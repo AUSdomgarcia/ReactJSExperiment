@@ -6,7 +6,8 @@ import {Router, Route, browserHistory} from 'react-router';
 
 import {Main} from './app/main';
 
-import './component1/index.scss';
+import './login/login.scss';
+import './layout/main.scss';
 
 ReactDOM.render(
   <Router history={browserHistory}>
