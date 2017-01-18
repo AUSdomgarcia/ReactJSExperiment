@@ -8,6 +8,11 @@ const conf = require('../conf/gulp.conf');
 
 gulp.task('clean', clean);
 gulp.task('other', other);
+gulp.task('cleanTmp', cleanTmp);
+
+function cleanTmp(){
+  return del([conf.paths.tmp]);
+}
 
 function clean() {
   return del([conf.paths.dist, conf.paths.tmp]);

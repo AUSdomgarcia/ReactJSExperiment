@@ -11,6 +11,7 @@ import {Home} from './app/home';
 ReactDOM.render(
     <Router history={browserHistory}>
         <Route path="/" component={Login}/>
+        <Route path="/home" component={Home}/>
     </Router>,
   document.getElementById('root')
 );

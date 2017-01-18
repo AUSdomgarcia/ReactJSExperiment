@@ -43,17 +43,25 @@ module.exports = {
       },
       // Fonts
       {
-        test: /\.(woff|woff2)$/, 
-        loaders: ['url?prefix=font/&limit=5000']
+        test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
+        loaders: ['url-loader?limit=10000&mimetype=application/font-woff']
+      },
+      {
+        test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/, 
+        loaders: ['url-loader?limit=10000&mimetype=application/font-woff']
       },
       {
         test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, 
-        loaders: ['url?limit=10000&mimetype=application/octet-stream']
+        loaders: ['url-loader?limit=10000&mimetype=application/octet-stream']
+      },
+      {
+        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, 
+        loaders: ['file-loader']
       },
       {
         test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, 
-        loaders: ['url?limit=10000&mimetype=image/svg+xml']
-      },
+        loaders: ['url-loader?limit=10000&mimetype=image/svg+xml']
+      }
       // {
       //   test: Webpack_isomorphic_tools_plugin.regular_expression('images'), 
       //   loaders: ['url-loader?limit=10240']
@@ -63,25 +71,31 @@ module.exports = {
   plugins: [
     // Webpack_isomorphic_tools_plugin,
     new webpack.optimize.OccurrenceOrderPlugin(),
+
     new webpack.NoErrorsPlugin(),
+
     FailPlugin,
+
     new HtmlWebpackPlugin({
       template: conf.path.src('index.html')
     }),
+
     new webpack.HotModuleReplacementPlugin(),
+
     new webpack.LoaderOptionsPlugin({
       options: {
-        context: '../src',
         postcss: () => [autoprefixer]
       },
       debug: true
     })
   ],
+
   devtool: 'source-map',
   output: {
     path: path.join(process.cwd(), conf.paths.tmp),
     filename: 'index.js'
   },
+  
   entry: [
     'webpack/hot/dev-server',
     'webpack-hot-middleware/client',

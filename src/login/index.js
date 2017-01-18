@@ -6,7 +6,6 @@ import {Button} from 'react-bootstrap';
 export class Login extends Component {
   constructor() { 
     super();
-    console.log(Button);
   }
 
   render() {
@@ -17,8 +16,8 @@ export class Login extends Component {
         <input type="text"/>
         <label>password</label>
         <input type="text"/>
-        
         <Button bsStyle="primary">submit</Button>
+        <i className="fa fa-times"></i>
       </div>
     );
   }
