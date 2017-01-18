@@ -5,7 +5,10 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FailPlugin = require('webpack-fail-plugin');
 const autoprefixer = require('autoprefixer');
-
+// Experiment
+// const Webpack_isomorphic_tools_plugin = require('webpack-isomorphic-tools/plugin');
+      // Webpack_isomorphic_tools_plugin = new Webpack_isomorphic_tools_plugin(require('./webpack-isomorphic-tools-configuration')).developmet();
+    
 module.exports = {
   module: {
     loaders: [
@@ -37,10 +40,28 @@ module.exports = {
           'react-hot-loader',
           'babel-loader'
         ]
-      }
+      },
+      // Fonts
+      {
+        test: /\.(woff|woff2)$/, 
+        loaders: ['url?prefix=font/&limit=5000']
+      },
+      {
+        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, 
+        loaders: ['url?limit=10000&mimetype=application/octet-stream']
+      },
+      {
+        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, 
+        loaders: ['url?limit=10000&mimetype=image/svg+xml']
+      },
+      // {
+      //   test: Webpack_isomorphic_tools_plugin.regular_expression('images'), 
+      //   loaders: ['url-loader?limit=10240']
+      // }
     ]
   },
   plugins: [
+    // Webpack_isomorphic_tools_plugin,
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.NoErrorsPlugin(),
     FailPlugin,
@@ -50,6 +71,7 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
     new webpack.LoaderOptionsPlugin({
       options: {
+        context: '../src',
         postcss: () => [autoprefixer]
       },
       debug: true

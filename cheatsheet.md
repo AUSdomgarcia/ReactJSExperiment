@@ -1,0 +1,1 @@
+- console.log('%c'+ this.value, 'background: #222; color: #bada55');
