@@ -11,6 +11,8 @@ export class Login extends Component {
   }
 
   componentDidMount() {
+    console.log(jQuery);
+
     let j = jQuery(ReactDOM.findDOMNode(this.refs.reactBtn))
     alert(j);
     j.css({'border':'10px solid red'});
@@ -24,11 +26,12 @@ export class Login extends Component {
         <input type="text"/>
         <label>password</label>
         <input type="text"/>
-        <Button ref="reactBtn" bsStyle="primary">submit</Button>
+        <button className="btn btn-success">Submit</button>
         <i className="fa fa-times"></i>
       </div>
     );
   }
 }
 
+// <Button ref="reactBtn" bsStyle="primary">submit</Button>
 
