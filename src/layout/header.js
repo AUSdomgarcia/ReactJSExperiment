@@ -1,3 +1,5 @@
+// Bootstrap and Fontawesome
+import '../common/resources.scss';
 import React, {Component} from 'react';
 
 const styles = {

@@ -1,21 +1,44 @@
-@import '../common/shared.scss';
-
-html, body, #root {
-  margin: 0;
-  height: 100%;
-  font-family: 'Open Sans', sans-serif;
-  @extend .iamblack;
+body {
+	background: #eee !important;	
 }
 
-body, h1, h2, h3 {
-  font-weight: 300
+.wrapper {	
+	margin-top: 80px;
+  margin-bottom: 80px;
 }
 
-a {
-  color: white;
-  text-decoration: none;
+.form-signin {
+  max-width: 380px;
+  padding: 15px 35px 45px;
+  margin: 0 auto;
+  background-color: #fff;
+  border: 1px solid rgba(0,0,0,0.1);  
 
-  &:hover {
-    color: #5aadbb;
-  }
+  .form-signin-heading,
+	.checkbox {
+	  margin-bottom: 30px;
+	}
+
+	.checkbox {
+	  font-weight: normal;
+	}
+
+	.form-control {
+	  position: relative;
+	  font-size: 16px;
+	  height: auto;
+	  padding: 10px;
+	}
+
+	input[type="text"] {
+	  margin-bottom: -1px;
+	  border-bottom-left-radius: 0;
+	  border-bottom-right-radius: 0;
+	}
+
+	input[type="password"] {
+	  margin-bottom: 20px;
+	  border-top-left-radius: 0;
+	  border-top-right-radius: 0;
+	}
 }
