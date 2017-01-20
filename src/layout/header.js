@@ -12,24 +12,42 @@ export default class Header extends Component {
   
   handleSelect(eventKey) {
     event.preventDefault();
-    alert(`selected ${eventKey}`);
+    // alert(`selected ${eventKey}`);
+    console.log(eventKey);
+    switch(eventKey){
+      case '4.1':
+        this.context.router.push('/packages');
+      break;
+      case '4.2':
+        this.context.router.push('/login');
+      break;
+    }
   }
 
   render() {
     return (
-      <Nav bsStyle="tabs" activeKey="1" onSelect={this.handleSelect.bind(this)}>
-        <NavItem eventKey="1" >Dashboard</NavItem>
-        <NavItem eventKey="2" >CE Creator</NavItem>
-        <NavItem eventKey="3" >Project Creator</NavItem>
-        <NavItem eventKey="3" >Account Listing</NavItem>
-        <NavDropdown eventKey="4" title="Dropdown" id="nav-dropdown">
-          <MenuItem eventKey="4.1">Action</MenuItem>
-          <MenuItem eventKey="4.2">Another action</MenuItem>
-          <MenuItem eventKey="4.3">Something else here</MenuItem>
-          <MenuItem divider />
-          <MenuItem eventKey="4.4">Separated link</MenuItem>
-        </NavDropdown>
-      </Nav>
+      <div className="navbar navbar-default">
+        <div className="container-fluid">
+          <Nav bsStyle='pills' onSelect={this.handleSelect.bind(this)}>
+            <NavItem eventKey='1' >Dashboard</NavItem>
+            <NavItem eventKey='2' >CE Creator</NavItem>
+            <NavItem eventKey='3' >Project Creator</NavItem>
+            <NavItem eventKey='3' >Account Listing</NavItem>
+            <NavDropdown eventKey='4' title='Rate Card' id='nav-dropdown'>
+              <MenuItem eventKey='4.1'>Packages</MenuItem>
+              <MenuItem eventKey='4.2'>Rate Card</MenuItem>
+              <MenuItem eventKey='4.3'>Services</MenuItem>
+              <MenuItem eventKey='4.4'>Personel</MenuItem>
+              <MenuItem eventKey='4.5'>Categories</MenuItem>
+            </NavDropdown>
+          </Nav>
+        </div>
+      </div>
     );
   }
 }
+
+Header.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
+

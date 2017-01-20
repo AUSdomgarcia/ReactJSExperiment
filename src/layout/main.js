@@ -4,20 +4,28 @@ import Footer from './footer';
 
 export default class MainLayout extends Component {
 
+  constructor(props){
+    super(props);
+  }
   componentDidMount(){
     // Force to redirect to Login
     console.log('%c '+'[DOM] On MainLayout Ready ', 'background: #222; color: #bada55');
+    // this.context.router.push('/login');
   }
 
   render() {
     return (
-      <div>
+      <div className="container">
         <Header />
-          <div className="container">
+          <div>
             {this.props.children}
           </div>
-        <Footer />
+          <Footer />
       </div>
     );
   }
 }
+
+MainLayout.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
