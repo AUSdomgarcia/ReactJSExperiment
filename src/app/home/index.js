@@ -5,7 +5,6 @@ export default class Home extends Component {
     return (
       <footer>
         Build with ♥ by the&nbsp;
-        <h1>Home Page</h1>
       </footer>
     );
   }

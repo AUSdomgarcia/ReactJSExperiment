@@ -1,6 +1,6 @@
 // Css
 import './login.scss';
-import jQuery from "jQuery";
+// import jQuery from "jQuery";
 import React, {Component} from 'react';
 import { browserHistory } from 'react-router';
 

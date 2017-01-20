@@ -1,23 +1,18 @@
 import React, {Component} from 'react';
-import {Header} from './header';
-import {Footer} from './footer';
-import {Link, hashHistory} from 'react-router';
+import Header from './header';
+import Footer from './footer';
 
 export default class MainLayout extends Component {
 
   componentDidMount(){
     // Force to redirect to Login
-    alert('X');
+    console.log('%c '+'[DOM] On MainLayout Ready ', 'background: #222; color: #bada55');
   }
 
   render() {
     return (
       <div>
         <Header />
-          <ul>
-            <li><Link to="/login">Login</Link></li>
-            <li><Link to="/home">Home</Link></li>
-          </ul>
           <div className="container">
             {this.props.children}
           </div>

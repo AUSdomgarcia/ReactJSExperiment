@@ -1,39 +1,35 @@
 // Bootstrap and Fontawesome
 import '../common/resources.scss';
+
 import React, {Component} from 'react';
+import {Nav,NavItem,NavDropdown,MenuItem} from 'react-bootstrap';
 
-const styles = {
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#1f1f1f'
-  },
-  title: {
-    flex: 1,
-    fontSize: '1.5rem',
-    margin: '1rem'
-  },
-  date: {
-    flex: 1,
-    textAlign: 'right',
-    margin: '1rem',
-    color: 'white'
+export default class Header extends Component {
+  
+  constructor(props) { 
+    super(props);
   }
-};
+  
+  handleSelect(eventKey) {
+    event.preventDefault();
+    alert(`selected ${eventKey}`);
+  }
 
-export class Header extends Component {
   render() {
     return (
-      <header style={styles.header}>
-        <p style={styles.title}>
-          <a href="https://github.com/FountainJS/generator-fountain-webapp" target="_blank">
-            Fountain Generator
-          </a>
-        </p>
-        <p style={styles.date}>
-          Generated with FountainJS v1.0.0-rc2 on Tue Jan 17 2017 16:50:37 GMT+0800 (China Standard Time)
-        </p>
-      </header>
+      <Nav bsStyle="tabs" activeKey="1" onSelect={this.handleSelect.bind(this)}>
+        <NavItem eventKey="1" >Dashboard</NavItem>
+        <NavItem eventKey="2" >CE Creator</NavItem>
+        <NavItem eventKey="3" >Project Creator</NavItem>
+        <NavItem eventKey="3" >Account Listing</NavItem>
+        <NavDropdown eventKey="4" title="Dropdown" id="nav-dropdown">
+          <MenuItem eventKey="4.1">Action</MenuItem>
+          <MenuItem eventKey="4.2">Another action</MenuItem>
+          <MenuItem eventKey="4.3">Something else here</MenuItem>
+          <MenuItem divider />
+          <MenuItem eventKey="4.4">Separated link</MenuItem>
+        </NavDropdown>
+      </Nav>
     );
   }
 }

@@ -4,6 +4,7 @@ import React from 'react';
 import {Router, Route, IndexRoute, browserHistory, Link } from 'react-router';
 import ReactDOM from 'react-dom';
 
+// Pages
 import MainLayout from './layout/main';
 import Login from './login/index';
 import Home from './app/home/index';
