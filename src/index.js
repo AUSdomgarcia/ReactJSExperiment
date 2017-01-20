@@ -12,16 +12,16 @@ import {Packages, PackagesCreation, PackagesChooseService} from './app/packages/
 
 ReactDOM.render(
     <Router history={browserHistory}>
-        <Route path="/" component={MainLayout}>
+        <Route path="/" handler={MainLayout}>
         
-            <IndexRoute component={Home} />
+            <IndexRoute handler={Home} />
 
-            <Route path="login" component={Login} />
+            <Route path="login" handler={Login} />
 
             <Route path="packages">
-                <IndexRoute component={Packages} />
-                <Route path="/packages/create" component={PackagesCreation} />
-                <Route path="/packages/choose-service" component={PackagesChooseService} />
+                <IndexRoute handler={Packages} />
+                <Route path="/packages/create" handler={PackagesCreation} />
+                <Route path="/packages/choose-service" handler={PackagesChooseService} />
             </Route>
         </Route>
     </Router>,
