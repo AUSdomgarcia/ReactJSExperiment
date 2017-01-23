@@ -1,0 +1,46 @@
+.permission-wrapper {
+    border:1px solid #ccc;
+}
+
+.left-section {
+    width: 20%;
+    box-sizing: border-box;
+    padding: 5px;
+    float: left;
+    border-top:1px solid #ccc;
+
+    position: relative;
+
+    span {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        display: inline-block;
+        font-weight: 600;
+        transform: translate(-50%,-50%);
+    }
+}
+
+.right-section {
+    width: 80%;
+    box-sizing: border-box;
+    padding: 5px;
+    float: left;
+    position: relative;
+    border-top:1px solid #ccc;
+    border-left: 1px solid #ccc;
+
+    ul {
+        padding: 0;
+        margin: 0;
+    }
+
+    li {
+        display: block;
+    }
+}
+
+.right-section.-big,
+.left-section.-big {
+    height: 70px;
+}

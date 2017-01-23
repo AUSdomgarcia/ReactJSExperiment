@@ -7,6 +7,7 @@ export default class MainLayout extends Component {
   constructor(props){
     super(props);
   }
+  
   componentDidMount(){
     // Force to redirect to Login
     console.log('%c '+'[DOM] On MainLayout Ready ', 'background: #222; color: #bada55');
@@ -15,7 +16,7 @@ export default class MainLayout extends Component {
 
   render() {
     return (
-      <div className="container">
+      <div className="container bgWhite">
         <Header />
           <div>
             {this.props.children}
