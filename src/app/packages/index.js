@@ -218,6 +218,21 @@ export class PackageChoose extends Component {
 
 // Step3 - Rate Service
 export class PackageRate extends Component {
+
+    constructor(props){
+        super(props);
+
+        this.state = {
+            'package_total': 20000,
+            'package_discount': 0,
+            'package_rate': 18000
+        }
+    }
+
+    onChangeHandler(evt){
+
+    }
+
     render () {
         return (
             <div>
@@ -232,7 +247,7 @@ export class PackageRate extends Component {
                                     <label>Total Package Rate</label>
                                 </div>
                                 <div className="col-xs-9">
-                                    <input type='text' className='form-control' />
+                                    <input type='text' className='form-control' value={this.state.package_total} onChange={this.onChangeHandler.bind(this)} disabled />
                                 </div>
                             </div>
                             
@@ -243,7 +258,7 @@ export class PackageRate extends Component {
                                     <label>Discount</label>
                                 </div>
                                 <div className="col-xs-9">
-                                    <input type='text' className='form-control' />
+                                    <input type='text' className='form-control' value={this.state.package_discount} onChange={this.onChangeHandler.bind(this)} />
                                 </div>
                             </div>
 
@@ -254,7 +269,7 @@ export class PackageRate extends Component {
                                     <label>Package Rate</label>
                                 </div>
                                 <div className="col-xs-9">
-                                    <input type='text' className='form-control' />
+                                    <input type='text' className='form-control' value={this.state.package_rate} onChange={this.onChangeHandler.bind(this)} disabled />
                                 </div>
                             </div>
 
