@@ -27,8 +27,8 @@ export default class CategoryTreeView extends Component {
         return (
         <div>
             <div className='package-info'>
-                <h4>Web Development Package</h4>
-                <small>Package of Unilever</small>
+                <h4>[Dynamic] Web Development Package</h4>
+                <small>[Dynamic] Package of Unilever</small>
             </div>
 
             <br />
@@ -36,7 +36,7 @@ export default class CategoryTreeView extends Component {
             {/* Category listing with table data inside */}
             <div className='category-list-opt-nested'>
             
-                <label className='category-name'>Digital Strategy</label>
+                <label className='category-name'>[Dynamic] Digital Strategy</label>
 
                 <div className='category-title clearfix'>
                     <div><strong>Service Name</strong></div>
@@ -71,7 +71,7 @@ export default class CategoryTreeView extends Component {
             {/* Category listing with table data inside */}
             <div className='category-list-opt-nested'>
             
-                <label className='category-name'>Creatives</label>
+                <label className='category-name'>[Dynamic] Creatives</label>
 
                 <div className='category-title clearfix'>
                     <div><strong>Service Name</strong></div>

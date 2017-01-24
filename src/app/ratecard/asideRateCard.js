@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import JQuery from 'jquery';
 
-import './aside.scss';
+import './aside-duplicate-aside.scss';
 
-export class AsideNav extends Component {
+export class AsideRateCard extends Component {
   constructor(props){
       super(props);
   }
@@ -11,7 +11,7 @@ export class AsideNav extends Component {
   componentDidMount(){
     let uri = this.props.path;
     
-    if(uri ==='/packages') {
+    if(uri ==='/ratecard') {
       JQuery('.leftNavIndicator').hide();
     } else {
       JQuery('.leftNavIndicator').show();
@@ -33,12 +33,11 @@ export class AsideNav extends Component {
     return (
       <div className='leftNavIndicator'>
 
-        <h3 className='sky'>Create Package</h3>
+        <h3 className='sky'>Create Rate Card</h3>
 
         <ul>
-          <li><a href='javascript:void(0)' data-route='add'>Choose Package name</a></li>
+          <li><a href='javascript:void(0)' data-route='add'>Choose Rate Card Name</a></li>
           <li><a href='javascript:void(0)' data-route='choose'>Choose Services</a></li>
-          <li><a href='javascript:void(0)' data-route='rate'>Add Package Rate</a></li>
           <li><a href='javascript:void(0)' data-route='permission'>Add Permission</a></li>
           <li><a href='javascript:void(0)' data-route='save'>Save</a></li>
         </ul>

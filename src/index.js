@@ -8,7 +8,32 @@ import ReactDOM from 'react-dom';
 import MainLayout from './layout/main';
 import Login from './login/index';
 import Home from './app/home/index';
-import {Packages, PackageAdd, PackageChoose, PackageRate, PackagePermission, PackageSave, PackagePreview} from './app/packages/index';
+
+import {
+    Packages, 
+    PackageAdd, 
+    PackageChoose, 
+    PackageRate, 
+    PackagePermission, 
+    PackageSave, 
+    PackagePreview} from './app/packages/index';
+
+import {
+    RateCard,
+    RateCardAdd,
+    RateCardChoose,
+    RateCardPermission,
+    RateCardSave
+        } from './app/ratecard/index';
+
+import {
+    Categories
+    } from './app/categories/index';
+
+import {
+    Personnel,
+    PersonnelEdit
+    } from './app/personnel/index';
 
 ReactDOM.render(
     <Router history={hashHistory}>
@@ -16,6 +41,7 @@ ReactDOM.render(
             <IndexRoute component={Home} />
             <Route path="login" component={Login} />
             
+            {/* P A C K A G E S */}
             <Route path="packages">
                 <IndexRoute component={Packages} />
                 <Route path="/packages/add" component={PackageAdd} />
@@ -25,6 +51,27 @@ ReactDOM.render(
                 <Route path="/packages/save" component={PackageSave} />
                 <Route path="/packages/preview" component={PackagePreview} />
             </Route>
+                
+            {/* R A T E  C A R D */}
+            <Route path='ratecard'>
+                <IndexRoute component={RateCard} />
+                <Route path="/ratecard/add" component={RateCardAdd} />
+                <Route path="/ratecard/choose" component={RateCardChoose} />
+                <Route path="/ratecard/permission" component={RateCardPermission} />
+                <Route path="/ratecard/save" component={RateCardSave} />
+            </Route>
+
+            {/* C A T E G O R I E S */}
+            <Route path='categories'>
+                <IndexRoute component={Categories} />
+            </Route>
+
+            {/* P E R S O N E L */}
+            <Route path='personnel'>
+                <IndexRoute component={Personnel} />
+                <Route path='/personnel/edit' component={PersonnelEdit} />
+            </Route>
+
         </Route>
     </Router>,
   document.getElementById('root')

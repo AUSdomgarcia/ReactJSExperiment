@@ -21,6 +21,7 @@ export default class PermissionView extends Component {
                 <div className='right-section -big'>
                    <ul>
                         <li>Tom De Leon</li>
+                        <li>Michael Ng</li>
                         <li>Jeff Saez</li>
                         <li>Connie Balmaceda</li>
                     </ul>

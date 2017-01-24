@@ -19,7 +19,13 @@ export default class Header extends Component {
         this.context.router.push('/packages');
       break;
       case '4.2':
-        this.context.router.push('/login');
+        this.context.router.push('/ratecard');
+      break;
+       case '4.4':
+        this.context.router.push('/personnel');
+      break;
+      case '4.5':
+        this.context.router.push('/categories');
       break;
     }
   }
