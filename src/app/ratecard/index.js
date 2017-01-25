@@ -5,6 +5,16 @@ import './ratecard.scss';
 
 export class RateCard extends Component {
     
+    constructor(props){
+        super(props);
+    }
+
+    handleEdit(evt){
+        console.log(evt);
+        
+        this.context.router.push('/ratecard/edit')
+    }
+    
     render(){
         
         return (
@@ -32,7 +42,7 @@ export class RateCard extends Component {
                                     <td>This is the baseline Rate card for 2017</td>
                                     <td>V1.1</td>
                                     <td>
-                                        <button className='btn btn-primary'>Edit</button>
+                                        <button className='btn btn-primary' onClick={this.handleEdit.bind(this)}>Edit</button>
                                         <button className='btn btn-primary'>View</button>
                                         <button className='btn btn-warning'>Archive</button>
                                     </td>
@@ -81,6 +91,12 @@ export class RateCard extends Component {
     }
 }
 
+RateCard.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
+
+
+{/* R A T E C A R D  A D D */}
 import { AsideRateCard } from './asideRateCard.js';
 
 export class RateCardAdd extends Component {
@@ -114,6 +130,65 @@ export class RateCardAdd extends Component {
     }
 }
 
+{/* R A T E C A R D  E D I T */}
+export class RateCardEdit extends Component {
+    render(){
+        
+        return(
+            <div>
+                <AsideRateCard path={this.props.location.pathname}/>
+
+                <div className='package-content'>
+
+                    <div className='col-md-12'>
+                        <form>
+                            <div className='form-group'>
+                                <label>Rate Card name</label>
+                                <input className='form-control' type='text' />
+                                <label>Rate Card Description</label>
+                                <input className='form-control' type='text' />
+                            </div>
+                        </form>
+                        
+                        <Link className='btn btn-default pull-left' to='/ratecard'>Back</Link>
+                        <Link className='btn btn-primary pull-right' to='/ratecard/choose'>Next</Link>
+                    </div>
+
+                </div>
+
+            <br className="clearfix" /><br />
+            </div>
+        )
+    }
+}
+
+{/* R A T E C A R D  V I E W */}
+export class RateCardView extends Component {
+    render(){
+        
+        return(
+            <div>
+                <AsideRateCard path={this.props.location.pathname}/>
+
+                <div className='package-content'>
+
+                    <div className='col-md-12'>
+                        XXX
+                        
+                        <Link className='btn btn-default pull-left' to='/ratecard'>Back</Link>
+                        <Link className='btn btn-primary pull-right' to='/ratecard/choose'>Next</Link>
+                    </div>
+
+                </div>
+
+            <br className="clearfix" /><br />
+            </div>
+        )
+    }
+}
+
+
+{/* R A T E C A R D  C H O O S E */}
 export class RateCardChoose extends Component {
     render(){
         
@@ -186,6 +261,7 @@ export class RateCardChoose extends Component {
     }
 }
 
+{/* R A T E C A R D  P E R M I S S I O N */}
 import PermissionEditor from '../../common/permissionEditor/permissionEditor.js';
 
 export class RateCardPermission extends Component {
@@ -214,6 +290,7 @@ export class RateCardPermission extends Component {
     }
 }
 
+{/* R A T E C A R D  S A V E */}
 import CategoryTreeView from '../../common/categoryTreeView/categoryTreeView.js';
 import PermissionView from '../../common/permissionView/permissionView.js';
 

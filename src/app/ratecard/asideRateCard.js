@@ -4,14 +4,15 @@ import JQuery from 'jquery';
 import './aside-duplicate-aside.scss';
 
 export class AsideRateCard extends Component {
+  
   constructor(props){
       super(props);
   }
 
   componentDidMount(){
-    let uri = this.props.path;
+    let URI = this.props.path;
     
-    if(uri ==='/ratecard') {
+    if(URI ==='/ratecard') {
       JQuery('.leftNavIndicator').hide();
     } else {
       JQuery('.leftNavIndicator').show();
@@ -21,15 +22,22 @@ export class AsideRateCard extends Component {
       let route = JQuery(this).attr('data-route');
       JQuery(this).removeClass('active');
 
-      if(uri.includes(route)){
+      if(URI.includes(route)){
         JQuery(this).parent().addClass('active');
+
+      } else if(URI.includes('edit')) {
+        route = JQuery(this).attr('data-route');
+        if(route==='add'){
+          JQuery(this).parent().addClass('active');
+        }
       }
 
     });
   }
 
   render() {
-      
+    let URI = this.props.path;
+
     return (
       <div className='leftNavIndicator'>
 

@@ -23,7 +23,9 @@ import {
     RateCardAdd,
     RateCardChoose,
     RateCardPermission,
-    RateCardSave
+    RateCardSave,
+    RateCardEdit,
+    RateCardView
         } from './app/ratecard/index';
 
 import {
@@ -59,6 +61,9 @@ ReactDOM.render(
                 <Route path="/ratecard/choose" component={RateCardChoose} />
                 <Route path="/ratecard/permission" component={RateCardPermission} />
                 <Route path="/ratecard/save" component={RateCardSave} />
+
+                <Route path="/ratecard/edit" component={RateCardEdit} />
+                <Route path="/ratecard/view" component={RateCardView} />
             </Route>
 
             {/* C A T E G O R I E S */}
