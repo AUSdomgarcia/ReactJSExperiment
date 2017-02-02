@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Link} from 'react-router';
 import './personnel.scss';
 
-import {PersonnelEditView} from '../../common/_personnelEdit/personnelEdit';
+import {PersonnelEditor} from '../../common/_personnelEdit/personnelEdit';
 
 export class Personnel extends Component {
   render() {
@@ -16,12 +16,12 @@ export class Personnel extends Component {
         
         <br />
           
-        <PersonnelEditView btnName='Add'/>
+        <PersonnelEditor btnName='Add'/>
 
         <br />
 
         <div className='search-wrap'>
-          <div className='col-xs-8'>...</div>
+          <div className='col-xs-8'>col-xs-8</div>
 
           <div className='col-xs-4'>
             <div className="input-group">
@@ -85,7 +85,7 @@ export class PersonnelEdit extends Component {
         
         <br />
           
-        <PersonnelEditView btnName='Update'/>
+        <PersonnelEditor btnName='Update'/>
 
         <br />
 

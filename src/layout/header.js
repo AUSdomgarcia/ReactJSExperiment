@@ -43,7 +43,7 @@ export default class Header extends Component {
               <MenuItem eventKey='4.1'>Packages</MenuItem>
               <MenuItem eventKey='4.2'>Rate Card</MenuItem>
               <MenuItem eventKey='4.3'>Services</MenuItem>
-              <MenuItem eventKey='4.4'>Personel</MenuItem>
+              <MenuItem eventKey='4.4'>Personnel</MenuItem>
               <MenuItem eventKey='4.5'>Categories</MenuItem>
             </NavDropdown>
           </Nav>

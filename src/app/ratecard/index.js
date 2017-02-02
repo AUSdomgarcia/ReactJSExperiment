@@ -10,8 +10,6 @@ export class RateCard extends Component {
     }
 
     handleEdit(evt){
-        console.log(evt);
-        
         this.context.router.push('/ratecard/edit')
     }
     
