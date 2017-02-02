@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import './personnelEdit.scss';
 
-export class PersonnelEditor extends Component {
+export class PersonnelInputField extends Component {
     constructor(props){
         super(props);
         this.state = {
@@ -21,11 +21,11 @@ export class PersonnelEditor extends Component {
         // GET state rateType, department, position 
     }
 
-    manHourHandler(evt){
+    onSetManHourHandler(evt){
         this.setState({manHour: evt.target.value});
     }
 
-    selectTagHandler(evt){
+    onSelectHandler(evt){
         if(this.state.rateType.includes(evt.target.value)){
             this.setState({ rateTypeValue: evt.target.value });
         } else if(this.state.department.includes(evt.target.value)) {
@@ -36,17 +36,21 @@ export class PersonnelEditor extends Component {
         console.log(evt.target.value);
     }
 
-    actionHandler(evt){
+    onActionHandler(evt){
         switch(this.props.btnName.toLowerCase()){
             case 'add':
-                alert('xxx');
+                // alert('add!!');
             break;
+            
+            case 'update':
+                // alert('update!!');
+            break;
+
             case 'edit':
                 this.context.router.push('/ratecard/edit')
             break;
         }
     }
-
 
   render() {
 
@@ -56,7 +60,7 @@ export class PersonnelEditor extends Component {
             <form>
                 <div className='form-group'>
                     <label>Rate Type</label>
-                    <select className="form-control" value={this.state.rateTypeValue} onChange={this.selectTagHandler.bind(this)}>
+                    <select className="form-control" value={this.state.rateTypeValue} onChange={this.onSelectHandler.bind(this)}>
                         {this.state.rateType.map(function(options){
                             return (<option key={options} value={options}>{options}</option>)
                         })}
@@ -65,7 +69,7 @@ export class PersonnelEditor extends Component {
                 
                 <div className='form-group'>
                     <label>Department</label>
-                    <select className="form-control" value={this.state.departmentValue} onChange={this.selectTagHandler.bind(this)}>
+                    <select className="form-control" value={this.state.departmentValue} onChange={this.onSelectHandler.bind(this)}>
                         {this.state.department.map(function(options){
                             return (<option key={options} value={options}>{options}</option>)
                         })}
@@ -74,7 +78,7 @@ export class PersonnelEditor extends Component {
 
                 <div className='form-group'>
                     <label>Position</label>
-                    <select className="form-control" value={this.state.positionValue} onChange={this.selectTagHandler.bind(this)}>
+                    <select className="form-control" value={this.state.positionValue} onChange={this.onSelectHandler.bind(this)}>
                         {this.state.position.map(function(options){
                             return (<option key={options} value={options}>{options}</option>)
                         })}
@@ -83,11 +87,11 @@ export class PersonnelEditor extends Component {
 
                 <div className='form-group'>
                     <label>Manhour Rate</label>
-                    <input type='text' className='form-control' value={this.state.manHour} onChange={this.manHourHandler.bind(this)}/>
+                    <input type='text' className='form-control' value={this.state.manHour} onChange={this.onSetManHourHandler.bind(this)}/>
                 </div>
                 
                 <div className='btn-wrap'>
-                    <button className='btn btn-primary pull-right' onClick={this.actionHandler.bind(this)}>{this.props.btnName}</button>
+                    <button className='btn btn-primary pull-right' onClick={this.onActionHandler.bind(this)}>{this.props.btnName}</button>
                 </div>
             </form>
         </div>
@@ -104,7 +108,7 @@ export class PersonnelEditor extends Component {
   }
 }
 
-PersonnelEditor.contextTypes = {
+PersonnelInputField.contextTypes = {
   router: React.PropTypes.object.isRequired
 };
 
