@@ -2,26 +2,26 @@ import React, {Component} from "react";
 import Jquery from 'jquery';
 import "./categories.scss";
 
-import SubLevel from '../../common/_categories/sublevel';
+import {LevelOne} from '../../common/_categories/levelone';
 
 export class Categories extends Component {
   
   constructor(props){
     super(props);
+    this.BASE_URL = "http://172.16.100.141/api.cerebrum/public";
     this.state = {
-      // categoryList : ["Digital Strategy", "Creative Production", "User Experience", "Dev Production", "Engagement"],
-      categoryList : [{ name: "Digital Strategy",    lvlTwo: [{ name: "Sample from Index 0"}] }, 
-                      { name: "Creative Production", lvlTwo: [{ name: "Sample from Index 1"}] }, 
-                      { name: "User Experience",     lvlTwo: [{ name: "Sample from Index 2"}] }, 
-                      { name: "Dev Production",      lvlTwo: [{ name: "Sample from Index 3"}] },
-                      { name: "Engagement",          lvlTwo: [{ name: "Sample from Index 4"}] }
-                      ],
-      categoryName:  ""
+      categoryList : [],
+      categoryName:  "",
     };
   }
 
   componentDidMount(){
     // GET state rateType, department, position 
+    let scope = this;
+
+    Jquery.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
+      scope.setState({ categoryList: data.payload })
+    });
   }
   
   addLevelOne(evt){
@@ -34,12 +34,13 @@ export class Categories extends Component {
   }
 
   onSaveHandler(evt){
-    var category = { name: this.state.categoryName };
+    // testing adding
+    var category = { "id": Math.floor(Math.random()*9999), "name": this.state.categoryName, "level": 2, "order": 1, "sub_categories": [] };
+    
     this.state.categoryList.push(category);
-
     this.setState({ categoryList: this.state.categoryList });
     this.setState({ categoryName: ""});
-
+    
     Jquery('.category-input').addClass('hide');
   }
 
@@ -52,35 +53,39 @@ export class Categories extends Component {
 
     return (
       <div>
+        {/* Title */}
         <h3 className="sky">Manage Categories and Rate Type</h3>
-          
-          <div className="col-md-12">
-            <div className="col-xs-6">
-              <strong>Service Category</strong>
-            </div>
-            <div className="col-xs-6">
-              <div className="pull-right">
-                <button type="button" className="btn btn-default">Rearrange</button>
-                <button type="button" className="btn btn-primary" onClick={this.addLevelOne.bind(this)}>Add Level</button>
-              </div>
+        
+        {/* Menu */}
+        <div className="col-md-12">
+          <div className="col-xs-6">
+            <strong>Service Category</strong>
+          </div>
+          <div className="col-xs-6">
+            <div className="pull-right">
+              <button type="button" className="btn btn-default">Rearrange</button>
+              <button type="button" className="btn btn-primary" onClick={this.addLevelOne.bind(this)}>Add Level</button>
             </div>
           </div>
+        </div>
 
         <br className="clearfix"/>
         <br />
 
         {/* Category Listing */}
-        <ul className="category-list">
-          {this.state.categoryList.map(function(data, index){
-              return (
-                <li key={index}>
-
-                   <SubLevel curData={data}/>
-
-                </li>)
-            })
-          }
-        </ul>
+        <div className="category-list">
+          <ul>
+            { 
+              this.state.categoryList.map(function(data, index){
+                return ( 
+                  <li key={data.id}>
+                    <LevelOne curData={data} />
+                  </li>
+                  )
+              })
+            }
+            </ul>
+        </div>
 
         <br />
 
