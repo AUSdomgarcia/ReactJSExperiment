@@ -19,13 +19,13 @@ export class Categories extends Component {
     // GET state rateType, department, position 
     let scope = this;
 
-    // Jquery.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
-    Jquery.get('./mockresponse.json', function(data){
+    Jquery.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
       scope.setState({ categoryList: data.payload })
     });
   }
   
-  addLevelOne(evt){
+  onAddLevel(evt){
+    console.log('onAddLevel');
     Jquery('.category-input').removeClass('hide');
   }
 
@@ -65,7 +65,7 @@ export class Categories extends Component {
           <div className="col-xs-6">
             <div className="pull-right">
               <button type="button" className="btn btn-default">Rearrange</button>
-              <button type="button" className="btn btn-primary" onClick={this.addLevelOne.bind(this)}>Add Level</button>
+              <button type="button" className="btn btn-primary" onClick={this.onAddLevel.bind(this)}>Add Level</button>
             </div>
           </div>
         </div>

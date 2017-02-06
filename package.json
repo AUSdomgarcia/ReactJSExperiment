@@ -1,4 +1,6 @@
-{
+{ 
+  "name":"domz",
+  "version":"0.0.1",
   "dependencies": {
     "axios": "^0.9.1",
     "react": "^15.0.1",
