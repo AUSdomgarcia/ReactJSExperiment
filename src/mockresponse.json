@@ -1,0 +1,84 @@
+{
+  "error": false,
+  "message": "",
+  "payload": [
+    {
+      "id": 1,
+      "name": "Digital Strategy",
+      "order": 1,
+      "sub_categories": [
+        {
+          "id": 1,
+          "name": "Sub Digital Strategy 1.1",
+          "level": "2",
+          "order": 1
+        },
+        {
+          "id": 2,
+          "name": "Sub Digital Strategy 1.2",
+          "level": "2",
+          "order": 2
+        },
+        {
+          "id": 3,
+          "name": "Sub Digital Strategy 1.3",
+          "level": "2",
+          "order": 3
+        },
+        {
+          "id": 4,
+          "name": "Sub Digital Strategy 1.3.1",
+          "level": "3",
+          "order": 4
+        },
+        {
+          "id": 5,
+          "name": "Sub Digital Strategy 1.3.2",
+          "level": "3",
+          "order": 5
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Creative Production",
+      "order": 2,
+      "sub_categories": [
+        {
+          "id": 6,
+          "name": "Creative Production 1.1",
+          "level": "2",
+          "order": 6
+        },
+        {
+          "id": 7,
+          "name": "Creative Production 1.2",
+          "level": "2",
+          "order": 7
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "User Experience",
+      "order": 3,
+      "sub_categories": []
+    },
+    {
+      "id": 4,
+      "name": "Dev Production",
+      "order": 4,
+      "sub_categories": []
+    },
+    {
+      "id": 5,
+      "name": "Engagement",
+      "order": 5,
+      "sub_categories": []
+    }
+  ],
+  "status": {
+    "code": 200,
+    "text": "OK"
+  }
+}

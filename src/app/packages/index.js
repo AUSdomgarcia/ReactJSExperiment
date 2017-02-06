@@ -115,7 +115,7 @@ export class PackageAdd extends Component {
 
 
 
-import TopBottomTable from '../../common/topBottomTable/topBottomTable.js';
+import ConnectedTable from '../../common/connectedTable/connectedTable.js';
 
 // Step2 - Choose Service
 export class PackageChoose extends Component {
@@ -129,7 +129,7 @@ export class PackageChoose extends Component {
 
                     <div className='col-md-12'>
                         
-                        <TopBottomTable />  
+                        <ConnectedTable />  
                       
                         <Link className='btn btn-default pull-left' to='/packages/add'>Back</Link>
                         <Link className='btn btn-primary pull-right' to='/packages/rate'>Next</Link>

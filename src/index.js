@@ -16,7 +16,7 @@ import {
     PackageRate, 
     PackagePermission, 
     PackageSave, 
-    PackagePreview} from './app/packages/index';
+    PackagePreview } from './app/packages/index';
 
 import {
     RateCard,
@@ -25,17 +25,21 @@ import {
     RateCardPermission,
     RateCardSave,
     RateCardEdit,
-    RateCardView
-        } from './app/ratecard/index';
+    RateCardView } from './app/ratecard/index';
 
 import {
-    Categories
-    } from './app/categories/index';
+    Categories } from './app/categories/index';
 
 import {
     Personnel,
-    PersonnelEdit
-    } from './app/personnel/index';
+    PersonnelEdit } from './app/personnel/index';
+
+import {
+    Services,
+    ManageServices,
+    ServiceAdd,
+    ServiceEdit,
+    ServiceViewer  } from './app/services/index';
 
 ReactDOM.render(
     <Router history={hashHistory}>
@@ -75,6 +79,15 @@ ReactDOM.render(
             <Route path='personnel'>
                 <IndexRoute component={Personnel} />
                 <Route path='/personnel/edit' component={PersonnelEdit} />
+            </Route>
+
+            {/* S E R V I C E S */}
+            <Route path='services'>
+                <IndexRoute component={Services} />
+                <Route path="/services/manage" component={ManageServices} />
+                <Route path="/services/add" component={ServiceAdd} />
+                <Route path="/services/edit" component={ServiceEdit} />
+                <Route path="/services/viewer" component={ServiceViewer} />
             </Route>
 
         </Route>

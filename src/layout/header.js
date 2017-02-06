@@ -12,14 +12,18 @@ export default class Header extends Component {
   
   handleSelect(eventKey) {
     event.preventDefault();
-    // alert(`selected ${eventKey}`);
-    console.log(eventKey);
+
+    // console.log(eventKey);
+
     switch(eventKey){
       case '4.1':
         this.context.router.push('/packages');
       break;
       case '4.2':
         this.context.router.push('/ratecard');
+      break;
+       case '4.3':
+        this.context.router.push('/services');
       break;
        case '4.4':
         this.context.router.push('/personnel');

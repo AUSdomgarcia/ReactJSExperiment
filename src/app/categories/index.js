@@ -19,7 +19,8 @@ export class Categories extends Component {
     // GET state rateType, department, position 
     let scope = this;
 
-    Jquery.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
+    // Jquery.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
+    Jquery.get('./mockresponse.json', function(data){
       scope.setState({ categoryList: data.payload })
     });
   }
