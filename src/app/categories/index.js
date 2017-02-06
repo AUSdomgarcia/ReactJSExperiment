@@ -148,6 +148,13 @@ export class Categories extends Component {
         <RateType />
         <br />
 
+        <pre>
+        Todo: <br />
+        1. Fix third level not sync after creating new category. <br />
+        2. Rate Type Functionality. <br />
+        3. Create Pagination.
+        </pre>
+
       </div>
     );
   }
