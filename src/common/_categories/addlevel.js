@@ -1,27 +1,28 @@
 import React, {Component} from 'react';
 
+import './addlevel.scss';
+
 export class AddLevel extends Component {
 
     constructor(props){
         super(props);
         this.state = {
-            categoryName: "",
+            newValue: "",
         }
     }
 
     inputHandler(evt){
-        this.setState({categoryName: evt.target.value });
+        this.setState({newValue: evt.target.value });
     }
 
     componentWillReceiveProps(nextProps){
-        console.log(nextProps.categoryName);
-        if(nextProps.categoryName !== this.state.categoryName){
-            this.setState({ categoryName: nextProps.categoryName });
+        if(nextProps.name !== this.state.newValue){
+            this.setState({ newValue: nextProps.name });
         }
     }
 
     onSave(){
-        this.props.onSave(this.state.categoryName);
+        this.props.onSave(this.state.newValue);
     }
 
     render(){
@@ -29,9 +30,9 @@ export class AddLevel extends Component {
 
         if(this.props.hasAddLevel){
             mainContent =
-                <div>
+                <div className="marginTop">
                     <div className="col-xs-6">
-                        <input type="text" className="form-control" value={this.state.categoryName} onChange={this.inputHandler.bind(this)} />
+                        <input type="text" className="form-control" value={this.state.newValue} onChange={this.inputHandler.bind(this)} />
                     </div>
 
                     <div className="col-xs-6">

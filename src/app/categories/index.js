@@ -2,16 +2,18 @@ import React, {Component} from "react";
 import Jquery from 'jquery';
 import "./categories.scss";
 
-import {LevelOne} from '../../common/_categories/levelone';
+import {LevelTwo} from '../../common/_categories/leveltwo';
+import {RateType} from '../../common/rateType/index';
 
 export class Categories extends Component {
   
   constructor(props){
     super(props);
-    this.BASE_URL = "http://172.16.100.141/api.cerebrum/public";
+    this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
     this.state = {
-      categoryList : [],
+      categoryLevelOne : [],
       categoryName:  "",
+      response_last_id: null,
     };
   }
 
@@ -20,12 +22,16 @@ export class Categories extends Component {
     let scope = this;
 
     Jquery.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
-      scope.setState({ categoryList: data.payload })
+      scope.setState({ categoryLevelOne: data.payload });
+
+      if(data.payload.length!==0){
+        scope.setState({response_last_id: data.payload[data.payload.length-1].id});
+      }
     });
   }
   
   onAddLevel(evt){
-    console.log('onAddLevel');
+    // alert('LAST_ID ' + this.state.response_last_id);
     Jquery('.category-input').removeClass('hide');
   }
 
@@ -35,13 +41,28 @@ export class Categories extends Component {
   }
 
   onSaveHandler(evt){
-    // testing adding
-    var category = { "id": Math.floor(Math.random()*9999), "name": this.state.categoryName, "level": 2, "order": 1, "sub_categories": [] };
-    
-    this.state.categoryList.push(category);
-    this.setState({ categoryList: this.state.categoryList });
+
+    if(this.state.categoryName.length===0){
+      alert('No category name');
+      console.log('No categorie name');
+      return;
+    }
+
+    let scope = this;
+    let category = { "id": this.state.response_last_id+1, "name": this.state.categoryName, "order": this.state.response_last_id+1, "sub_categories": [] };
+    let level1Arr = this.state.categoryLevelOne;
+        level1Arr.push(category);
+
+    Jquery.post(this.BASE_URL+'/rate-cards/service-categories/create', 
+    {
+      name: scope.state.categoryName
+    },
+    function(data){
+      scope.setState({ categoryLevelOne: data.payload });
+      scope.setState({ response_last_id: data.payload[data.payload.length-1].id });
+    });
+
     this.setState({ categoryName: ""});
-    
     Jquery('.category-input').addClass('hide');
   }
 
@@ -57,6 +78,11 @@ export class Categories extends Component {
         {/* Title */}
         <h3 className="sky">Manage Categories and Rate Type</h3>
         
+
+
+
+
+
         {/* Menu */}
         <div className="col-md-12">
           <div className="col-xs-6">
@@ -64,31 +90,38 @@ export class Categories extends Component {
           </div>
           <div className="col-xs-6">
             <div className="pull-right">
-              <button type="button" className="btn btn-default">Rearrange</button>
+              <button type="button" className="btn btn-default">Rearrange</button>&nbsp;
               <button type="button" className="btn btn-primary" onClick={this.onAddLevel.bind(this)}>Add Level</button>
             </div>
           </div>
         </div>
 
         <br className="clearfix"/>
-        <br />
+
+
+
+
+
 
         {/* Category Listing */}
         <div className="category-list">
           <ul>
-            { 
-              this.state.categoryList.map(function(data, index){
+            { scope.state.categoryLevelOne.map(function(currentData){
                 return ( 
-                  <li key={data.id}>
-                    <LevelOne curData={data} />
+                  <li key={currentData.id}>
+
+                    <LevelTwo parentData={currentData} />
+
                   </li>
                   )
-              })
-            }
+              } ) }
             </ul>
         </div>
 
-        <br />
+
+
+
+
 
         {/* Hidden Input for new Category */}
         <div className="category-input hide">
@@ -96,7 +129,7 @@ export class Categories extends Component {
             <input type="text" className="form-control" value={this.state.categoryName} onChange={this.onCategoryNameHandler.bind(this)} placeholder="Enter Product Category Name" />
           </div>
           <div className="col-xs-6">
-            <div className="pull-right">
+            <div className="text-left">
               <button type="button" className="btn btn-danger" onClick={this.onCancelHandler.bind(this)}>Cancel</button>
               &nbsp;
               <button type="button" className="btn btn-success" onClick={this.onSaveHandler.bind(this)}>Save</button>
@@ -105,6 +138,14 @@ export class Categories extends Component {
           <br className="clearfix"/>
         </div>
 
+        <br />
+        <br />
+        <br />
+        <br />
+        <br />
+
+        {/* Rate Type */}
+        <RateType />
         <br />
 
       </div>
