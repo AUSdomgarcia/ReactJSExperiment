@@ -104,6 +104,11 @@ export class LevelTwo extends Component {
     onSave(newValue){
         let scope = this;
 
+        if(newValue.length===0){
+            alert('No category were set.');
+            return;
+        }
+
         xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/create', 
         {
             service_category_id: scope.state.myCurrentId,
@@ -178,7 +183,7 @@ export class LevelTwo extends Component {
         let scope = this;
         
         let level2 = function(){ return (<br/>) };
-        
+
         let ulStyle = function(style){ return style; }
         let style = {};
 

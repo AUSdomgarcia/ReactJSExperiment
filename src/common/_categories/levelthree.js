@@ -85,6 +85,11 @@ export class LevelThree extends Component {
     onSave(newValue){
         let scope = this;
 
+        if(newValue.length===0){
+            alert('No category were set.');
+            return;
+        }
+
         xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/create', 
         {
             service_sub_category_id: scope.state.curLevelId,

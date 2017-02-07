@@ -55,7 +55,6 @@ export class Categories extends Component {
 
     if(this.state.categoryName.length===0){
       alert('No category name');
-      console.log('No categorie name');
       return;
     }
 
