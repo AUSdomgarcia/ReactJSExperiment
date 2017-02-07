@@ -1,15 +1,19 @@
 import React, {Component} from "react";
-import Jquery from 'jquery';
+import xhr from 'jquery';
 import "./categories.scss";
 
 import {LevelTwo} from '../../common/_categories/leveltwo';
 import {RateType} from '../../common/rateType/index';
 
+import sortable from 'sortablejs';
+
 export class Categories extends Component {
   
   constructor(props){
     super(props);
+
     this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+
     this.state = {
       categoryLevelOne : [],
       categoryName:  "",
@@ -21,22 +25,29 @@ export class Categories extends Component {
     // GET state rateType, department, position 
     let scope = this;
 
-    Jquery.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
+    xhr.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
       scope.setState({ categoryLevelOne: data.payload });
 
       if(data.payload.length!==0){
         scope.setState({response_last_id: data.payload[data.payload.length-1].id});
       }
     });
+
+    sortable.create(SortableLevelOne ,
+    {
+      animation: 100,
+      handle: '.myHandle',
+      ghostClass: 'ghost'
+    });
   }
   
   onAddLevel(evt){
     // alert('LAST_ID ' + this.state.response_last_id);
-    Jquery('.category-input').removeClass('hide');
+    xhr('.category-input').removeClass('hide');
   }
 
   onCancelHandler(evt){
-    Jquery('.category-input').addClass('hide');
+    xhr('.category-input').addClass('hide');
     this.setState({categoryName: ''});
   }
 
@@ -53,7 +64,7 @@ export class Categories extends Component {
     let level1Arr = this.state.categoryLevelOne;
         level1Arr.push(category);
 
-    Jquery.post(this.BASE_URL+'/rate-cards/service-categories/create', 
+    xhr.post(this.BASE_URL+'/rate-cards/service-categories/create', 
     {
       name: scope.state.categoryName
     },
@@ -63,11 +74,43 @@ export class Categories extends Component {
     });
 
     this.setState({ categoryName: ""});
-    Jquery('.category-input').addClass('hide');
+    xhr('.category-input').addClass('hide');
   }
 
   onCategoryNameHandler(evt){
     this.setState({categoryName: evt.target.value });
+  }
+
+  callbackDelete(id){
+    let scope = this;
+  
+    scope.state.categoryLevelOne.map(function(el, index){
+      if(el.id === id){
+        scope.state.categoryLevelOne.splice(index, 1);
+      }
+    });
+    
+    scope.setState({ categoryLevelOne: scope.state.categoryLevelOne });
+  }
+
+  callbackUpdate(value, id){
+    // alert('FCK'+ ', value: ' + value + ', id: ' + id );
+
+    let scope = this;
+
+    scope.state.categoryLevelOne.map(function(data){
+      if(data.id === id){
+        data.name = value;
+      }
+    });
+
+    xhr.post(this.BASE_URL+'/rate-cards/service-categories/update', {
+      name: value,
+      id: id
+    },
+    function(data){
+      console.log('[Edit] Level one success', data);
+    });
   }
 
   render() {
@@ -75,6 +118,8 @@ export class Categories extends Component {
 
     return (
       <div>
+        
+
         {/* Title */}
         <h3 className="sky">Manage Categories and Rate Type</h3>
         
@@ -105,13 +150,15 @@ export class Categories extends Component {
 
         {/* Category Listing */}
         <div className="category-list">
-          <ul>
-            { scope.state.categoryLevelOne.map(function(currentData){
+          <ul style={{margin:"0"}} id="SortableLevelOne">
+            { scope.state.categoryLevelOne.map(function(currentData, index){
                 return ( 
                   <li key={currentData.id}>
-
-                    <LevelTwo parentData={currentData} />
-
+                    <span className="myHandle">::</span>
+                    <LevelTwo parentData={currentData} 
+                              sortableId={currentData.id} 
+                              onDelete={scope.callbackDelete.bind(scope)} 
+                              onUpdate={scope.callbackUpdate.bind(scope)} />
                   </li>
                   )
               } ) }
@@ -123,13 +170,13 @@ export class Categories extends Component {
 
 
 
-        {/* Hidden Input for new Category */}
+      {/* Hidden Input for new Category */}
         <div className="category-input hide">
           <div className="col-xs-6">
             <input type="text" className="form-control" value={this.state.categoryName} onChange={this.onCategoryNameHandler.bind(this)} placeholder="Enter Product Category Name" />
           </div>
           <div className="col-xs-6">
-            <div className="text-left">
+            <div className="text-right">
               <button type="button" className="btn btn-danger" onClick={this.onCancelHandler.bind(this)}>Cancel</button>
               &nbsp;
               <button type="button" className="btn btn-success" onClick={this.onSaveHandler.bind(this)}>Save</button>
@@ -137,22 +184,32 @@ export class Categories extends Component {
           </div>
           <br className="clearfix"/>
         </div>
-
-        <br />
-        <br />
+      
         <br />
         <br />
         <br />
 
         {/* Rate Type */}
         <RateType />
-        <br />
-
+        
+        
         <pre>
-        Todo: <br />
-        1. Fix third level not sync after creating new category. <br />
-        2. Rate Type Functionality. <br />
-        3. Create Pagination.
+        # Todo/Change Logs: <br />
+        1. <span style={{textDecoration:"line-through"}}>Fixed Nest children.</span> <br />
+        2. Fixed category version(<span style={{textDecoration:"line-through"}}>Level 1, Level 2, </span> Level 3)<br />
+        3  <span style={{textDecoration:"line-through"}}>Sortable all Levels.</span><br />
+        4. Save Sort Order all Levels. <br />
+        5. <span style={{textDecoration:"line-through"}}>Delete functionality Level 1. </span><br />
+        6. <span style={{textDecoration:"line-through"}}>Delete functionality Level 2. </span> <br />
+        7. <span style={{textDecoration:"line-through"}}>Delete functionality Level 3. </span> <br />
+        8. <span style={{textDecoration:"line-through"}}>Edit functionality Level 1. </span> <br />
+        9. <span style={{textDecoration:"line-through"}}>Edit functionality Level 2. </span> <br />
+        10.<span style={{textDecoration:"line-through"}}>Edit functionality Level 3. </span> <br />
+        11. Aesthetics margin between elements. <br />
+        12. Enter key to complete actions.  <br /><br />
+        # Rate Type Functionality. <br />
+        1. <span style={{textDecoration:"line-through"}}>Rate Type Add.</span> <br />
+        2. <span style={{textDecoration:"line-through"}}>Rate Type Delete.</span> <br />
         </pre>
 
       </div>

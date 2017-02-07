@@ -3,7 +3,7 @@
     margin: 0;
 
     ul {
-        margin: 5px;
+        margin-top: 5px;
         border-left: 10px solid #16A7E0;
         padding-left:0;
     }
@@ -33,4 +33,22 @@
     background: #16A7E0;
     padding: 5px;
     padding-left: 50px;
+}
+
+#SortableLevelOne li {
+    position: relative;
+}
+
+.myHandle {
+    position: absolute;
+    top: 10px;
+    left: 5px;
+    z-index: 5;
+
+    cursor: all-scroll;
+}
+
+.ghost {
+  opacity: .5;
+  background: red;
 }

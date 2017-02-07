@@ -36,7 +36,7 @@ export class AddLevel extends Component {
                     </div>
 
                     <div className="col-xs-6">
-                        <div className="text-left">
+                        <div className="text-right">
                             <button type="button" className="btn btn-danger" onClick={this.props.onCancel} >Cancel</button>&nbsp;
                             <button type="button" className="btn btn-success" onClick={this.onSave.bind(this)} >Save</button>&nbsp;
                         </div>

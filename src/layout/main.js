@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import Header from './header';
 import Footer from './footer';
 
+import {PopupGeneric} from '../common/popups/generic'; 
+
 export default class MainLayout extends Component {
 
   constructor(props){
@@ -19,7 +21,12 @@ export default class MainLayout extends Component {
       <div className="container bgWhite">
         <Header />
           <div>
+          
+          {/* GLOBAL POPUP */}
+            <PopupGeneric />
+          
             {this.props.children}
+          
           </div>
           <Footer />
       </div>

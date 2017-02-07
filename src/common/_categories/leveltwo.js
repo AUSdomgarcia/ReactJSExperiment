@@ -1,8 +1,11 @@
 import React, {Component} from 'react';
 
-import {InnerLevel} from './innerlevel';
+import {LevelThree} from './levelthree';
 import {AddLevel} from './addlevel';
-import Jquery from 'jquery';
+
+import xhr from 'jquery';
+
+import sortable from 'sortablejs';
 
 export class LevelTwo extends Component {
 
@@ -17,35 +20,72 @@ export class LevelTwo extends Component {
             showAddLevel: false,
             subCategoryName: "",
 
-            subCategoryData: [],
+            categoryLevelTwo: [],
             currentVersion: "0.0",
             myCurrentId: 0,
+
+            showPopup: false,
+
+            inputCategoryName: "",
+            showInputName: false
         }
+        this.hackSortableInstance = null;
     }
 
     componentDidMount(evt){
+        let scope = this;
         // initial here
+        let el = document.getElementById('SortableLevelTwo_' + this.props.sortableId);
+
+        if(scope.hackSortableInstance!==null){
+            scope.hackSortableInstance.destroy();
+            console.log('destroying instance of ', scope.props.sortableId);
+        }
+
+        scope.hackSortableInstance = sortable.create( el , {
+            animation: 100,
+            handle: '.myHandle'
+        });
     }
 
     componentWillReceiveProps(nextProps){
         let tempArr = nextProps.parentData['sub_categories'];
 
-        if(tempArr !== this.state.subCategoryData){
+        if(tempArr !== this.state.categoryLevelTwo){
             // categories Array
-            this.setState({ subCategoryData: tempArr });
+            this.setState({ categoryLevelTwo: tempArr });
             // id Integer
             this.setState({ myCurrentId: nextProps.parentData.id });
             // version String
             if(tempArr.length!==0) {
                 this.setState({ currentVersion: tempArr[tempArr.length-1].version });
             }
-            console.log('level one contains', tempArr.length);
         }
     }
 
     onManageBtn(){
         this.setState({isManageBtn:false});
         this.setState({isMenuBtn:true});
+    }
+
+    onDelete(evt){
+        let scope = this;
+        let target = evt.target;
+
+        if (confirm('Are you sure you want to save this thing into the database?')) {
+            // continue
+        } else {
+            return;
+        }
+
+        xhr.post(this.BASE_URL+'/rate-cards/service-categories/delete', 
+        {
+            id: scope.state.myCurrentId
+        },
+        function(data){
+            scope.hackSortableInstance.destroy();
+            scope.props.onDelete(scope.state.myCurrentId);
+        });
     }
 
     onDone(){
@@ -64,7 +104,7 @@ export class LevelTwo extends Component {
     onSave(newValue){
         let scope = this;
 
-        Jquery.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/create', 
+        xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/create', 
         {
             service_category_id: scope.state.myCurrentId,
             name: newValue,
@@ -73,19 +113,94 @@ export class LevelTwo extends Component {
         function(data){
             scope.setState({subCategoryName: ""});
             scope.setState({showAddLevel: false});
-            scope.setState({subCategoryData: data.payload});
+            scope.setState({categoryLevelTwo: data.payload});
         });
+    }
+
+    onClickEdit(){
+        let scope = this;
+        let toggle = this.state.showInputName;
+            toggle = !toggle;
+
+        this.setState({showInputName: toggle});
+
+        this.setState({inputCategoryName: this.props.parentData.name });
+
+        if(toggle===false && scope.state.inputCategoryName.length !== 0){
+            scope.props.onUpdate( scope.state.inputCategoryName, scope.state.myCurrentId ); 
+        }
+    }
+
+    onCategoryNameChanged(evt){
+        this.setState({inputCategoryName: evt.target.value });
+    }
+
+    onHandleKeyChange(evt){
+        var scope = this;
+        if(evt.key === 'Enter'){
+            scope.props.onUpdate( scope.state.inputCategoryName, scope.state.myCurrentId ); 
+            this.setState({showInputName:false});
+        }
+    }
+
+    callbackDelete(id){
+        let scope = this;
+        scope.state.categoryLevelTwo.map(function(el, index){
+            if(el.id === id){
+                scope.state.categoryLevelTwo.splice(index, 1);
+            }
+        });
+        scope.setState({ categoryLevelTwo: scope.state.categoryLevelTwo });
+    }
+
+    callbackUpdate(value, id){
+       let scope = this;
+
+       // Local Update
+        this.state.categoryLevelTwo.map(function(data){
+                if(data.id === id){
+                    data.name = value;
+                }
+            });
+        
+        // Server Update
+        xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/update', {
+                name: value,
+                id: id
+            },
+            function(data){
+                console.log('[Edit] Level two success', data);
+            });
     }
 
     render(){
         let menuBtn = null;
-        let level2 = null;
         let scope = this;
+        
+        let level2 = function(){ return (<br/>) };
+        
+        let ulStyle = function(style){ return style; }
+        let style = {};
+
+        let hasLevel2 = false;
 
         menuBtn = 
             <div>
                 <div className="col-xs-6">
-                    <span className="name">{this.props.parentData.name}</span>
+                    {
+                        (function(){
+                            let visibleElement = null;
+
+                            if(scope.state.showInputName){
+                                visibleElement = 
+                                <input type="text" className="form-control" value={scope.state.inputCategoryName} onChange={scope.onCategoryNameChanged.bind(scope)} onKeyPress={scope.onHandleKeyChange.bind(scope)}/>
+                            } else {
+                                visibleElement = 
+                                <span className="name">{scope.props.parentData.name}</span>
+                            }
+                            return visibleElement;
+                        })()
+                    }
                 </div>
 
                 <div className="col-xs-6">
@@ -100,7 +215,12 @@ export class LevelTwo extends Component {
                                         <button type="button" className="btn btn-default" onClick={scope.onDone.bind(scope)}>Done</button> 
                                     </div>
                             } else {
-                                elem = <button type="button" className="btn btn-default" onClick={scope.onManageBtn.bind(scope)}>Manage SubCategories</button> 
+                                elem = 
+                                <div>
+                                    <button type="button" className="btn btn-default" onClick={scope.onManageBtn.bind(scope)}>Manage SubCategories</button>&nbsp;
+                                    <button type="button" className="btn btn-success" onClick={scope.onClickEdit.bind(scope)}><i className="fa fa-pencil-square-o"></i></button>&nbsp;
+                                    <button type="button" className="btn btn-danger" onClick={scope.onDelete.bind(scope)}><i className="fa fa-times"></i></button>
+                                </div>
                             }
                             return (elem)
                         })(scope)}
@@ -110,26 +230,41 @@ export class LevelTwo extends Component {
 
             </div>
         
-        if(this.state.isMenuBtn && this.state.subCategoryData.length !==0){
+        if(this.state.isMenuBtn && this.state.categoryLevelTwo.length !==0){
             level2 = 
-            <ul>
-                { this.state.subCategoryData
+                this.state.categoryLevelTwo
                     .map(function(data){
                         if( data.level ==="2" ){
+                            hasLevel2 = true;
+
                             return (
                                 <li key={data.id}>
-                                    <InnerLevel nextLevel={2} parentData={data} arrayOfCurrentLevel={scope.state.subCategoryData} />
+                                    <span className="myHandle">::</span>
+                                    <LevelThree 
+                                        nextLevel={2}
+                                        sortableId={data.id} 
+                                        parentData={data} 
+                                        arrayOfCurrentLevel={scope.state.categoryLevelTwo} 
+
+                                        onDelete={scope.callbackDelete.bind(scope)} 
+                                        onUpdate={scope.callbackUpdate.bind(scope)} 
+                                    />
                                 </li> )
                         }
-                    }) 
-                }
-            </ul>
+                    })
+            
+            if(hasLevel2 === false){
+                style = { margin: "0px !important" };
+            }
         }
         
         return (
             <div>
                 {menuBtn}
-                {level2}
+
+                <ul style={ulStyle(style)} id={'SortableLevelTwo_'+scope.props.sortableId}>
+                    {level2}
+                </ul>
 
                 {/* TRY TO MAKE COMPONENT */}
                 <AddLevel 
