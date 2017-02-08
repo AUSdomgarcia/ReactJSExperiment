@@ -205,10 +205,14 @@ export class Categories extends Component {
         9. <span style={{textDecoration:"line-through"}}>Edit functionality Level 2. </span> <br />
         10.<span style={{textDecoration:"line-through"}}>Edit functionality Level 3. </span> <br />
         11. Aesthetics margin between elements. <br />
-        12. Enter key to complete actions.  <br /><br />
+        12. "Enter key" to complete actions.  <br /><br />
         # Rate Type Functionality. <br />
         1. <span style={{textDecoration:"line-through"}}>Rate Type Add.</span> <br />
         2. <span style={{textDecoration:"line-through"}}>Rate Type Delete.</span> <br />
+        
+        <br /><br />
+        # Popup <br />
+        1. Popup confirmation design
         </pre>
 
       </div>

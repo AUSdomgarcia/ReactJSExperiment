@@ -5,7 +5,32 @@ import './personnel.scss';
 import {PersonnelInputField} from '../../common/_personnel/personnelInputField';
 import {PersonnelList} from '../../common/_personnel/personnelList';
 
+import xhr from 'jquery';
+
 export class Personnel extends Component {
+
+  constructor(props){
+      super(props);
+
+      this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+
+      this.state = {
+        rateTypeArr: [],
+        editData: []
+      }
+  }
+
+  callbackAddPersonnel(addValue){
+    this.setState({rateTypeArr:addValue});
+  }
+
+  callbackDeletePersonnel(deleteVal){
+    this.setState({rateTypeArr:deleteVal});  
+  }
+  callbackEditPersonnel(id, ratetype_id, dapartment_id, position_id, manhour ){
+    
+  }
+  
   render() {
     return (
       <div>
@@ -14,7 +39,7 @@ export class Personnel extends Component {
           <small>Create New Personnel</small>
         </div>
               
-        <PersonnelInputField btnName='Add'/>
+        <PersonnelInputField isEdit={false} btnName='Add' onSuccess={this.callbackAddPersonnel.bind(this)}/>
 
         <br />
       
@@ -29,9 +54,12 @@ export class Personnel extends Component {
               </span>
             </div>
           </div>
+          
+          <br className="clearfix"/>
         </div>
-      
-        <PersonnelList />
+
+        <PersonnelList onEdit={this.callbackEditPersonnel.bind(this)} updatedRateType={this.state.rateTypeArr} onDelete={this.callbackDeletePersonnel.bind(this)}/>
+
       </div>
     )
   }
@@ -40,7 +68,38 @@ export class Personnel extends Component {
 
 export class PersonnelEdit extends Component {
 
-  render(){
+  constructor(props){
+      super(props);
+      this.state = {
+        rateTypeArr: [],
+        editData: []
+      }
+  }
+
+  componentDidMount(){
+    // console.log('ON EDIT ONLY', this.props.location.query , this.props.params.value);
+    let scope = this;
+      xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
+          scope.setState({ rateTypeArr: data.payload });
+      });
+  }
+
+  callbackAddPersonnel(addValue){
+    this.setState({rateTypeArr:addValue});
+  }
+
+  callbackDeletePersonnel(deleteVal){
+    this.setState({rateTypeArr:deleteVal});  
+  }
+
+  callbackEditPersonnel(id, ratetype_id, dapartment_id, position_id, manhour ){
+    this.setState({editData: [] });
+    this.state.editData.push( { id: id, rid: ratetype_id, did: dapartment_id, pid: position_id, mh: manhour });
+
+
+  }
+  
+  render() {
     return (
       <div>
         <div className='header-wrap'>
@@ -48,7 +107,11 @@ export class PersonnelEdit extends Component {
           <small>Create New Personnel</small>
         </div>
               
-        <PersonnelInputField btnName='Update'/>
+        <PersonnelInputField 
+          replaceData={this.state.editData} 
+          isEdit={true} 
+          btnName='Update'
+          onSuccess={this.callbackAddPersonnel.bind(this)}/>
 
         <br />
       
@@ -63,9 +126,12 @@ export class PersonnelEdit extends Component {
               </span>
             </div>
           </div>
+          
+          <br className="clearfix"/>
         </div>
-      
-        <PersonnelList />
+
+        <PersonnelList onEdit={this.callbackEditPersonnel.bind(this)} updatedRateType={this.state.rateTypeArr} onDelete={this.callbackDeletePersonnel.bind(this)}/>
+
       </div>
     )
   }

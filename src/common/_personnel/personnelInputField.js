@@ -1,13 +1,18 @@
 import React, {Component} from 'react';
-import './personnelEdit.scss';
+import './personnel.scss';
+
+import xhr from 'jquery';
 
 export class PersonnelInputField extends Component {
     constructor(props){
         super(props);
+
+        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+
         this.state = {
-            rateType: ['Standard', 'Unilever', 'Cheap', 'Expensive'],
-            department: ['Creatives','Production'],
-            position: ['Creative Officer','Frontend Developer','Backend Developer'],
+            rateType: [],
+            department: [],
+            position: [],
             
             rateTypeValue: 'select',
             departmentValue: 'select',
@@ -18,41 +23,89 @@ export class PersonnelInputField extends Component {
     }
 
     componentDidMount(){
-        // GET state rateType, department, position 
+        let scope = this;
+
+        if(this.props.isEdit === true){
+            // 
+            console.log( this.props.replaceData );
+
+        } else {
+            xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
+                scope.setState({ rateType: data.payload });
+                scope.setState({ rateTypeValue: data.payload[0].id });
+            });
+
+            xhr.get(this.BASE_URL+'/rate-cards/personnels/departments', function(data){
+                scope.setState({ department: data.payload });
+                scope.setState({ departmentValue: data.payload[0]._id });
+            });
+
+            xhr.get(this.BASE_URL+'/rate-cards/personnels/positions', function(data){
+                scope.setState({ position: data.payload });
+                scope.setState({ positionValue: data.payload[0]._id });
+            });
+        }
     }
 
     onSetManHourHandler(evt){
         this.setState({manHour: evt.target.value});
     }
 
-    onSelectHandler(evt){
-        if(this.state.rateType.includes(evt.target.value)){
-            this.setState({ rateTypeValue: evt.target.value });
-        } else if(this.state.department.includes(evt.target.value)) {
-            this.setState({ departmentValue: evt.target.value });
-        } else {
-            this.setState({ positionValue: evt.target.value });
-        }
-        console.log(evt.target.value);
+    onSelectRateType(evt){
+        this.setState({ rateTypeValue: evt.target.value });
+    }
+
+    onSelectDepartment(evt){
+        this.setState({ departmentValue: evt.target.value });
+    }
+
+    onSelectPosition(evt){
+        this.setState({ positionValue: evt.target.value });
     }
 
     onActionHandler(evt){
+        let scope = this;
+
         switch(this.props.btnName.toLowerCase()){
             case 'add':
-                // alert('add!!');
+                
+                console.log( scope.state.rateTypeValue , 
+                            scope.state.departmentValue, 
+                            scope.state.positionValue, 
+                            scope.state.manHour
+                );
+
+                xhr.post(this.BASE_URL+'/rate-cards/personnels/create', 
+                    {
+                        rate_type_id : scope.state.rateTypeValue,
+                        department_id : scope.state.departmentValue,
+                        position_id : scope.state.positionValue,
+                        manhour_rate : scope.state.manHour
+                    },
+                    function(data){
+                        console.log(data);
+
+                        scope.props.onSuccess(data.payload);
+                    });
             break;
             
             case 'update':
-                // alert('update!!');
-            break;
-
-            case 'edit':
-                this.context.router.push('/ratecard/edit')
+                alert('update!!');
             break;
         }
     }
 
   render() {
+
+    let isUpdate = false;  
+    let notification = null;
+
+    if(isUpdate){
+        notification = 
+        <div className="alert alert-success">
+            <strong>Success!</strong> Indicates a successful or positive action.
+        </div>
+    }
 
     return (
       <div className='row'>
@@ -60,34 +113,34 @@ export class PersonnelInputField extends Component {
             <form>
                 <div className='form-group'>
                     <label>Rate Type</label>
-                    <select className="form-control" value={this.state.rateTypeValue} onChange={this.onSelectHandler.bind(this)}>
+                    <select className="form-control" value={this.state.rateTypeValue} onChange={this.onSelectRateType.bind(this)}>
                         {this.state.rateType.map(function(options){
-                            return (<option key={options} value={options}>{options}</option>)
+                            return (<option key={options.id} value={options.id}>{options.name}</option>)
                         })}
                     </select>
                 </div>
                 
                 <div className='form-group'>
                     <label>Department</label>
-                    <select className="form-control" value={this.state.departmentValue} onChange={this.onSelectHandler.bind(this)}>
+                    <select className="form-control" value={this.state.departmentValue} onChange={this.onSelectDepartment.bind(this)}>
                         {this.state.department.map(function(options){
-                            return (<option key={options} value={options}>{options}</option>)
+                            return (<option key={options._id} value={options._id}>{options.name}</option>)
                         })}
                     </select>
                 </div>
 
                 <div className='form-group'>
                     <label>Position</label>
-                    <select className="form-control" value={this.state.positionValue} onChange={this.onSelectHandler.bind(this)}>
+                    <select className="form-control" value={this.state.positionValue} onChange={this.onSelectPosition.bind(this)}>
                         {this.state.position.map(function(options){
-                            return (<option key={options} value={options}>{options}</option>)
+                            return (<option key={options._id} value={options._id}>{options.name}</option>)
                         })}
                     </select>
                 </div>
 
                 <div className='form-group'>
                     <label>Manhour Rate</label>
-                    <input type='text' className='form-control' value={this.state.manHour} onChange={this.onSetManHourHandler.bind(this)}/>
+                    <input type="number" maxLength={"8"} className='form-control' value={this.state.manHour} onChange={this.onSetManHourHandler.bind(this)}/>
                 </div>
                 
                 <div className='btn-wrap'>
@@ -97,9 +150,7 @@ export class PersonnelInputField extends Component {
         </div>
 
         <div className='col-xs-6'>
-            <div className="alert alert-success">
-                <strong>Success!</strong> Indicates a successful or positive action.
-            </div>
+            {notification}
         </div>
 
         <br className='clearfix' />
