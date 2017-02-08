@@ -12,16 +12,16 @@ export class PersonnelList extends Component {
 
         this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
         // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
-       
     }
 
-    // componentWillReceiveProps(nextProps){
-    //     if(this.props.parentData !== nextProps.updatedRateType){
-    //         this.props(parentDatapersonnelData: nextProps.updatedRateType});
-    //     }
-    // }
-
     onDelete(evt){
+
+        if(confirm('Are you sure you want to delete?')){
+            //
+        } else {
+            return;
+        }
+
         let id = xhr(evt.target)[0].dataset.storedid;
         let scope = this;
 
@@ -48,7 +48,7 @@ export class PersonnelList extends Component {
                                 <td>{data.position.name}</td>
                                 <td>{data.department.name}</td>
                                 <td>{data.manhour_rate}</td>
-                                
+
                                 <td>
                                     <Link className='btn btn-primary' 
                                         to={'/personnel/edit' + 

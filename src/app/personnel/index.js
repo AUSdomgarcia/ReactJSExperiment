@@ -33,10 +33,15 @@ export class Personnel extends Component {
     console.log(this.props.params);
   }
 
-  callbackAddPersonnel(addValue){
-    console.log('onAddOrUpdate', addValue);
+  callbackAdded(addValue){
     this.setState({personnelDataArr: addValue});
   }
+
+  callbackUpdate(addValue){
+    this.setState({personnelDataArr: addValue});
+    this.context.router.push('/personnel');
+  }
+  
 
   callbackDeletePersonnel(id){
     let scope = this;
@@ -55,19 +60,21 @@ export class Personnel extends Component {
     if(this.props.params.hasOwnProperty('id')) {
 
       personnel =
-        <PersonnelInputField 
+        ( <PersonnelInputField 
           btnName='Update'
           isEdit={true}
           personnelData={scope.props.params}
-          onSuccess={scope.callbackAddPersonnel.bind(scope)}/>
+          onAdded={scope.callbackUpdate.bind(scope)}/>
+        )
 
     } else {
 
       personnel =
-        <PersonnelInputField 
+        ( <PersonnelInputField 
           btnName='Add'
           isEdit={false}
-          onSuccess={scope.callbackAddPersonnel.bind(scope)}/>
+          onAdded={scope.callbackAdded.bind(scope)}/>
+        )
     }
 
     return (
@@ -105,68 +112,6 @@ export class Personnel extends Component {
   }
 }
 
-
-
-// export class PersonnelEdit extends Component {
-
-//   constructor(props){
-//       super(props);
-//       this.state = {
-//         rateTypeArr: [],
-//         editData: []
-//       }
-//   }
-
-//   componentDidMount(){
-//     // console.log('ON EDIT ONLY', this.props.location.query , this.props.params.value);
-//     let scope = this;
-//       xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
-//           scope.setState({ rateTypeArr: data.payload });
-//       });
-//   }
-
-//   callbackAddPersonnel(addValue){
-//     this.setState({rateTypeArr:addValue});
-//   }
-
-//   callbackDeletePersonnel(deleteVal){
-//     this.setState({rateTypeArr:deleteVal});  
-//   }
-  
-//   render() {
-//     return (
-//       <div>
-//         <div className='header-wrap'>
-//           <h3 className='sky'>Personnel</h3>
-//           <small>Create New Personnel</small>
-//         </div>
-              
-//         <PersonnelInputField 
-//           btnName='Update'
-//           onSuccess={this.callbackAddPersonnel.bind(this)}/>
-
-//         <br />
-      
-//         <div className='search-wrap'>
-//           <div className='col-xs-8'>col-xs-8</div>
-          
-//           <div className='col-xs-4'>
-//             <div className="input-group">
-//               <input type="text" className="form-control" placeholder="Search for..." />
-//               <span className="input-group-btn">
-//                 <button className="btn btn-default" type="button">Go!</button>
-//               </span>
-//             </div>
-//           </div>
-          
-//           <br className="clearfix"/>
-//         </div>
-
-//         <PersonnelList
-//             updatedRateType={this.state.rateTypeArr} 
-//             onDelete={this.callbackDeletePersonnel.bind(this)}/>
-
-//       </div>
-//     )
-//   }
-// }
+Personnel.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};

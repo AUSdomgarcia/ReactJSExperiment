@@ -85,7 +85,7 @@ export class PersonnelInputField extends Component {
                         manhour_rate : scope.state.manHour
                     },
                     function(data){
-                        scope.props.onSuccess(data.payload);
+                        scope.props.onAdded(data.payload);
                     });
             break;
             
@@ -106,7 +106,7 @@ export class PersonnelInputField extends Component {
                         manhour_rate : +scope.state.manHour
                     },
                     function(data){
-                        scope.props.onSuccess(data.payload);
+                        scope.props.onAdded(data.payload);
                     });
             break;
         }
