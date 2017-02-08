@@ -49,6 +49,8 @@ export class LevelTwo extends Component {
     }
 
     componentWillReceiveProps(nextProps){
+        if(nextProps.parentData['sub_categories']===undefined) return;
+
         let tempArr = nextProps.parentData['sub_categories'];
 
         if(tempArr !== this.state.categoryLevelTwo){

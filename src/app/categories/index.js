@@ -28,6 +28,8 @@ export class Categories extends Component {
     xhr.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
       scope.setState({ categoryLevelOne: data.payload });
 
+      console.log(data.payload);
+
       if(data.payload.length!==0){
         scope.setState({response_last_id: data.payload[data.payload.length-1].id});
       }

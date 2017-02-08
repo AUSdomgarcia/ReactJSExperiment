@@ -90,6 +90,8 @@ export class LevelThree extends Component {
             return;
         }
 
+        console.log('before set',newValue, scope.state.currentVersion)
+
         xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/create', 
         {
             service_sub_category_id: scope.state.curLevelId,
