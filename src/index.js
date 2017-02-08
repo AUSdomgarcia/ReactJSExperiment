@@ -32,6 +32,7 @@ import {
 
 import {
     Personnel,
+    // PersonnelEdit } from './app/personnel/index';
     PersonnelEdit } from './app/personnel/index';
 
 import {
@@ -78,7 +79,7 @@ ReactDOM.render(
             {/* P E R S O N E L */}
             <Route path='personnel'>
                 <IndexRoute component={Personnel} />
-                <Route path='/personnel/edit' component={PersonnelEdit} />
+                <Route path='/personnel/edit/:id/:ratetype/:department/:position/:manhour' component={Personnel} />
             </Route>
 
             {/* S E R V I C E S */}

@@ -12,24 +12,14 @@ export class PersonnelList extends Component {
 
         this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
         // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
-        this.state = {
-            personnelData: []
-        }
+       
     }
 
-    componentWillReceiveProps(nextProps){
-        if(this.state.personnelData !== nextProps.updatedRateType){
-            this.setState({personnelData: nextProps.updatedRateType});
-        }
-    }
-
-    componentDidMount(){
-        let scope = this;
-
-        xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
-            scope.setState({ personnelData: data.payload });
-        });
-    }
+    // componentWillReceiveProps(nextProps){
+    //     if(this.props.parentData !== nextProps.updatedRateType){
+    //         this.props(parentDatapersonnelData: nextProps.updatedRateType});
+    //     }
+    // }
 
     onDelete(evt){
         let id = xhr(evt.target)[0].dataset.storedid;
@@ -40,14 +30,7 @@ export class PersonnelList extends Component {
                 id: id
             },
             function(data){
-                console.log('delete completed.', data);
-
-                scope.state.personnelData.map(function(data, index){
-                    if(data.id === +id){
-                        scope.state.personnelData.splice(index, 1);
-                        scope.props.onDelete(scope.state.personnelData);
-                    }
-                });
+                scope.props.onDelete(id);
             });
     }
 
@@ -56,23 +39,24 @@ export class PersonnelList extends Component {
     let scope = this;
     let tableContent = null;
     
-    if(this.state.personnelData !== undefined){
+    if(this.props.parentData !== undefined){
         tableContent = 
-                this.state.personnelData.map(function(data){
+                this.props.parentData.map(function(data){
                         return (
                             <tr key={data.id}>
                                 <td>{data.rate_type.name}</td>
                                 <td>{data.position.name}</td>
                                 <td>{data.department.name}</td>
                                 <td>{data.manhour_rate}</td>
-
+                                
                                 <td>
                                     <Link className='btn btn-primary' 
                                         to={'/personnel/edit' + 
+                                            '/' + data.id +
                                             '/' + data.rate_type.id + 
                                             '/' + data.department._id +
                                             '/' + data.position._id +
-                                            '/' + data.manhour_rate }>Edit</Link> &nbsp;
+                                            '/' + data.manhour_rate } >Edit</Link> &nbsp;
                                     <button className='btn btn-danger' data-storedid={data.id} onClick={scope.onDelete.bind(scope)}>Delete</button>
                                 </td>
                             </tr> )

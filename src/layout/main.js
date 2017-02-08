@@ -17,14 +17,16 @@ export default class MainLayout extends Component {
   }
 
   render() {
+    var popUpRef = <PopupGeneric />
+
     return (
       <div className="container bgWhite">
         <Header />
           <div>
           
           {/* GLOBAL POPUP */}
-            <PopupGeneric />
-          
+            {popUpRef}
+            
             {this.props.children}
           
           </div>
