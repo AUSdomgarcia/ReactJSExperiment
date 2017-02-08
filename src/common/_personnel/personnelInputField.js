@@ -114,14 +114,17 @@ export class PersonnelInputField extends Component {
 
   render() {
 
-    let isUpdate = false;  
     let notification = null;
 
-    if(isUpdate){
+    if(this.props.isUpdated){
         notification = 
-        <div className="alert alert-success">
-            <strong>Success!</strong> Indicates a successful or positive action.
-        </div>
+            (function(){
+                return (
+                    <div className="alert alert-success">
+                        <strong>Success!</strong> Data updated.
+                    </div>
+                )
+            })();
     }
 
     return (

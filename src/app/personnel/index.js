@@ -18,7 +18,8 @@ export class Personnel extends Component {
       this.state = {
         rateTypeArr: [],
         editData: [],
-        personnelDataArr: []
+        personnelDataArr: [],
+        isUpdated: false
       }
   }
 
@@ -35,11 +36,13 @@ export class Personnel extends Component {
 
   callbackAdded(addValue){
     this.setState({personnelDataArr: addValue});
+    this.setState({isUpdated:false});
   }
 
   callbackUpdate(addValue){
     this.setState({personnelDataArr: addValue});
     this.context.router.push('/personnel');
+    this.setState({isUpdated:true});
   }
   
 
@@ -63,6 +66,7 @@ export class Personnel extends Component {
         ( <PersonnelInputField 
           btnName='Update'
           isEdit={true}
+          isUpdated={scope.state.isUpdated}
           personnelData={scope.props.params}
           onAdded={scope.callbackUpdate.bind(scope)}/>
         )
@@ -72,6 +76,7 @@ export class Personnel extends Component {
       personnel =
         ( <PersonnelInputField 
           btnName='Add'
+          isUpdated={scope.state.isUpdated}
           isEdit={false}
           onAdded={scope.callbackAdded.bind(scope)}/>
         )
