@@ -8,7 +8,7 @@ export class PersonnelInputField extends Component {
         super(props);
 
         this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-
+        // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
         this.state = {
             rateType: [],
             department: [],
@@ -25,26 +25,20 @@ export class PersonnelInputField extends Component {
     componentDidMount(){
         let scope = this;
 
-        if(this.props.isEdit === true){
-            // 
-            console.log( this.props.replaceData );
+        xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
+            scope.setState({ rateType: data.payload });
+            scope.setState({ rateTypeValue: data.payload[0].id });
+        });
 
-        } else {
-            xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
-                scope.setState({ rateType: data.payload });
-                scope.setState({ rateTypeValue: data.payload[0].id });
-            });
+        xhr.get(this.BASE_URL+'/rate-cards/personnels/departments', function(data){
+            scope.setState({ department: data.payload });
+            scope.setState({ departmentValue: data.payload[0]._id });
+        });
 
-            xhr.get(this.BASE_URL+'/rate-cards/personnels/departments', function(data){
-                scope.setState({ department: data.payload });
-                scope.setState({ departmentValue: data.payload[0]._id });
-            });
-
-            xhr.get(this.BASE_URL+'/rate-cards/personnels/positions', function(data){
-                scope.setState({ position: data.payload });
-                scope.setState({ positionValue: data.payload[0]._id });
-            });
-        }
+        xhr.get(this.BASE_URL+'/rate-cards/personnels/positions', function(data){
+            scope.setState({ position: data.payload });
+            scope.setState({ positionValue: data.payload[0]._id });
+        });
     }
 
     onSetManHourHandler(evt){
@@ -68,13 +62,6 @@ export class PersonnelInputField extends Component {
 
         switch(this.props.btnName.toLowerCase()){
             case 'add':
-                
-                console.log( scope.state.rateTypeValue , 
-                            scope.state.departmentValue, 
-                            scope.state.positionValue, 
-                            scope.state.manHour
-                );
-
                 xhr.post(this.BASE_URL+'/rate-cards/personnels/create', 
                     {
                         rate_type_id : scope.state.rateTypeValue,
@@ -83,8 +70,6 @@ export class PersonnelInputField extends Component {
                         manhour_rate : scope.state.manHour
                     },
                     function(data){
-                        console.log(data);
-
                         scope.props.onSuccess(data.payload);
                     });
             break;

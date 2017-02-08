@@ -13,6 +13,7 @@ export class Personnel extends Component {
       super(props);
 
       this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+      // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
 
       this.state = {
         rateTypeArr: [],
@@ -27,10 +28,7 @@ export class Personnel extends Component {
   callbackDeletePersonnel(deleteVal){
     this.setState({rateTypeArr:deleteVal});  
   }
-  callbackEditPersonnel(id, ratetype_id, dapartment_id, position_id, manhour ){
-    
-  }
-  
+
   render() {
     return (
       <div>
@@ -39,7 +37,9 @@ export class Personnel extends Component {
           <small>Create New Personnel</small>
         </div>
               
-        <PersonnelInputField isEdit={false} btnName='Add' onSuccess={this.callbackAddPersonnel.bind(this)}/>
+        <PersonnelInputField 
+          btnName='Add' 
+          onSuccess={this.callbackAddPersonnel.bind(this)}/>
 
         <br />
       
@@ -58,7 +58,9 @@ export class Personnel extends Component {
           <br className="clearfix"/>
         </div>
 
-        <PersonnelList onEdit={this.callbackEditPersonnel.bind(this)} updatedRateType={this.state.rateTypeArr} onDelete={this.callbackDeletePersonnel.bind(this)}/>
+        <PersonnelList
+          updatedRateType={this.state.rateTypeArr} 
+          onDelete={this.callbackDeletePersonnel.bind(this)}/>
 
       </div>
     )
@@ -91,13 +93,6 @@ export class PersonnelEdit extends Component {
   callbackDeletePersonnel(deleteVal){
     this.setState({rateTypeArr:deleteVal});  
   }
-
-  callbackEditPersonnel(id, ratetype_id, dapartment_id, position_id, manhour ){
-    this.setState({editData: [] });
-    this.state.editData.push( { id: id, rid: ratetype_id, did: dapartment_id, pid: position_id, mh: manhour });
-
-
-  }
   
   render() {
     return (
@@ -108,8 +103,6 @@ export class PersonnelEdit extends Component {
         </div>
               
         <PersonnelInputField 
-          replaceData={this.state.editData} 
-          isEdit={true} 
           btnName='Update'
           onSuccess={this.callbackAddPersonnel.bind(this)}/>
 
@@ -130,7 +123,9 @@ export class PersonnelEdit extends Component {
           <br className="clearfix"/>
         </div>
 
-        <PersonnelList onEdit={this.callbackEditPersonnel.bind(this)} updatedRateType={this.state.rateTypeArr} onDelete={this.callbackDeletePersonnel.bind(this)}/>
+        <PersonnelList
+            updatedRateType={this.state.rateTypeArr} 
+            onDelete={this.callbackDeletePersonnel.bind(this)}/>
 
       </div>
     )

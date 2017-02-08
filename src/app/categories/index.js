@@ -12,7 +12,8 @@ export class Categories extends Component {
   constructor(props){
     super(props);
 
-    this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+    // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+    this.BASE_URL = "http://cerebrum-api.dev:8096/api";
 
     this.state = {
       categoryLevelOne : [],
@@ -197,7 +198,7 @@ export class Categories extends Component {
         <pre>
         # Todo/Change Logs: <br />
         1. <span style={{textDecoration:"line-through"}}>Fixed Nest children.</span> <br />
-        2. Fixed category version(<span style={{textDecoration:"line-through"}}>Level 1, Level 2, </span> Level 3)<br />
+        2. <span style={{textDecoration:"line-through"}}>Fixed category version(Level 1, Level 2,  Level 3)</span><br />
         3  <span style={{textDecoration:"line-through"}}>Sortable all Levels.</span><br />
         4. Save Sort Order all Levels. <br />
         5. <span style={{textDecoration:"line-through"}}>Delete functionality Level 1. </span><br />

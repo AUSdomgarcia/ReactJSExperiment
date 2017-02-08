@@ -11,7 +11,7 @@ export class PersonnelList extends Component {
         super(props);
 
         this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-        
+        // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
         this.state = {
             personnelData: []
         }
@@ -51,18 +51,6 @@ export class PersonnelList extends Component {
             });
     }
 
-    onEdit(evt){
-        let ratetype = xhr(evt.target)[0].dataset.ratetype;
-        let department = xhr(evt.target)[0].dataset.department;
-        let position = xhr(evt.target)[0].dataset.position;
-        let manhour = xhr(evt.target)[0].dataset.manhour;
-        let storedid = xhr(evt.target)[0].dataset.storedid;
-
-        this.props.onEdit( storedid, ratetype, department, position, manhour);
-
-        this.context.router.push('/personnel/edit');
-    }
-
     render(){
     
     let scope = this;
@@ -79,23 +67,12 @@ export class PersonnelList extends Component {
                                 <td>{data.manhour_rate}</td>
 
                                 <td>
-                                    {/*<Link className='btn btn-primary' 
-                                    to={'/personnel/edit' + 
-                                        '/' + data.rate_type.id + 
-                                        '/' + data.department._id +
-                                        '/' + data.position._id +
-                                    '/' + data.manhour_rate }>Edit</Link>*/} 
-                                    
-                                    <button type="button" 
-                                        className='btn btn-primary'
-
-                                        data-storeid={data.id}
-                                        data-ratetype={data.rate_type.id} 
-                                        data-department={data.department._id}
-                                        data-position={data.position._id}
-                                        data-manhour={data.manhour_rate}
-                                        
-                                        onClick={scope.onEdit.bind(scope)}>Edit</button> &nbsp;
+                                    <Link className='btn btn-primary' 
+                                        to={'/personnel/edit' + 
+                                            '/' + data.rate_type.id + 
+                                            '/' + data.department._id +
+                                            '/' + data.position._id +
+                                            '/' + data.manhour_rate }>Edit</Link> &nbsp;
                                     <button className='btn btn-danger' data-storedid={data.id} onClick={scope.onDelete.bind(scope)}>Delete</button>
                                 </td>
                             </tr> )
