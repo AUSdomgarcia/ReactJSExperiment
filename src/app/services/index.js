@@ -1,11 +1,36 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router';
+
 import './services.scss';
+
+import xhr from 'jquery';
 
 export class Services extends Component {
 
-    onManage(){
-        this.context.router.push('/services/manage')
+    constructor(props){
+        super(props);
+        this.state = {
+            categoriesArr: []
+        };
+        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+    }
+
+    onManage(evt){
+        let id = xhr(evt.target)[0].dataset.storedid;
+
+        xhr.get(this.BASE_URL+'/rate-cards/services?service_category_id='+id, function(data){
+            console.log( data );
+        });
+        // this.context.router.push('/services/manage');
+    }
+
+    componentDidMount(){
+        let scope = this;
+
+        xhr.get(this.BASE_URL+'/rate-cards/service-categories/services', function(data){
+            console.log( data );
+            scope.setState({ categoriesArr : data.payload });
+        });
     }
 
     onDelete(){
@@ -13,6 +38,28 @@ export class Services extends Component {
     }
 
     render(){
+        let categories = null;
+        let scope = this;
+
+        if(this.state.categoriesArr.length!==0){
+            categories = 
+            this.state.categoriesArr.map(function(data){
+                return (
+                    <tr key={data.id}>
+                        <td>{data.name}</td>
+                        <td>{data.services_count}</td>
+                        <td>{data.rate_types_count}</td>
+                        <td>
+                            {/*<button type="button" data-storeid={data.id} className="btn btn-default" onClick={scope.onManage.bind(scope)} >Manage</button>*/}
+                            <Link className='btn btn-default' 
+                                to={'services/manage/' + data.id + '/' + data.name } >Manage</Link>&nbsp;
+                            <button type="button" data-storeid={data.id} className="btn btn-danger"  onClick={scope.onDelete.bind(scope)} ><i className="fa fa-times"></i></button>
+                        </td>
+                    </tr>
+                )
+            });
+        }
+
         return (
             <div>
                 <h3 className="sky">Manage Services 1</h3>
@@ -29,15 +76,7 @@ export class Services extends Component {
                     </thead>
 
                     <tbody>
-                        <tr>
-                            <td>Digital Strategy</td>
-                            <td>14</td>
-                            <td>6</td>
-                            <td>
-                                <button type="button" className="btn btn-default" onClick={this.onManage.bind(this)} >Manage</button> &nbsp;
-                                <button type="button" className="btn btn-danger"  onClick={this.onDelete.bind(this)} ><i className="fa fa-times"></i></button>
-                            </td>
-                        </tr>
+                        {categories}
                     </tbody>                           
                 </table>
             </div>
@@ -51,18 +90,60 @@ Services.contextTypes = {
 
 export class ManageServices extends Component {
 
+    constructor(props){
+        super(props);
+        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+        this.state = {
+            serviceArr: [],
+            title: ""
+        };
+    }
+    
+    componentWillReceiveProps(nextProps){
+        // console.log(nextProps);
+        if(nextProps){
+            this.setState({ title: nextProps.params.title });
+            xhr.get(this.BASE_URL+'/rate-cards/services?service_category_id=' + nextProps.params.id, function(data){
+                console.log( data );
+            });
+        }
+    }
+
     onEdit(){
         this.context.router.push('/services/edit');
     }
 
-    onClose(){
+    onDelete(){
         //
     }
-    
+
     render(){
+        let scope = this;
+        let services = null;
+
+        if(this.state.serviceArr.length!==0){
+            services = 
+            this.state.serviceArr.map(function(){
+                return (
+                    <tr>
+                        <td>Product 1</td>
+                        <td>Standard</td>
+                        <td>70,000</td>
+                        <td>Active</td>
+                        <td>
+                            <button type="button" className="btn btn-default" onClick={this.onEdit.bind(this)}>Edit</button>
+                            <button type="button" className="btn btn-danger"  onClick={this.onDelete.bind(this)}>
+                                <i className="fa fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+                )
+            });
+        }
+
         return (
             <div>
-                <h3 className="sky">Manage Services <span>[Dynamic Title]</span></h3>
+                <h3 className="sky">Manage Services: <span>{this.state.title}</span></h3>
                 
                 <div className="header">
                     <div className="col-xs-6 text-left">
@@ -89,16 +170,7 @@ export class ManageServices extends Component {
                     </thead>
 
                     <tbody>
-                        <tr>
-                            <td>Product 1</td>
-                            <td>Standard</td>
-                            <td>70,000</td>
-                            <td>Active</td>
-                            <td>
-                                <button type="button" className="btn btn-default" onClick={this.onEdit.bind(this)}>Edit</button>
-                                <button type="button" className="btn btn-danger"  onClick={this.onClose.bind(this)}>Close</button>
-                            </td>
-                        </tr>
+                        {services}
                     </tbody>                           
                 </table>
 

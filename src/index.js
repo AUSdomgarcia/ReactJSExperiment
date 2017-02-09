@@ -85,7 +85,7 @@ ReactDOM.render(
             {/* S E R V I C E S */}
             <Route path='services'>
                 <IndexRoute component={Services} />
-                <Route path="/services/manage" component={ManageServices} />
+                <Route path="/services/manage/:id/:title" component={ManageServices} />
                 <Route path="/services/add" component={ServiceAdd} />
                 <Route path="/services/edit" component={ServiceEdit} />
                 <Route path="/services/viewer" component={ServiceViewer} />

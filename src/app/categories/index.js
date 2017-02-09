@@ -1,5 +1,7 @@
 import React, {Component} from "react";
+
 import xhr from 'jquery';
+
 import "./categories.scss";
 
 import {LevelTwo} from '../../common/_categories/leveltwo';
@@ -12,8 +14,8 @@ export class Categories extends Component {
   constructor(props){
     super(props);
 
-    // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-    this.BASE_URL = "http://cerebrum-api.dev:8096/api";
+    this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+    // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
 
     this.state = {
       categoryLevelOne : [],
