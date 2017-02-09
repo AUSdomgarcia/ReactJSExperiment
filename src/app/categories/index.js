@@ -193,30 +193,6 @@ export class Categories extends Component {
 
         {/* Rate Type */}
         <RateType />
-        
-        
-        <pre>
-        # Todo/Change Logs: <br />
-        1. <span style={{textDecoration:"line-through"}}>Fixed Nest children.</span> <br />
-        2. <span style={{textDecoration:"line-through"}}>Fixed category version(Level 1, Level 2,  Level 3)</span><br />
-        3  <span style={{textDecoration:"line-through"}}>Sortable all Levels.</span><br />
-        4. Save Sort Order all Levels. <br />
-        5. <span style={{textDecoration:"line-through"}}>Delete functionality Level 1. </span><br />
-        6. <span style={{textDecoration:"line-through"}}>Delete functionality Level 2. </span> <br />
-        7. <span style={{textDecoration:"line-through"}}>Delete functionality Level 3. </span> <br />
-        8. <span style={{textDecoration:"line-through"}}>Edit functionality Level 1. </span> <br />
-        9. <span style={{textDecoration:"line-through"}}>Edit functionality Level 2. </span> <br />
-        10.<span style={{textDecoration:"line-through"}}>Edit functionality Level 3. </span> <br />
-        11. Aesthetics margin between elements. <br />
-        12. "Enter key" to complete actions.  <br /><br />
-        # Rate Type Functionality. <br />
-        1. <span style={{textDecoration:"line-through"}}>Rate Type Add.</span> <br />
-        2. <span style={{textDecoration:"line-through"}}>Rate Type Delete.</span> <br />
-        
-        <br /><br />
-        # Popup <br />
-        1. Popup confirmation design
-        </pre>
 
       </div>
     );

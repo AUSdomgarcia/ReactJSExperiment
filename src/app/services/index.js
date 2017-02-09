@@ -8,14 +8,14 @@ export class Services extends Component {
         this.context.router.push('/services/manage')
     }
 
-    onClose(){
+    onDelete(){
 
     }
 
     render(){
         return (
             <div>
-                <h3 className="sky">Manage Services</h3>
+                <h3 className="sky">Manage Services 1</h3>
                 <p><Link to="/services/viewer">View All</Link></p>
 
                 <table className='table table-hover table-bordered table-striped'>
@@ -34,8 +34,8 @@ export class Services extends Component {
                             <td>14</td>
                             <td>6</td>
                             <td>
-                                <button type="button" className="btn btn-default" onClick={this.onManage.bind(this)}>Manage</button>
-                                <button type="button" className="btn btn-danger"  onClick={this.onClose.bind(this)}>Close</button>
+                                <button type="button" className="btn btn-default" onClick={this.onManage.bind(this)} >Manage</button> &nbsp;
+                                <button type="button" className="btn btn-danger"  onClick={this.onDelete.bind(this)} ><i className="fa fa-times"></i></button>
                             </td>
                         </tr>
                     </tbody>                           
