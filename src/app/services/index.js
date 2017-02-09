@@ -62,7 +62,7 @@ export class Services extends Component {
 
         return (
             <div>
-                <h3 className="sky">Manage Services 1</h3>
+                <h3 className="sky">Manage Services</h3>
                 <p><Link to="/services/viewer">View All</Link></p>
 
                 <table className='table table-hover table-bordered table-striped'>

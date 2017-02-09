@@ -12,8 +12,8 @@ export class LevelTwo extends Component {
     constructor(props){
         super(props);
 
-        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-        this.BASE_URL = "http://cerebrum-api.dev:8096/api";
+        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+        // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
         
         this.state = {
             isManageBtn: true,
