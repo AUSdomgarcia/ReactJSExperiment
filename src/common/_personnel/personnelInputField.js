@@ -45,13 +45,13 @@ export class PersonnelInputField extends Component {
     }
 
     componentWillReceiveProps(nextProps){
-        console.log('called me every props received.', nextProps);
-        
+        // console.log('called me every props received.', nextProps);
         if(nextProps.isEdit){
             this.setState({ storeId: nextProps.personnelData.id });
             this.setState({ rateTypeValue: nextProps.personnelData.ratetype });
             this.setState({ departmentValue: nextProps.personnelData.department });
             this.setState({ positionValue: nextProps.personnelData.position });
+            this.setState({ manHour: nextProps.personnelData.manhour });
         }
     }
 
@@ -115,6 +115,7 @@ export class PersonnelInputField extends Component {
   render() {
 
     let notification = null;
+    let updateOrAddBtn = null;
 
     if(this.props.isUpdated){
         notification = 
@@ -127,10 +128,17 @@ export class PersonnelInputField extends Component {
             })();
     }
 
+    if(this.props.btnName==='Add'){
+        updateOrAddBtn = 
+            <button className='btn btn-primary pull-right' onClick={this.onActionHandler.bind(this)}>Add</button>
+    } else {
+        updateOrAddBtn = 
+            <button className='btn btn-primary pull-right' onClick={this.onActionHandler.bind(this)}>Update</button>
+    }
+
     return (
       <div className='row'>
         <div className='col-xs-6'>
-            <form>
                 <div className='form-group'>
                     <label>Rate Type</label>
                     <select className="form-control" value={this.state.rateTypeValue} onChange={this.onSelectRateType.bind(this)}>
@@ -164,9 +172,8 @@ export class PersonnelInputField extends Component {
                 </div>
                 
                 <div className='btn-wrap'>
-                    <button className='btn btn-primary pull-right' onClick={this.onActionHandler.bind(this)}>{this.props.btnName}</button>
+                    {updateOrAddBtn}
                 </div>
-            </form>
         </div>
 
         <div className='col-xs-6'>

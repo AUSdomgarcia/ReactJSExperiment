@@ -18,7 +18,7 @@ export class Personnel extends Component {
       this.state = {
         rateTypeArr: [],
         editData: [],
-        personnelDataArr: [],
+        personnelArr: [],
         isUpdated: false
       }
   }
@@ -26,21 +26,21 @@ export class Personnel extends Component {
   componentDidMount(){
     let scope = this;
     xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
-        scope.setState({ personnelDataArr: data.payload });
+        scope.setState({ personnelArr: data.payload });
     });
   }
 
   componentWillReceiveProps(nextProps){
-    console.log(this.props.params);
+    // console.log(this.props.params);
   }
 
   callbackAdded(addValue){
-    this.setState({personnelDataArr: addValue});
+    this.setState({personnelArr: addValue});
     this.setState({isUpdated:false});
   }
 
   callbackUpdate(addValue){
-    this.setState({personnelDataArr: addValue});
+    this.setState({personnelArr: addValue});
     this.context.router.push('/personnel');
     this.setState({isUpdated:true});
   }
@@ -48,12 +48,20 @@ export class Personnel extends Component {
 
   callbackDeletePersonnel(id){
     let scope = this;
-     this.state.personnelDataArr.map(function(data, index){
+     this.state.personnelArr.map(function(data, index){
         if(data.id === +id){
-          scope.state.personnelDataArr.splice(index, 1);
-          scope.setState({ personnelDataArr: scope.state.personnelDataArr });   
+          scope.state.personnelArr.splice(index, 1);
+          scope.setState({ personnelArr: scope.state.personnelArr });   
         }
     });
+
+    this.redirectWhenNoArr();
+  }
+
+  redirectWhenNoArr(){
+    if(this.state.personnelArr.length===0){
+      this.context.router.push('/personnel');
+    }
   }
 
   render() {
@@ -109,7 +117,7 @@ export class Personnel extends Component {
         </div>
 
         <PersonnelList
-          parentData={this.state.personnelDataArr} 
+          parentData={this.state.personnelArr} 
           onDelete={this.callbackDeletePersonnel.bind(this)}/>
 
       </div>
