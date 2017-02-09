@@ -19,7 +19,7 @@ module.exports = {
       },
       {
         test: /.js$/,
-        exclude: /node_modules/,
+        exclude: /node_modules|bower_components/,
         loader: 'eslint-loader?babel-eslint',
         enforce: 'pre'
       },
@@ -32,7 +32,7 @@ module.exports = {
       },
       {
         test: /\.js$/,
-        exclude: /node_modules/,
+        exclude: /node_modules|bower_components/,
         loaders: [
           'babel-loader'
         ]

@@ -8,7 +8,9 @@ const autoprefixer = require('autoprefixer');
 // Experiment
 // const Webpack_isomorphic_tools_plugin = require('webpack-isomorphic-tools/plugin');
       // Webpack_isomorphic_tools_plugin = new Webpack_isomorphic_tools_plugin(require('./webpack-isomorphic-tools-configuration')).developmet();
-    
+  
+const BowerWebpackPlugin = require("bower-webpack-plugin");
+
 module.exports = {
   module: {
     loaders: [
@@ -20,7 +22,7 @@ module.exports = {
       },
       {
         test: /.js$/,
-        exclude: /node_modules/,
+        exclude: /node_modules|bower_components/,
         loader: 'eslint-loader?babel-eslint',
         enforce: 'pre'
       },
@@ -35,7 +37,7 @@ module.exports = {
       },
       {
         test: /\.js$/,
-        exclude: /node_modules/,
+        exclude: /node_modules|bower_components/,
         loaders: [
           'react-hot-loader',
           'babel-loader'
@@ -70,6 +72,9 @@ module.exports = {
   },
   plugins: [
     // Webpack_isomorphic_tools_plugin,
+
+    // new BowerWebpackPlugin(),
+
     new webpack.optimize.OccurrenceOrderPlugin(),
 
     new webpack.NoErrorsPlugin(),

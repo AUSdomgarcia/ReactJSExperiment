@@ -1,0 +1,20 @@
+{
+  "name": "domz",
+  "description": "",
+  "main": "",
+  "authors": [
+    "bb_domgarcia <dom.garcia@nuworks.ph>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/AUSdomgarcia/react-firstproject",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "typeahead.js": "^0.11.1"
+  }
+}

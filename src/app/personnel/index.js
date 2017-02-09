@@ -7,6 +7,10 @@ import {PersonnelList} from '../../common/_personnel/personnelList';
 
 import xhr from 'jquery';
 
+// import {Filter} from 'react-filter';
+
+import {FilteredList} from '../../common/_personnel/filteredList';
+
 export class Personnel extends Component {
 
   constructor(props){
@@ -18,15 +22,23 @@ export class Personnel extends Component {
       this.state = {
         rateTypeArr: [],
         editData: [],
+
         personnelArr: [],
+        
+        personnelFilter: [],
+
         isUpdated: false
       }
   }
 
   componentDidMount(){
     let scope = this;
+    let ta = null;
+
     xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
         scope.setState({ personnelArr: data.payload });
+        // copy
+        scope.setState({ personnelFilter: data.payload });
     });
   }
 
@@ -37,21 +49,26 @@ export class Personnel extends Component {
   callbackAdded(addValue){
     this.setState({personnelArr: addValue});
     this.setState({isUpdated:false});
+    // copy
+    this.setState({ personnelFilter: addValue });
   }
 
   callbackUpdate(addValue){
     this.setState({personnelArr: addValue});
     this.context.router.push('/personnel');
     this.setState({isUpdated:true});
+    // copy
+    this.setState({ personnelFilter: addValue });
   }
   
-
   callbackDeletePersonnel(id){
     let scope = this;
      this.state.personnelArr.map(function(data, index){
         if(data.id === +id){
           scope.state.personnelArr.splice(index, 1);
           scope.setState({ personnelArr: scope.state.personnelArr });   
+          // copy
+          scope.setState({ personnelFilter: scope.state.personnelArr });
         }
     });
 
@@ -64,13 +81,18 @@ export class Personnel extends Component {
     }
   }
 
+  callbackFilter(filteredData){
+    // console.log(filteredData);
+    this.setState({ personnelFilter: filteredData });
+  }
+
   render() {
-    let personnel = null;
+    let personnelField = null;
     let scope = this;
 
     if(this.props.params.hasOwnProperty('id')) {
 
-      personnel =
+      personnelField =
         ( <PersonnelInputField 
           btnName='Update'
           isEdit={true}
@@ -81,7 +103,7 @@ export class Personnel extends Component {
 
     } else {
 
-      personnel =
+      personnelField =
         ( <PersonnelInputField 
           btnName='Add'
           isUpdated={scope.state.isUpdated}
@@ -97,16 +119,22 @@ export class Personnel extends Component {
           <small>Create New Personnel</small>
         </div>
               
-        {personnel}
+        {personnelField}
 
         <br />
       
         <div className='search-wrap'>
-          <div className='col-xs-8'>col-xs-8</div>
+          <div className='col-xs-8'> &nbsp; </div>
           
           <div className='col-xs-4'>
             <div className="input-group">
-              <input type="text" className="form-control" placeholder="Search for..." />
+              {/*<input id="personnel-searchbox" type="text" className="form-control" placeholder="Search for..." onChange={this.onFilter.bind(this)} />*/}
+
+              <FilteredList 
+                data={this.state.personnelArr}
+                onFilter={this.callbackFilter.bind(this)}
+              />
+
               <span className="input-group-btn">
                 <button className="btn btn-default" type="button">Go!</button>
               </span>
@@ -117,7 +145,7 @@ export class Personnel extends Component {
         </div>
 
         <PersonnelList
-          parentData={this.state.personnelArr} 
+          parentData={this.state.personnelFilter} 
           onDelete={this.callbackDeletePersonnel.bind(this)}/>
 
       </div>

@@ -12,6 +12,9 @@ export class PersonnelList extends Component {
 
         // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
         this.BASE_URL = "http://cerebrum-api.dev:8096/api";
+        this.state = {
+            parentDataCopy: []
+        }
     }
 
     onDelete(evt){
@@ -34,14 +37,20 @@ export class PersonnelList extends Component {
             });
     }
 
+    componentWillReceiveProps(nextProps){
+        if(this.state.parentDataCopy !== nextProps.parentData){
+            this.setState({parentDataCopy: nextProps.parentData});
+        }
+    }
+
     render(){
     
     let scope = this;
     let tableContent = null;
     
-    if(this.props.parentData !== undefined){
+    if(this.state.parentDataCopy !== undefined){
         tableContent = 
-                this.props.parentData.map(function(data){
+                this.state.parentDataCopy.map(function(data){
                         return (
                             <tr key={data.id}>
                                 <td>{data.rate_type.name}</td>

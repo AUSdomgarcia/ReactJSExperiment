@@ -149,18 +149,18 @@ export class PersonnelInputField extends Component {
                 </div>
                 
                 <div className='form-group'>
-                    <label>Department</label>
-                    <select className="form-control" value={this.state.departmentValue} onChange={this.onSelectDepartment.bind(this)}>
-                        {this.state.department.map(function(options){
+                    <label>Position</label>
+                    <select className="form-control" value={this.state.positionValue} onChange={this.onSelectPosition.bind(this)}>
+                        {this.state.position.map(function(options){
                             return (<option key={options._id} value={options._id}>{options.name}</option>)
                         })}
                     </select>
                 </div>
-
+                
                 <div className='form-group'>
-                    <label>Position</label>
-                    <select className="form-control" value={this.state.positionValue} onChange={this.onSelectPosition.bind(this)}>
-                        {this.state.position.map(function(options){
+                    <label>Department</label>
+                    <select className="form-control" value={this.state.departmentValue} onChange={this.onSelectDepartment.bind(this)}>
+                        {this.state.department.map(function(options){
                             return (<option key={options._id} value={options._id}>{options.name}</option>)
                         })}
                     </select>
