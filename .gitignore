@@ -2,5 +2,6 @@
 coverage/
 dist/
 node_modules/
+bower_components/
 .vscode/
 package.json
