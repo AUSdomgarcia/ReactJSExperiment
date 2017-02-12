@@ -9,6 +9,11 @@ import {InputHelper} from '../../common/helpers/inputhelpers';
 
 import {ServicePersonnel} from '../../common/_services/servicePersonnel';
 
+import {
+    getServices,
+    getServiceByCategoryId
+
+ } from '../../common/http';
 
 export class Services extends Component {
 
@@ -17,14 +22,20 @@ export class Services extends Component {
         this.state = {
             categoriesArr: []
         };
-        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
     }
 
     componentDidMount(){
         let scope = this;
+        // xhr.get(this.BASE_URL+'/rate-cards/service-categories/services', function(data){
+        //     console.log('/services', data );
+        //     scope.setState({ categoriesArr : data.payload });
+        // });
+        
+        console.log('hellopo');
 
-        xhr.get(this.BASE_URL+'/rate-cards/service-categories/services', function(data){
-            console.log('/services', data );
+        getServices().then(function(data){
+            console.log(data);
             scope.setState({ categoriesArr : data.payload });
         });
     }
@@ -88,7 +99,7 @@ export class ManageServices extends Component {
 
     constructor(props){
         super(props);
-        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
         this.state = {
             serviceArr: [],
             serviceCategoryIdRef: "",
@@ -102,9 +113,12 @@ export class ManageServices extends Component {
     }
 
     componentDidMount(){
-        xhr.get(this.BASE_URL+'/rate-cards/services?service_category_id=' + this.props.params.serviceCategoryId, function(data){
-            console.log( data );
-        });
+        // xhr.get(this.BASE_URL+'/rate-cards/services?service_category_id=' + this.props.params.serviceCategoryId, function(data){
+        //     console.log( data );
+        // });
+        getServiceByCategoryId(this.props.params.serviceCategoryId).then(function(data){
+            console.log(data);
+        })
     }
 
     onEdit(){
