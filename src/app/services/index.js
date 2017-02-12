@@ -3,16 +3,18 @@ import {Link} from 'react-router';
 
 import './services.scss';
 
-import xhr from 'jquery';
-
 import {InputHelper} from '../../common/helpers/inputhelpers';
 
 import {ServicePersonnel} from '../../common/_services/servicePersonnel';
 
 import {
     getServices,
-    getServiceByCategoryId
+    getServiceByCategoryId,
+    getServiceCreateDetails,
+    getServiceRateTypes,
 
+    getServiceCategories_subCategories_level2_byParentId,
+    getServiceCategories_subCategories_level3_byParentId
  } from '../../common/http';
 
 export class Services extends Component {
@@ -201,7 +203,8 @@ export class ServiceAdd extends Component {
 
     constructor(props){
         super(props);
-        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+
+        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
 
         this.state = {
             titleRef: "",
@@ -236,27 +239,53 @@ export class ServiceAdd extends Component {
     componentDidMount(){
         let scope = this;
 
-        xhr.get(this.BASE_URL+'/rate-cards/services/create-details', function(data){
+        // xhr.get(this.BASE_URL+'/rate-cards/services/create-details', function(data){
+        //     scope.setState({serviceId: data.payload.service_id });
+        //     scope.setState({accountName: data.payload.name });
+        //     scope.setState({updatedAt: data.payload.updated_at});
+        //     scope.setState({createdAt: data.payload.created_at});
+        // });
+
+        getServiceCreateDetails().then(function(data){
             scope.setState({serviceId: data.payload.service_id });
             scope.setState({accountName: data.payload.name });
             scope.setState({updatedAt: data.payload.updated_at});
             scope.setState({createdAt: data.payload.created_at});
-        });
+        })
 
-         xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
+        //  xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
+        //     scope.setState({ rateTypeArr: data.payload });
+        //     console.log(data.payload);
+        // });
+
+        getServiceRateTypes().then(function(data){
             scope.setState({ rateTypeArr: data.payload });
-            console.log(data.payload);
         });
 
-        xhr.get(this.BASE_URL+'/rate-cards/service-categories/sub-categories/level-2?parent_id=' + this.state.serviceCategoryIdRef, function(data){
-            scope.setState({ level2Arr: data.payload });
+        // xhr.get(this.BASE_URL+'/rate-cards/service-categories/sub-categories/level-2?parent_id=' + this.state.serviceCategoryIdRef, function(data){
+        //     scope.setState({ level2Arr: data.payload });
 
-            // Check Level3 index 0
+        //     // Check Level3 index 0
+        //     if(scope.state.level2Arr.length !== 0){
+        //         let level3IndexZeroId = scope.state.level2Arr[0].id;
+        //         if(level3IndexZeroId !== undefined){
+        //             if(!isNaN(level3IndexZeroId)){
+        //                 xhr.get(scope.BASE_URL+'/rate-cards/service-categories/sub-categories/level-3?parent_id=' + level3IndexZeroId, function(data){
+        //                     scope.setState({ level3Arr: data.payload });
+        //                 });
+        //             }
+        //         }
+        //     }
+        // });
+
+        getServiceCategories_subCategories_level2_byParentId(this.state.serviceCategoryIdRef)
+        .then(function(data){
             if(scope.state.level2Arr.length !== 0){
                 let level3IndexZeroId = scope.state.level2Arr[0].id;
                 if(level3IndexZeroId !== undefined){
                     if(!isNaN(level3IndexZeroId)){
-                        xhr.get(scope.BASE_URL+'/rate-cards/service-categories/sub-categories/level-3?parent_id=' + level3IndexZeroId, function(data){
+                        getServiceCategories_subCategories_level3_byParentId(level3IndexZeroId)
+                        .then(function(data){
                             scope.setState({ level3Arr: data.payload });
                         });
                     }
@@ -284,9 +313,15 @@ export class ServiceAdd extends Component {
     onLevel2Change(evt){
         let scope = this;
         this.setState({level2ValueId: evt.target.value});
-        xhr.get(this.BASE_URL+'/rate-cards/service-categories/sub-categories/level-3?parent_id=' + evt.target.value, function(data){
+
+        // xhr.get(this.BASE_URL+'/rate-cards/service-categories/sub-categories/level-3?parent_id=' + evt.target.value, function(data){
+        //     scope.setState({ level3Arr: data.payload });
+        // });
+
+        getServiceCategories_subCategories_level3_byParentId(evt.target.value)
+        .then(function(data){
             scope.setState({ level3Arr: data.payload });
-        })
+        });
     }
 
     onLevel3Change(evt){
