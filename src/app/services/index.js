@@ -194,11 +194,14 @@ export class ManageServices extends Component {
                             to={'/services/add/' 
                             + this.state.serviceCategoryIdRef + '/' 
                             + this.state.titleRef + '/'
-                            + true }>Edit Service Sample</Link>
+                            + true }>EditSimulate</Link>
                         &nbsp;
                         <Link 
                             className="btn btn-primary" 
-                            to={'/services/add/' + this.state.serviceCategoryIdRef + '/' + this.state.titleRef }>Add Service</Link>
+                            to={'/services/add/' 
+                            + this.state.serviceCategoryIdRef + '/' 
+                            + this.state.titleRef + '/'
+                            + false }>Add Service</Link>
                     </div>
                     <br className="clearfix" />
                 </div>
@@ -311,11 +314,12 @@ export class ServiceAdd extends Component {
     componentDidMount(){
         let scope = this;
 
-        if(this.props.params.editmode!==null){
+        if(this.props.params.editmode===true){
             // If edit mode load data when edit
+        }
 
 
-        } else {
+        if(this.props.params.editmode===false){
             // Get Details when Created From Server
             getServiceCreateDetails().then(function(response){
                 scope.setState({serviceId: response.data.payload.service_id });
@@ -474,12 +478,12 @@ export class ServiceAdd extends Component {
             }
         }
 
-        let finalPersonnelFormat = [];
+        let personnelFormat = [];
         this.state.servicePersonnelArr.map(function(data){
             let tempObj = {};
                 tempObj.id = data.myId;
                 tempObj.manhours = Math.floor(data.manhour);
-            finalPersonnelFormat.push(tempObj);
+            personnelFormat.push(tempObj);
         });
 
         console.log('========== POST START====================')
@@ -489,36 +493,33 @@ export class ServiceAdd extends Component {
         console.log('Level_2:', this.state.level2ValueId );
         console.log('Level_3:', this.state.level3ValueId );
         console.log('RateType_ID:', this.state.rateTypeValue );
-        console.log('Personnels:', finalPersonnelFormat)
+        console.log('Personnels:', personnelFormat)
         console.log('Subtotal:', this.state.subtotal );
         console.log('Created_Time:', this.state.createdAt);
         console.log('========== POST END ========================')
 
-        postServiceCreate({
-            
-            name: this.state.serviceName,
-            
-            description: this.state.description,
-            
-            service_category_id: this.state.serviceCategoryIdRef,
-            
-            service_sub_category_id: this.state.level2ValueId || null,
-            
-            sub_service_sub_category_id: this.state.level3ValueId || null,
-            
-            rate_type_id: this.state.rateTypeValue,
+        // Edit False
+        if(this.props.params.editmode===false){
+            postServiceCreate({
+                name: this.state.serviceName,
+                description: this.state.description,
+                service_category_id: this.state.serviceCategoryIdRef,
+                service_sub_category_id: this.state.level2ValueId || null,
+                sub_service_sub_category_id: this.state.level3ValueId || null,
+                rate_type_id: this.state.rateTypeValue,
+                is_active: this.state.activeStatus,
+                personnels: [{ id: 1, personnel_id: 1, manhours: 100 }],  // <----- Mock Personnels
+                subtotal: this.state.subtotal,
+                created_at: '2017-02-09 11:14:00' // <------ Mock time ,     this.state.createdAt,
+            }).then(function(response){
+                console.log(response);
+            });
+        }
 
-            is_active: this.state.activeStatus,
-            
-            personnels: [{ id: 1, personnel_id: 1, manhours: 100 }],  // <----- Mock Personnels
-            
-            subtotal: this.state.subtotal,
-
-            created_at: '2017-02-09 11:14:00' // <------ Mock time ,     this.state.createdAt,
-
-        }).then(function(response){
-            console.log(response);
-        });
+        // Edit True
+        if(this.props.params.editmode===true){
+            //
+        }
     }
 
     render(){
