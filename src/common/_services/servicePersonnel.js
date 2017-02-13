@@ -13,8 +13,8 @@ export class ServicePersonnel extends Component {
         this.state = {
             personnelArr: [],
 
-            rateMultiplier: 0,
-            manHourValue: 0,
+            manHourRate: 0,
+            manHourValue: 1,
 
             debugPerBox: 0,
             personnelId: "",
@@ -25,85 +25,73 @@ export class ServicePersonnel extends Component {
         let scope = this;
         this.getValue = function(){
             return {
-                total: scope.state.rateMultiplier * scope.state.manHourValue,
+                total: scope.state.manHourRate * scope.state.manHourValue,
                 manhour: scope.state.manHourValue,
                 personnelId: scope.state.personnelId,
-                multiplier: scope.state.rateMultiplier,
+                multiplier: scope.state.manHourRate,
                 position: scope.state.position
             }
         }
     }
 
-    componentWillReceiveProps(nextProps){
-        // console.log(nextProps);
-        if(nextProps.manhour !== this.state.manHourValue){
-            this.setState({manHourValue: nextProps.manhour});
-            this.setState({position: this.props.position});
-            this.setState({personnelId: this.props.personnelId});
-        }
-    }
+    // componentWillReceiveProps(nextProps){
+    //     if(nextProps.manhour !== this.state.manHourValue){
+    //         this.setState({manHourValue: nextProps.manhour});
+    //         this.setState({position: this.props.position});
+    //         this.setState({personnelId: this.props.personnelId});
+    //     }
+    // }
 
     componentWillMount(){
-        if(!this.props.isEnable){
-            this.setState({manHourValue: this.props.manhour});
-            this.setState({position: this.props.position});
+        if(this.props.isEnable===false){
             this.setState({personnelId: this.props.personnelId});
+            this.setState({position: this.props.position});
+            this.setState({manHourValue: this.props.manhour});
         }
     }
 
     componentDidMount(){
         let scope = this;
 
-        if(this.props.isEnable){
-            //  xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
-            //     console.log('>>', data);
-            //     scope.setState({ personnelArr: data.payload });
-
-            //     // default
-            //     scope.setState({ rateMultiplier: +data.payload[0].manhour_rate});
-            //     scope.setState({ personnelId: data.payload[0].personnel_id });
-            //     scope.setState({ position: data.payload[0].position.name });
-            // });
-
+        if(this.props.isEnable===true){
             getServicePersonnels().then(function(response){
-                console.log( response.data );
+                console.log('ServicePersonnel:', response.data );
 
                 scope.setState({ personnelArr: response.data.payload });
 
                 // default
-                scope.setState({ rateMultiplier: +response.data.payload[0].manhour_rate});
+                scope.setState({ manHourRate: +response.data.payload[0].manhour_rate});
                 scope.setState({ personnelId: response.data.payload[0].personnel_id });
                 scope.setState({ position: response.data.payload[0].position.name });
             });
         }
     }
 
-    onChangePersonnel(event, index, value){
-        this.setState({rateMultiplier: event.target.value});
-
-        let dataset = event.target.options[event.target.selectedIndex].dataset;
-        
-        this.setState({ personnelId: dataset.personnelid });
-        this.setState({ position: dataset.personnelname });
-    }
-
     onChangeManHour(evt){
         let manhour = +evt.target.value
         this.setState({manHourValue: manhour});
 
-        let total = this.state.rateMultiplier * this.state.manHourValue;
+        let total = this.state.manHourRate * this.state.manHourValue;
 
         this.setState({ debugPerBox: total });
     }
 
-    onDeleteSelf(){
+    onDelete(){
        if(confirm('Are you sure you want to delete?')){
             //
         } else {
             return;
         }
-        
         this.props.onDeleteSelf(this.state.personnelId);
+    }
+
+    onChangePersonnel(event){
+        this.setState({personnelId: event.target.value});
+        
+        let dataset = event.target.options[event.target.selectedIndex].dataset;
+        
+        this.setState({ manHourRate: dataset.manhourrate });
+        this.setState({ position: dataset.personnelposition });
     }
 
     render() {
@@ -114,20 +102,24 @@ export class ServicePersonnel extends Component {
 
         if(this.state.personnelArr.length !==0 && this.props.isEnable === true){
             personnelOption = 
-           <select className="form-control" value={this.state.rateMultiplier} onChange={this.onChangePersonnel.bind(this)}>
+           <select className="form-control" value={this.state.personnelId} onChange={this.onChangePersonnel.bind(this)}>
                 { this.state.personnelArr.map(function(data){
-                    return (<option 
+                    return (
+                        <option 
                             key={data.id}
-                            data-personnelid={data.personnel_id}
-                            data-personnelname={data.position.name}
-                            value={data.manhour_rate}>{data.position.name}</option>)
+                            
+                            data-manhourrate={data.manhour_rate}
+
+                            data-personnelposition={data.position.name}
+
+                            value={data.personnel_id}> {data.position.name} </option>)
                 }) }
             </select>
         }
 
         if(this.props.isEnable===false){
             closebtn =
-            <button type="button" className="btn btn-danger pull-right"  onClick={this.onDeleteSelf.bind(this)}><i className="fa fa-times"></i></button>
+            <button type="button" className="btn btn-danger pull-right"  onClick={this.onDelete.bind(this)}><i className="fa fa-times"></i></button>
 
             personnelOption = 
             <input type="text" className="form-control" value={this.state.position} disabled />
@@ -144,7 +136,7 @@ export class ServicePersonnel extends Component {
 
         return (
             <div className="group-box">
-                {/*<small><strong>Per box Value: </strong>{this.state.debugPerBox} , {this.state.rateMultiplier} , {this.state.manHourValue}</small>*/}
+                {/*<small><strong>Per box Value: </strong>{this.state.debugPerBox} , {this.state.manHourRate} , {this.state.manHourValue}</small>*/}
                 <div className="form-group">
                     {closebtn}
                     <label>Personnel ID</label>

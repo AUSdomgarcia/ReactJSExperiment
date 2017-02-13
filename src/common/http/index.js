@@ -20,9 +20,6 @@ let getServiceByCategoryId = function(categoryId){
 let getServiceCreateDetails = function(){
   return axios.get( baseURL + '/rate-cards/services/create-details');
 }
-let getServicePersonnels = function(){
-  return axios.get( baseURL + '/rate-cards/personnels');
-}
 
 
 
@@ -64,6 +61,7 @@ let postServiceCategories_subCategories_delete = function(obj){
 
 
 
+
 {/* Rate Types */}
 let getServiceRateTypes = function(){
   return axios.get( baseURL + '/rate-cards/rate-types');
@@ -81,11 +79,36 @@ let postServiceRateTypesDelete = function(obj){
 
 
 
+{/* Personnels */}
+let getServicePersonnels = function(){
+  return axios.get( baseURL + '/rate-cards/personnels');
+}
+let getPersonnelsDepartment = function(){
+  return axios.get( baseURL + '/rate-cards/personnels/departments');
+}
+let getPersonnelsPositions = function(){
+  return axios.get( baseURL + '/rate-cards/personnels/positions');
+}
+let postPersonnelsCreate = function(obj){
+  return axios.post( baseURL + '/rate-cards/personnels/create', obj );
+}
+let postPersonnelsUpdate = function(obj){
+  return axios.post( baseURL + '/rate-cards/personnels/update', obj );
+}
+let postPersonnelsDelete = function(obj){
+  return axios.post( baseURL + '/rate-cards/personnels/delete', obj );
+}
+
+
+
+
+
+
+
 export { 
   getServices, 
   getServiceByCategoryId, 
   getServiceCreateDetails,
-  getServicePersonnels,
   postServiceCategoriesDelete,
   postServiceCategories_subCategories_create,
   postServiceCategories_subCategories_update,
@@ -96,6 +119,13 @@ export {
   postServiceCategoriesUpdate,
   getServiceCategories_subCategories_level2_byParentId,
   getServiceCategories_subCategories_level3_byParentId,
+
+  getServicePersonnels,
+  getPersonnelsDepartment,
+  getPersonnelsPositions,
+  postPersonnelsCreate,
+  postPersonnelsUpdate,
+  postPersonnelsDelete,
 
   getServiceRateTypes,
   postServiceRateTypesCreate,

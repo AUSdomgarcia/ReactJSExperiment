@@ -249,7 +249,7 @@ ManageServices.contextTypes = {
 
 
 
-
+{/*----------------------------------->>> Y O U R  W O R K I N G  H E R E <<<---------------------------------------------*/}
 
 export class ServiceAdd extends Component {
 
@@ -278,6 +278,10 @@ export class ServiceAdd extends Component {
 
             servicePersonnelArr: [],
             subtotal: 0,
+
+            personnelComp_previous_personnel_id: "",
+            personnelComp_previous_position: "",
+            personnelComp_previous_manhour: 0,
         }
     }
 
@@ -383,52 +387,67 @@ export class ServiceAdd extends Component {
     }
 
     onAddPersonnel(evt){
-        console.log('ADD PERSON', this._child.getValue() );
+        // console.log('CLICKED ADD PERSON', this._child.getValue() );
+        // cachePreviousSelection in ServicePersonnel Component
+        this.setState( { personnelComp_previous_personnel_id : this._child.getValue().personnelId || "" });
+        this.setState( { personnelComp_previous_position : this._child.getValue().position || "" });
+        this.setState( { personnelComp_previous_manhour : this._child.getValue().manhour || 0 });
 
         let tempObj = this._child.getValue();
         let subtotal = 0;
         let scope = this;
         let hasCopy = false;
 
-        if(this.state.servicePersonnelArr.length !==0 ){
-
-            this.state.servicePersonnelArr.map(function(data){
-                // compute
-                subtotal += data.total;
-
-                // check id
-                if(data.personnelId === tempObj.personnelId ){
-                    hasCopy = true;
-                } 
-
-                if(hasCopy){
-                    if(confirm('Cannot add the same position.')){
-                        return false;
-                    }
-                    return false;
-                } else {
-                    scope.state.servicePersonnelArr.push(tempObj);
-                    scope.setState({ servicePersonnelArr: scope.state.servicePersonnelArr });
-                }
-            }); 
-                
-        } else {
+        if(this.state.servicePersonnelArr.length ===0 ){
             this.state.servicePersonnelArr.push(tempObj);
             this.setState({ servicePersonnelArr: this.state.servicePersonnelArr });
-            subtotal += this.state.servicePersonnelArr[0].total;
+            this.calculateSubtotal();
+            console.log('ADDED PERSON!!!!:', scope.state.servicePersonnelArr);
+            return;
         }
 
+        // Mapping
+        this.state.servicePersonnelArr.map(function(data){
+            // check id
+            if(data.personnelId === tempObj.personnelId ){
+                hasCopy = true;
+            }
+        });
+
+        if(hasCopy===false){
+            scope.state.servicePersonnelArr.push(tempObj);
+            scope.setState({ servicePersonnelArr: scope.state.servicePersonnelArr });
+            console.log('ADDED PERSON!!!!:', scope.state.servicePersonnelArr);
+        }
+
+        this.calculateSubtotal();
+
+        if(hasCopy===true){
+            if(confirm('Cannot add the same position X.')){
+                return;
+            } else {
+                return;
+            }
+        }
+    }
+
+    calculateSubtotal(){
+        let subtotal = 0;
+        this.state.servicePersonnelArr.map(function(data){
+            subtotal += data.total;
+        });
         this.setState({ subtotal: subtotal });
     }
 
     callbackDeleteSelf(id){
         let scope = this;
-        this.state.servicePersonnelArr.map(function(data, idx){
-            if(data.personnelId === id){
-                scope.state.servicePersonnelArr.splice(idx, 1);
-                scope.setState({ servicePersonnelArr: scope.state.servicePersonnelArr });
+        for(var i=0; i < this.state.servicePersonnelArr.length; i++){
+            if(scope.state.servicePersonnelArr[i].personnelId.toString() === id.toString()){
+                scope.state.servicePersonnelArr.splice(i, 1);
             }
-        });
+        }
+        this.setState({ servicePersonnelArr: this.state.servicePersonnelArr });
+        this.calculateSubtotal();
     }
 
     render(){
@@ -436,6 +455,8 @@ export class ServiceAdd extends Component {
         let level2SelectOptions = null;
         let level3SelectOptions = null;
         let personnelList = null;
+        let defaultStatus = null;
+        let arrlengthStatus = null;
 
         if(this.state.level2Arr.length!==0){
             level2SelectOptions = 
@@ -466,6 +487,9 @@ export class ServiceAdd extends Component {
         }
 
         if(this.state.servicePersonnelArr.length!==0){
+            defaultStatus = <span></span>
+            arrlengthStatus = <span className="btn-warning">({ this.state.servicePersonnelArr.length })</span>
+            
             personnelList = 
             this.state.servicePersonnelArr.map(function(data, index){
                 // console.log('data>>', data);
@@ -475,8 +499,11 @@ export class ServiceAdd extends Component {
                             isEnable={false} 
                             position={data.position} 
                             manhour={data.manhour} 
-                            key={index} /> )
-            } )
+                            key={data.personnelId} /> )
+            } );
+
+        } else {
+            defaultStatus = <strong className="btn-danger">No added personnels.</strong>
         }
 
         return ( 
@@ -526,18 +553,13 @@ export class ServiceAdd extends Component {
                         </select>
                     </div>
 
-
-
-
-
-
                     {/*S E R V I C E  P E R S O N N E L*/}
 
                     <ServicePersonnel 
                         isEnable={true} 
-                        personnelId={""} 
-                        position={""} 
-                        manhour={0} 
+                        personnelId={ this.state.personnelComp_previous_personnel_id } 
+                        position={ this.state.personnelComp_previous_position } 
+                        manhour={ this.state.personnelComp_previous_manhour } 
                         ref={(child) => { this._child = child; }} />
 
                     <p className="personnel-btn-wrapper">
@@ -566,29 +588,28 @@ export class ServiceAdd extends Component {
                         <label><input type="radio" name="service_status" />Active</label>
                         <label><input type="radio" name="service_status" />Inactive</label>
                     </div>
+                    
+                    <br />
+
+                    <p className="form-control text-left">
+                        <strong>Subtotal:</strong>&nbsp;<span>{this.state.subtotal}</span>
+                    </p>
+                    
+                    <br />
+
+                    <p className="text-right">
+                        <button type="button" className="btn btn-success">Save Selections</button>
+                    </p>
 
                     <br className="clearfix"/>
 
-                    <p className="text-right">
-                        <strong>Subtotal:</strong>&nbsp;<span>{this.state.subtotal}</span>
-                    </p>
-                </div>
-
-                <p className="text-right">
-                    <button type="button" className="btn btn-success">Save</button>
-                </p>
-
-                <br className="clearfix" />
-                <br />
-
-                <p>-----------------------------------------------</p>
-                
-                <div className="col-xs-6">
+                    <h3>Added Personnel(s) {arrlengthStatus}</h3>
+                    {defaultStatus}
                     {personnelList}
+                    
                 </div>
-                <div className="col-xs-6"></div>
-
-                <br className="clearfix"/>
+            
+            <br className="clearfix"/>
             </div>
         )
     }

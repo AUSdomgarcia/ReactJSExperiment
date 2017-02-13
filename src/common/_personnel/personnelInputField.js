@@ -3,12 +3,22 @@ import './personnel.scss';
 
 import xhr from 'jquery';
 
+import {
+        getPersonnelsDepartment, 
+        getServiceRateTypes, 
+        getPersonnelsPositions,
+        postPersonnelsCreate,
+        postPersonnelsUpdate
+
+    } from '../../common/http';
+
 export class PersonnelInputField extends Component {
     constructor(props){
         super(props);
 
-        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
         // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
+        
         this.state = {
             rateType: [],
             department: [],
@@ -28,19 +38,34 @@ export class PersonnelInputField extends Component {
 
         console.log('called me once');
 
-        xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
-        scope.setState({ rateType: data.payload });
-        scope.setState({ rateTypeValue: data.payload[0].id });
+        // xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
+        //     scope.setState({ rateType: data.payload });
+        //     scope.setState({ rateTypeValue: data.payload[0].id });
+        // });
+    
+        getServiceRateTypes().then(function(response){
+            scope.setState({ rateType: response.data.payload });
+            scope.setState({ rateTypeValue: response.data.payload[0].id });
         });
 
-        xhr.get(this.BASE_URL+'/rate-cards/personnels/departments', function(data){
-            scope.setState({ department: data.payload });
-            scope.setState({ departmentValue: data.payload[0]._id });
+        // xhr.get(this.BASE_URL+'/rate-cards/personnels/departments', function(data){
+        //     scope.setState({ department: data.payload });
+        //     scope.setState({ departmentValue: data.payload[0]._id });
+        // });
+
+        getPersonnelsDepartment().then(function(response){
+            scope.setState({ department: response.data.payload });
+            scope.setState({ departmentValue: response.data.payload[0]._id });
         });
 
-        xhr.get(this.BASE_URL+'/rate-cards/personnels/positions', function(data){
-            scope.setState({ position: data.payload });
-            scope.setState({ positionValue: data.payload[0]._id });
+        // xhr.get(this.BASE_URL+'/rate-cards/personnels/positions', function(data){
+        //     scope.setState({ position: data.payload });
+        //     scope.setState({ positionValue: data.payload[0]._id });
+        // });
+
+        getPersonnelsPositions().then(function(response){
+            scope.setState({ position: response.data.payload });
+            scope.setState({ positionValue: response.data.payload[0]._id });
         });
     }
 
@@ -77,16 +102,26 @@ export class PersonnelInputField extends Component {
 
         switch(this.props.btnName.toLowerCase()){
             case 'add':
-                xhr.post(this.BASE_URL+'/rate-cards/personnels/create', 
-                    {
-                        rate_type_id : scope.state.rateTypeValue,
-                        department_id : scope.state.departmentValue,
-                        position_id : scope.state.positionValue,
-                        manhour_rate : scope.state.manHour
-                    },
-                    function(data){
-                        scope.props.onAdded(data.payload);
-                    });
+                // xhr.post(this.BASE_URL+'/rate-cards/personnels/create', 
+                //     {
+                //         rate_type_id : scope.state.rateTypeValue,
+                //         department_id : scope.state.departmentValue,
+                //         position_id : scope.state.positionValue,
+                //         manhour_rate : scope.state.manHour
+                //     },
+                //     function(data){
+                //         scope.props.onAdded(data.payload);
+                //     });
+
+                postPersonnelsCreate({
+                    rate_type_id : scope.state.rateTypeValue,
+                    department_id : scope.state.departmentValue,
+                    position_id : scope.state.positionValue,
+                    manhour_rate : scope.state.manHour
+                }).then(function(response){
+                    scope.props.onAdded(response.data.payload);
+                });
+
             break;
             
             case 'update':
@@ -97,17 +132,28 @@ export class PersonnelInputField extends Component {
                     +scope.state.manHour
                 );
 
-                xhr.post(this.BASE_URL+'/rate-cards/personnels/update', 
-                    {
-                        id: +scope.state.storeId,
-                        rate_type_id : +scope.state.rateTypeValue,
-                        department_id : scope.state.departmentValue,
-                        position_id : scope.state.positionValue,
-                        manhour_rate : +scope.state.manHour
-                    },
-                    function(data){
-                        scope.props.onAdded(data.payload);
-                    });
+                // xhr.post(this.BASE_URL+'/rate-cards/personnels/update', 
+                //     {
+                //         id: +scope.state.storeId,
+                //         rate_type_id : +scope.state.rateTypeValue,
+                //         department_id : scope.state.departmentValue,
+                //         position_id : scope.state.positionValue,
+                //         manhour_rate : +scope.state.manHour
+                //     },
+                //     function(data){
+                //         scope.props.onAdded(data.payload);
+                //     });
+
+                postPersonnelsUpdate({
+                    id: +scope.state.storeId,
+                    rate_type_id : +scope.state.rateTypeValue,
+                    department_id : scope.state.departmentValue,
+                    position_id : scope.state.positionValue,
+                    manhour_rate : +scope.state.manHour
+                }).then(function(response){
+                    scope.props.onAdded(response.data.payload);
+                });
+
             break;
         }
     }

@@ -11,6 +11,8 @@ import xhr from 'jquery';
 
 import {FilteredList} from '../../common/_personnel/filteredList';
 
+import {getServicePersonnels} from '../../common/http';
+
 export class Personnel extends Component {
 
   constructor(props){
@@ -35,13 +37,18 @@ export class Personnel extends Component {
     let scope = this;
     let ta = null;
 
-    xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
-        
-        console.log('current personnels', data.payload);
+    // xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
+    //     console.log('current personnels', data.payload);
+    //     scope.setState({ personnelArr: data.payload });
+    //     // copy
+    //     scope.setState({ personnelFilter: data.payload });
+    // });
 
-        scope.setState({ personnelArr: data.payload });
+    getServicePersonnels().then(function(response){
+      console.log('personnels', response.data.payload);
+        scope.setState({ personnelArr: response.data.payload });
         // copy
-        scope.setState({ personnelFilter: data.payload });
+        scope.setState({ personnelFilter: response.data.payload });
     });
   }
 

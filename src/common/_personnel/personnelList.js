@@ -5,13 +5,13 @@ import './personnel.scss';
 
 import xhr from 'jquery';
 
+import { postPersonnelsDelete } from '../../common/http';
+
 export class PersonnelList extends Component {
 
     constructor(props){
         super(props);
 
-        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-        // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
         this.state = {
             parentDataCopy: []
         }
@@ -28,13 +28,17 @@ export class PersonnelList extends Component {
         let id = xhr(evt.target)[0].dataset.storedid;
         let scope = this;
 
-        xhr.post(this.BASE_URL+'/rate-cards/personnels/delete', 
-            {
-                id: id
-            },
-            function(data){
-                scope.props.onDelete(id);
-            });
+        // xhr.post(this.BASE_URL+'/rate-cards/personnels/delete', 
+        //     {
+        //         id: id
+        //     },
+        //     function(data){
+        //         scope.props.onDelete(id);
+        //     });
+
+        postPersonnelsDelete({ id: id }).then(function(response){
+            scope.props.onDelete(id)
+        })
     }
 
     componentWillReceiveProps(nextProps){
