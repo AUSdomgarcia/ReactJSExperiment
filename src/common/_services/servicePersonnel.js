@@ -8,8 +8,6 @@ export class ServicePersonnel extends Component {
     constructor(props){
         super(props);
 
-        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-
         this.state = {
             personnelArr: [],
 
@@ -18,7 +16,9 @@ export class ServicePersonnel extends Component {
             myId: 0,
             debugPerBox: 0,
             personnelId: "",
-            position: ""
+            position: "",
+
+            isReady: false
         }
         
         // Hack 
@@ -32,6 +32,10 @@ export class ServicePersonnel extends Component {
                 position: scope.state.position,
                 myId: scope.state.myId
             }
+        }
+
+        this.getIsReady = function(){
+            return scope.state.isReady;
         }
     }
 
@@ -58,7 +62,6 @@ export class ServicePersonnel extends Component {
         if(this.props.isEnable===true){
             getServicePersonnels().then(function(response){
                 console.log('ServicePersonnel:', response.data );
-
                 scope.setState({ personnelArr: response.data.payload });
 
                 // default
@@ -67,6 +70,8 @@ export class ServicePersonnel extends Component {
                 scope.setState({ position: response.data.payload[0].position.name });
                 scope.setState({ myid: response.data.payload[0].id });
 
+                // Set AddPersonnel to ready
+                scope.setState({isReady: true});
             });
         }
     }

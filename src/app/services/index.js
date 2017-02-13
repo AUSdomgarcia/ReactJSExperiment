@@ -7,6 +7,8 @@ import {InputHelper} from '../../common/helpers/inputhelpers';
 
 import {ServicePersonnel} from '../../common/_services/servicePersonnel';
 
+import xhr from 'jquery';
+
 import {
     getServices,
     getServiceByCategoryId,
@@ -16,7 +18,13 @@ import {
     getServiceCategories_subCategories_level2_byParentId,
     getServiceCategories_subCategories_level3_byParentId,
 
-    postServiceCreate
+    postServiceCreate,
+    postServiceUpdate,
+    postServiceDelete,
+
+    postServiceCategoriesDelete,
+
+    getServiceByServiceIdWithServiceCategoryId
 
  } from '../../common/http';
 
@@ -33,11 +41,38 @@ export class Services extends Component {
     componentDidMount(){
         let scope = this;
         getServices().then(function(response){
-            scope.setState({ categoriesArr: response.data.payload })
+            if(response.data.payload.length!==0){
+                scope.setState({ categoriesArr: response.data.payload })    
+            }
         });
     }
 
-    onDelete(){}
+    onDelete(evt){
+        let id = xhr(evt.target)[0].dataset.storeid;
+        let scope = this;
+
+        if(id===undefined) return;
+
+        if(confirm('Do you want to delete?')){
+            //
+        } else {
+            return;
+        }
+
+        this.state.categoriesArr.map(function(data, idx){
+            if(data.id.toString() === id.toString() ){
+                scope.state.categoriesArr.splice(idx, 1);
+            }
+        });
+        this.setState({categoriesArr: this.state.categoriesArr });
+
+        postServiceCategoriesDelete({id: id}).then(function(response){
+            console.log('deleted', response);
+            if(response.data.payload.length!==0){
+                scope.setState({ categoriesArr: response.data.payload });    
+            }
+        });
+    }
 
     render(){
         let categories = null;
@@ -56,6 +91,7 @@ export class Services extends Component {
                                 {/*<button type="button" data-storeid={data.id} className="btn btn-default" onClick={scope.onManage.bind(scope)} >Manage</button>*/}
                                 <Link className='btn btn-default'
                                     to={'services/manage/' + data.id + '/' + data.name } >Manage</Link>&nbsp;
+                                
                                 <button type="button" data-storeid={data.id} className="btn btn-danger"  onClick={scope.onDelete.bind(scope)} ><i className="fa fa-times"></i></button>
                             </td>
                         </tr>
@@ -142,8 +178,11 @@ export class ManageServices extends Component {
 
     componentDidMount(){
         // not yet in use
-        getServiceByCategoryId(this.props.params.serviceCategoryId).then(function(data){
-            console.log(data);
+        let scope = this;
+
+        getServiceByCategoryId(this.props.params.serviceCategoryId).then(function(response){
+            console.log('manage_service', response);
+            scope.setState({ serviceArr: response.data.payload })
         });
     }
 
@@ -151,8 +190,25 @@ export class ManageServices extends Component {
         this.context.router.push('/services/edit');
     }
 
-    onDelete(){
-        //
+    onDelete(evt){
+        let scope = this;
+        let id = xhr(evt.target)[0].dataset.serviceid;
+        
+        console.log('id', id);
+
+        if(id === undefined ) return;
+
+        this.state.serviceArr.map(function(data, idx){
+            if(data.id.toString() === id.toString()){
+                scope.state.serviceArr.splice(idx, 1);
+            }
+        });
+
+        this.setState({ serviceArr: this.state.serviceArr });
+
+        postServiceDelete({id: id}).then(function(response){
+            console.log('onDelete Service', response);
+        });
     }
 
     render(){
@@ -161,18 +217,29 @@ export class ManageServices extends Component {
 
         if(this.state.serviceArr.length!==0){
             services = 
-            this.state.serviceArr.map(function(){
+            this.state.serviceArr.map(function(data){
                 return (
-                    <tr>
-                        <td>Product 1</td>
-                        <td>Standard</td>
-                        <td>70,000</td>
-                        <td>Active</td>
+                    <tr key={data.id}>
+                        <td>{ data.name }</td>
+                        <td>{ data.rate_type.name }</td>
+                        <td>{ data.subtotal } </td>
+                        <td>{ (data.is_active==='1')? 'Active' : 'Inactive' }</td>
                         <td>
-                            <button type="button" className="btn btn-default" onClick={this.onEdit.bind(this)}>Edit</button>
-                            <button type="button" className="btn btn-danger"  onClick={this.onDelete.bind(this)}>
-                                <i className="fa fa-times"></i>
-                            </button>
+
+                            {/*<button type="button" className="btn btn-default" onClick={scope.onEdit.bind(scope)}>Edit</button>*/}
+
+                            <Link 
+                                className="btn btn-primary" 
+                                to={'/services/edit/' 
+                                + scope.state.serviceCategoryIdRef + '/' 
+                                + scope.state.titleRef + '/'
+                                + 1 + '/'
+                                + data.id }>Edit
+                            </Link>
+
+                            &nbsp;
+                            <button type="button" className="btn btn-danger" data-serviceid={data.id} onClick={scope.onDelete.bind(scope)}><i className="fa fa-times"></i></button>
+
                         </td>
                     </tr>
                 )
@@ -189,19 +256,21 @@ export class ManageServices extends Component {
                     </div>
 
                     <div className="col-xs-6 text-right">
+                        {/*<Link 
+                            className="btn btn-primary" 
+                            to={'/services/edit/' 
+                            + this.state.serviceCategoryIdRef + '/' 
+                            + this.state.titleRef + '/'
+                            + 1 + '/'
+                            + 'service_id' }>EditSimulate</Link>
+                        &nbsp;*/}
+
                         <Link 
                             className="btn btn-primary" 
                             to={'/services/add/' 
                             + this.state.serviceCategoryIdRef + '/' 
                             + this.state.titleRef + '/'
-                            + true }>EditSimulate</Link>
-                        &nbsp;
-                        <Link 
-                            className="btn btn-primary" 
-                            to={'/services/add/' 
-                            + this.state.serviceCategoryIdRef + '/' 
-                            + this.state.titleRef + '/'
-                            + false }>Add Service</Link>
+                            + 0 }>Add Service</Link>
                     </div>
                     <br className="clearfix" />
                 </div>
@@ -300,28 +369,40 @@ export class ServiceAdd extends Component {
             personnelComp_previous_manhour: 0,
 
             activeStatus: 0,
-
-            editMode: false,
         }
     }
 
     componentWillMount(){
         this.setState({ titleRef: this.props.params.title });
         this.setState({ serviceCategoryIdRef: this.props.params.serviceCategoryId }); 
-        this.setState({ editMode: this.props.params.editmode });
     }
 
     componentDidMount(){
+        console.log('EDIT_MODE', this.props.params.editmode, '1=true, 0=false');
         let scope = this;
 
-        if(this.props.params.editmode===true){
+        if(this.props.params.editmode==='1'){
             // If edit mode load data when edit
-        }
+            let serviceCategoryId = this.props.params.serviceCategoryId;
+            let serviceId = this.props.params.serviceid;
+
+            console.log( serviceCategoryId, serviceId );
+
+            getServiceByServiceIdWithServiceCategoryId(serviceCategoryId, serviceId).then(function(response){
+                console.log('ServiceCategoryAndServiceId', response);
+                console.log('ServiceCategoryAndServiceId_name', response.data.payload[0].name);
+
+                scope.setState({serviceName: response.data.payload[0].name});
+                scope.setState({description: response.data.payload[0].description});
+                scope.setState({updatedAt: response.data.payload[0].updated_at});
+                scope.setState({createdAt: response.data.payload[0].created_at});
+            });
 
 
-        if(this.props.params.editmode===false){
+        } else if(this.props.params.editmode==='0'){
             // Get Details when Created From Server
             getServiceCreateDetails().then(function(response){
+                console.log('getCreateDetails', response);
                 scope.setState({serviceId: response.data.payload.service_id });
                 scope.setState({accountName: response.data.payload.name });
                 scope.setState({updatedAt: response.data.payload.updated_at});
@@ -396,6 +477,8 @@ export class ServiceAdd extends Component {
     }
 
     onAddPersonnel(evt){
+        if(this._child.getIsReady() === false) return;
+
         // Get data from ServicePersonnel Component        
         this.setState( { personnelComp_previous_myId : this._child.getValue().myId || 0 });
         this.setState( { personnelComp_previous_personnel_id : this._child.getValue().personnelId || "" });
@@ -493,13 +576,13 @@ export class ServiceAdd extends Component {
         console.log('Level_2:', this.state.level2ValueId );
         console.log('Level_3:', this.state.level3ValueId );
         console.log('RateType_ID:', this.state.rateTypeValue );
-        console.log('Personnels:', personnelFormat)
+        console.log('Personnels:', personnelFormat); // Not use 
         console.log('Subtotal:', this.state.subtotal );
-        console.log('Created_Time:', this.state.createdAt);
+        console.log('Created_Time:', this.state.createdAt); // Not use 
         console.log('========== POST END ========================')
 
         // Edit False
-        if(this.props.params.editmode===false){
+        if(this.props.params.editmode==='0'){
             postServiceCreate({
                 name: this.state.serviceName,
                 description: this.state.description,
@@ -508,17 +591,35 @@ export class ServiceAdd extends Component {
                 sub_service_sub_category_id: this.state.level3ValueId || null,
                 rate_type_id: this.state.rateTypeValue,
                 is_active: this.state.activeStatus,
-                personnels: [{ id: 1, personnel_id: 1, manhours: 100 }],  // <----- Mock Personnels
+                personnels: JSON.stringify( [{ "id": 1, "personnel_id": 1, "manhours": 100 }] ),  // <----- Mock Personnels
                 subtotal: this.state.subtotal,
-                created_at: '2017-02-09 11:14:00' // <------ Mock time ,     this.state.createdAt,
+                created_at: this.state.createdAt, // '2017-02-09 11:14:00' // <------ Mock time ,     this.state.createdAt,
             }).then(function(response){
-                console.log(response);
+                console.log('onCreate', response);
             });
         }
 
-        // Edit True
-        if(this.props.params.editmode===true){
-            //
+        // Edit True 
+        if(this.props.params.editmode==='1'){
+            let serviceId = this.props.params.serviceid;
+
+            console.log(serviceId); // NOT YET STILL WORKING ON UPDATE, AND FIXING PERSONNELS JSON
+
+            postServiceUpdate({
+                id: serviceId,
+                name: this.state.serviceName,
+                description: this.state.description,
+                service_category_id: this.state.serviceCategoryIdRef,
+                service_sub_category_id: this.state.level2ValueId || null,
+                sub_service_sub_category_id: this.state.level3ValueId || null,
+                rate_type_id: this.state.rateTypeValue,
+                is_active: this.state.activeStatus,
+                personnels: JSON.stringify( [{ "id": 1, "personnel_id": 1, "manhours": 100 }] ),
+                subtotal: this.state.subtotal,
+                created_at: this.state.createdAt,
+            }).then(function(response){
+                console.log('onUpdate', response);
+            })
         }
     }
 
@@ -564,7 +665,6 @@ export class ServiceAdd extends Component {
             
             personnelList = 
             this.state.servicePersonnelArr.map(function(data, index){
-                // console.log('data>>', data);
                 return ( <ServicePersonnel 
                             personnelId={data.personnelId} 
                             onDeleteSelf={scope.callbackDeleteSelf.bind(scope)} 
@@ -626,12 +726,11 @@ export class ServiceAdd extends Component {
                         </select>
                     </div>
 
-                    {/*S E R V I C E  P E R S O N N E L*/}
-
+                    {/* SERVICE__PERSONNEL__EDITOR*/}
                     <ServicePersonnel 
+                        personnelId={ this.state.personnelComp_previous_personnel_id} 
                         isEnable={true} 
                         myId={this.state.personnelComp_previous_myId}
-                        personnelId={ this.state.personnelComp_previous_personnel_id} 
                         position={ this.state.personnelComp_previous_position} 
                         manhour={ this.state.personnelComp_previous_manhour} 
                         ref={(child) => { this._child = child; }} />
