@@ -20,6 +20,9 @@ let getServiceByCategoryId = function(categoryId){
 let getServiceCreateDetails = function(){
   return axios.get( baseURL + '/rate-cards/services/create-details');
 }
+let postServiceCreate = function(obj){
+  return axios.post( baseURL + '/rate-cards/services/create', obj );
+}
 
 
 
@@ -119,6 +122,8 @@ export {
   postServiceCategoriesUpdate,
   getServiceCategories_subCategories_level2_byParentId,
   getServiceCategories_subCategories_level3_byParentId,
+
+  postServiceCreate,
 
   getServicePersonnels,
   getPersonnelsDepartment,

@@ -15,7 +15,7 @@ export class ServicePersonnel extends Component {
 
             manHourRate: 0,
             manHourValue: 1,
-
+            myId: 0,
             debugPerBox: 0,
             personnelId: "",
             position: ""
@@ -29,7 +29,8 @@ export class ServicePersonnel extends Component {
                 manhour: scope.state.manHourValue,
                 personnelId: scope.state.personnelId,
                 multiplier: scope.state.manHourRate,
-                position: scope.state.position
+                position: scope.state.position,
+                myId: scope.state.myId
             }
         }
     }
@@ -47,6 +48,7 @@ export class ServicePersonnel extends Component {
             this.setState({personnelId: this.props.personnelId});
             this.setState({position: this.props.position});
             this.setState({manHourValue: this.props.manhour});
+            this.setState({myId: this.props.myId});
         }
     }
 
@@ -63,6 +65,8 @@ export class ServicePersonnel extends Component {
                 scope.setState({ manHourRate: +response.data.payload[0].manhour_rate});
                 scope.setState({ personnelId: response.data.payload[0].personnel_id });
                 scope.setState({ position: response.data.payload[0].position.name });
+                scope.setState({ myid: response.data.payload[0].id });
+
             });
         }
     }
@@ -92,6 +96,7 @@ export class ServicePersonnel extends Component {
         
         this.setState({ manHourRate: dataset.manhourrate });
         this.setState({ position: dataset.personnelposition });
+        this.setState({ myId: dataset.myid });
     }
 
     render() {
@@ -109,6 +114,8 @@ export class ServicePersonnel extends Component {
                             key={data.id}
                             
                             data-manhourrate={data.manhour_rate}
+
+                            data-myid={data.id}
 
                             data-personnelposition={data.position.name}
 
