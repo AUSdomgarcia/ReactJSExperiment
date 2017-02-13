@@ -9,13 +9,15 @@ import {RateType} from '../../common/rateType/index';
 
 import sortable from 'sortablejs';
 
+import {getServiceCategoriesRoot,
+        postServiceCategoriesCreate,
+        postServiceCategoriesUpdate
+      } from '../../common/http';
+
 export class Categories extends Component {
   
   constructor(props){
     super(props);
-
-    this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-    // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
 
     this.state = {
       categoryLevelOne : [],
@@ -25,16 +27,15 @@ export class Categories extends Component {
   }
 
   componentDidMount(){
-    // GET state rateType, department, position 
     let scope = this;
 
-    xhr.get(this.BASE_URL+'/rate-cards/service-categories', function(data){
-      scope.setState({ categoryLevelOne: data.payload });
+    getServiceCategoriesRoot().then(function(response){
+      console.log('categories', response.data);
+      
+      scope.setState({ categoryLevelOne: response.data.payload });
 
-      console.log(data.payload);
-
-      if(data.payload.length!==0){
-        scope.setState({response_last_id: data.payload[data.payload.length-1].id});
+      if(response.data.payload.length!==0){
+        scope.setState({response_last_id: response.data.payload[response.data.payload.length-1].id});
       }
     });
 
@@ -47,7 +48,6 @@ export class Categories extends Component {
   }
   
   onAddLevel(evt){
-    // alert('LAST_ID ' + this.state.response_last_id);
     xhr('.category-input').removeClass('hide');
   }
 
@@ -57,7 +57,6 @@ export class Categories extends Component {
   }
 
   onSaveHandler(evt){
-
     if(this.state.categoryName.length===0){
       alert('No category name');
       return;
@@ -68,13 +67,9 @@ export class Categories extends Component {
     let level1Arr = this.state.categoryLevelOne;
         level1Arr.push(category);
 
-    xhr.post(this.BASE_URL+'/rate-cards/service-categories/create', 
-    {
-      name: scope.state.categoryName
-    },
-    function(data){
-      scope.setState({ categoryLevelOne: data.payload });
-      scope.setState({ response_last_id: data.payload[data.payload.length-1].id });
+    postServiceCategoriesCreate({name: this.state.categoryName }).then(function(response){
+      scope.setState({ categoryLevelOne: response.data.payload });
+      scope.setState({ response_last_id: response.data.payload[response.data.payload.length-1].id });
     });
 
     this.setState({ categoryName: ""});
@@ -98,8 +93,6 @@ export class Categories extends Component {
   }
 
   callbackUpdate(value, id){
-    // alert('FCK'+ ', value: ' + value + ', id: ' + id );
-
     let scope = this;
 
     scope.state.categoryLevelOne.map(function(data){
@@ -108,12 +101,8 @@ export class Categories extends Component {
       }
     });
 
-    xhr.post(this.BASE_URL+'/rate-cards/service-categories/update', {
-      name: value,
-      id: id
-    },
-    function(data){
-      console.log('[Edit] Level one success', data);
+    postServiceCategoriesUpdate({name: value, id: id}).then(function(response){
+      console.log('[Edit] Level one success', response.data);
     });
   }
 

@@ -1,12 +1,15 @@
 import React, {Component} from 'react';
 import xhr from 'jquery';
 
+import { getServicePersonnels } from '../http';
+
 export class ServicePersonnel extends Component {
 
     constructor(props){
         super(props);
 
-        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
+
         this.state = {
             personnelArr: [],
 
@@ -52,14 +55,25 @@ export class ServicePersonnel extends Component {
         let scope = this;
 
         if(this.props.isEnable){
-             xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
-                console.log('>>', data);
-                scope.setState({ personnelArr: data.payload });
+            //  xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
+            //     console.log('>>', data);
+            //     scope.setState({ personnelArr: data.payload });
+
+            //     // default
+            //     scope.setState({ rateMultiplier: +data.payload[0].manhour_rate});
+            //     scope.setState({ personnelId: data.payload[0].personnel_id });
+            //     scope.setState({ position: data.payload[0].position.name });
+            // });
+
+            getServicePersonnels().then(function(response){
+                console.log( response.data );
+
+                scope.setState({ personnelArr: response.data.payload });
 
                 // default
-                scope.setState({ rateMultiplier: +data.payload[0].manhour_rate});
-                scope.setState({ personnelId: data.payload[0].personnel_id });
-                scope.setState({ position: data.payload[0].position.name });
+                scope.setState({ rateMultiplier: +response.data.payload[0].manhour_rate});
+                scope.setState({ personnelId: response.data.payload[0].personnel_id });
+                scope.setState({ position: response.data.payload[0].position.name });
             });
         }
     }

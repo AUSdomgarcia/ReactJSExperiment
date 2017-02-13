@@ -7,14 +7,16 @@ import xhr from 'jquery';
 
 import sortable from 'sortablejs';
 
+import { 
+    postServiceCategoriesDelete,
+    postServiceCategories_subCategories_create,
+    postServiceCategories_subCategories_update } from '../../common/http';
+
 export class LevelTwo extends Component {
 
     constructor(props){
         super(props);
 
-        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-        // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
-        
         this.state = {
             isManageBtn: true,
             isMenuBtn: false,
@@ -81,11 +83,7 @@ export class LevelTwo extends Component {
             return;
         }
 
-        xhr.post(this.BASE_URL+'/rate-cards/service-categories/delete', 
-        {
-            id: scope.state.myCurrentId
-        },
-        function(data){
+        postServiceCategoriesDelete({id: this.state.myCurrentId}).then(function(response){
             scope.hackSortableInstance.destroy();
             scope.props.onDelete(scope.state.myCurrentId);
         });
@@ -112,16 +110,15 @@ export class LevelTwo extends Component {
             return;
         }
 
-        xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/create', 
-        {
+        // Create
+        postServiceCategories_subCategories_create({
             service_category_id: scope.state.myCurrentId,
             name: newValue,
             level: "2"
-        },
-        function(data){
+        }).then(function(response){
             scope.setState({subCategoryName: ""});
             scope.setState({showAddLevel: false});
-            scope.setState({categoryLevelTwo: data.payload});
+            scope.setState({categoryLevelTwo: response.data.payload});
         });
     }
 
@@ -172,13 +169,10 @@ export class LevelTwo extends Component {
             });
         
         // Server Update
-        xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/update', {
-                name: value,
-                id: id
-            },
-            function(data){
-                console.log('[Edit] Level two success', data);
-            });
+        postServiceCategories_subCategories_update({name: value, id: id})
+        .then(function(response){
+            console.log('[Edit] Level two success', response.data);
+        });
     }
 
     render(){
@@ -285,5 +279,3 @@ export class LevelTwo extends Component {
     }
     
 }
-
-

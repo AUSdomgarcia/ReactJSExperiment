@@ -6,13 +6,18 @@ import xhr from 'jquery';
 
 import sortable from 'sortablejs';
 
+import {
+    getServiceCategories_subCategories_level3_byParentId,
+    postServiceCategories_subCategories_create,
+    postServiceCategories_subCategories_delete,
+    postServiceCategories_subCategories_update
+    
+    } from '../http';
+
 export class LevelThree extends Component {
 
     constructor(props){
         super(props);
-
-        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-        // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
 
         this.state = {
             isManageBtn: true,
@@ -64,9 +69,10 @@ export class LevelThree extends Component {
             this.setState({ currentVersion: this.props.parentData.version });
             this.setState({ service_category_id: this.props.parentData.service_category_id });
 
-            // GET THIRD LEVEL DATA
-            xhr.get(this.BASE_URL+'/rate-cards/service-categories/sub-categories/level-3?parent_id='+ scope.props.parentData.id +'&version='+ scope.props.parentData.version, function(data){
-                scope.setState({ dataTree: data.payload });
+            getServiceCategories_subCategories_level3_byParentId(
+                this.props.parentData.id + 
+                '&version=' + scope.props.parentData.version).then(function(response){
+                scope.setState({ dataTree: response.data.payload });
             });
         }
 
@@ -93,19 +99,17 @@ export class LevelThree extends Component {
 
         console.log('before set',newValue, scope.state.currentVersion)
 
-        xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/create', 
-        {
+        postServiceCategories_subCategories_create({
             service_sub_category_id: scope.state.curLevelId,
             name: newValue,
             level: "3",
             version: scope.state.currentVersion,
             service_category_id: scope.state.service_category_id
-        },
-        function(data){
-            console.log(data.payload);
+        })
+        .then(function(response){
             scope.setState({subCategoryName: ""});
             scope.setState({showAddLevel: false});
-            scope.setState({dataTree: data.payload});
+            scope.setState({dataTree: response.data.payload});
         });
     }
 
@@ -154,14 +158,12 @@ export class LevelThree extends Component {
             return;
         }
 
-        xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/delete', 
-        {
-            id: scope.props.parentData.id
-        },
-        function(data){
+        postServiceCategories_subCategories_delete({id: this.props.parentData.id })
+        .then(function(response){
             if(scope.hackSortableInstance!==null) scope.hackSortableInstance.destroy();
             scope.props.onDelete(scope.props.parentData.id);
         });
+
     }
 
     callbackDelete(id){
@@ -185,13 +187,10 @@ export class LevelThree extends Component {
             });
         
         // Server Update
-        xhr.post(this.BASE_URL+'/rate-cards/service-categories/sub-categories/update', {
-                name: value,
-                id: id
-            },
-            function(data){
-                console.log('[Edit] Level three success', data);
-            });
+        postServiceCategories_subCategories_update({name: value, id: id})
+        .then(function(response){
+            console.log('[Edit] Level three success', response.data);
+        })
     }
 
     render(){

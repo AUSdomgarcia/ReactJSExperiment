@@ -88,11 +88,42 @@ Services.contextTypes = {
   router: React.PropTypes.object.isRequired
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export class ManageServices extends Component {
 
     constructor(props){
         super(props);
-        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
         this.state = {
             serviceArr: [],
             serviceCategoryIdRef: "",
@@ -106,9 +137,7 @@ export class ManageServices extends Component {
     }
 
     componentDidMount(){
-        // xhr.get(this.BASE_URL+'/rate-cards/services?service_category_id=' + this.props.params.serviceCategoryId, function(data){
-        //     console.log( data );
-        // });
+        // not yet in use
         getServiceByCategoryId(this.props.params.serviceCategoryId).then(function(data){
             console.log(data);
         });
@@ -190,12 +219,42 @@ ManageServices.contextTypes = {
   router: React.PropTypes.object.isRequired
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export class ServiceAdd extends Component {
 
     constructor(props){
         super(props);
-
-        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
 
         this.state = {
             titleRef: "",
@@ -237,11 +296,11 @@ export class ServiceAdd extends Component {
         //     scope.setState({createdAt: data.payload.created_at});
         // });
 
-        getServiceCreateDetails().then(function(data){
-            scope.setState({serviceId: data.payload.service_id });
-            scope.setState({accountName: data.payload.name });
-            scope.setState({updatedAt: data.payload.updated_at});
-            scope.setState({createdAt: data.payload.created_at});
+        getServiceCreateDetails().then(function(response){
+            scope.setState({serviceId: response.data.payload.service_id });
+            scope.setState({accountName: response.data.payload.name });
+            scope.setState({updatedAt: response.data.payload.updated_at});
+            scope.setState({createdAt: response.data.payload.created_at});
         })
 
         //  xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
@@ -249,8 +308,8 @@ export class ServiceAdd extends Component {
         //     console.log(data.payload);
         // });
 
-        getServiceRateTypes().then(function(data){
-            scope.setState({ rateTypeArr: data.payload });
+        getServiceRateTypes().then(function(response){
+            scope.setState({ rateTypeArr: response.data.payload });
         });
 
         // xhr.get(this.BASE_URL+'/rate-cards/service-categories/sub-categories/level-2?parent_id=' + this.state.serviceCategoryIdRef, function(data){
@@ -270,14 +329,18 @@ export class ServiceAdd extends Component {
         // });
 
         getServiceCategories_subCategories_level2_byParentId(this.state.serviceCategoryIdRef)
-        .then(function(data){
+        .then(function(response){
+            scope.setState({ level2Arr: response.data.payload });
+
             if(scope.state.level2Arr.length !== 0){
                 let level3IndexZeroId = scope.state.level2Arr[0].id;
+
                 if(level3IndexZeroId !== undefined){
+
                     if(!isNaN(level3IndexZeroId)){
                         getServiceCategories_subCategories_level3_byParentId(level3IndexZeroId)
-                        .then(function(data){
-                            scope.setState({ level3Arr: data.payload });
+                        .then(function(response){
+                            scope.setState({ level3Arr: response.data.payload });
                         });
                     }
                 }
@@ -310,8 +373,8 @@ export class ServiceAdd extends Component {
         // });
 
         getServiceCategories_subCategories_level3_byParentId(evt.target.value)
-        .then(function(data){
-            scope.setState({ level3Arr: data.payload });
+        .then(function(response){
+            scope.setState({ level3Arr: response.data.payload });
         });
     }
 
@@ -532,6 +595,37 @@ export class ServiceAdd extends Component {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export class ServiceEdit extends Component {
 
     render(){
@@ -666,6 +760,35 @@ export class ServiceEdit extends Component {
         )
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

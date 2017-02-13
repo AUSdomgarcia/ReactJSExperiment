@@ -4,13 +4,15 @@ import './ratetype.scss';
 
 import xhr from 'jquery';
 
+import {
+    getServiceRateTypes, 
+    postServiceRateTypesCreate,
+    postServiceRateTypesDelete } from '../http';
+
 export class RateType extends Component {
 
     constructor(props){
         super(props);
-
-        this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-        // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
 
         this.state = {
             showAddRateType : false,
@@ -22,8 +24,9 @@ export class RateType extends Component {
     componentDidMount(){
         let scope = this;
 
-        xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
-            scope.setState({ rateTypeArr: data.payload });
+        getServiceRateTypes().then(function(response){
+            console.log('rateTypes', response.data);
+            scope.setState({ rateTypeArr: response.data.payload });
         });
     }
 
@@ -39,13 +42,11 @@ export class RateType extends Component {
             return;
         }
 
-        xhr.post(this.BASE_URL+'/rate-cards/rate-types/create', {
-            name: newValue
-        },  
-        function(data){
-           scope.setState({ rateTypeArr: data.payload });
-           scope.setState({ rateTypeName: "" });
-           scope.setState({ showAddRateType: false });
+        postServiceRateTypesCreate({ name: newValue }).then(function(response){
+            scope.setState({ rateTypeArr: response.data.payload });
+            // reset
+            scope.setState({ rateTypeName: "" });
+            scope.setState({ showAddRateType: false });
         });
     }
 
@@ -63,10 +64,7 @@ export class RateType extends Component {
             return;
         }
 
-        xhr.post(this.BASE_URL+'/rate-cards/rate-types/delete', {
-            id: id
-        },  
-        function(data){
+        postServiceRateTypesDelete({ id: id }).then(function(response){
             scope.state.rateTypeArr.map(function(el, index){
                 if(el.id === +id){
                     scope.state.rateTypeArr.splice(index, 1);
