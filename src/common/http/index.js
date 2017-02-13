@@ -1,6 +1,8 @@
 import axios from 'axios';
+import jquery from 'jquery';
 
-const baseURL = 'http://cerebrum-api.dev:8098';
+const baseURL = 'http://www.cerebrum-api-staging.dev:8096/api';
+// const baseURL = 'http://www.cerebrum-api-staging.dev:8096/api';
 
 {/* Services */}
 let getServices = function() {
