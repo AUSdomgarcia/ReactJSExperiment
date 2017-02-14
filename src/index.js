@@ -40,7 +40,7 @@ import {
     ManageServices,
     ServiceAdd,
     ServiceEdit,
-    ServiceViewer  } from './app/services/index';
+    ServiceAll  } from './app/services/index';
 
 ReactDOM.render(
     <Router history={hashHistory}>
@@ -66,7 +66,6 @@ ReactDOM.render(
                 <Route path="/ratecard/choose" component={RateCardChoose} />
                 <Route path="/ratecard/permission" component={RateCardPermission} />
                 <Route path="/ratecard/save" component={RateCardSave} />
-
                 <Route path="/ratecard/edit" component={RateCardEdit} />
                 <Route path="/ratecard/view" component={RateCardView} />
             </Route>
@@ -88,7 +87,7 @@ ReactDOM.render(
                 <Route path="/services/manage/:serviceCategoryId/:title" component={ManageServices} />
                 <Route path="/services/add/:serviceCategoryId/:title/:editmode" component={ServiceAdd} />
                 <Route path="/services/edit/:serviceCategoryId/:title/:editmode(/:serviceid)" component={ServiceAdd} />{/*ServiceEdit*/}
-                <Route path="/services/viewer" component={ServiceViewer} />
+                <Route path="/services/all" component={ServiceAll} />
             </Route>
 
         </Route>

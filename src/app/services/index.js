@@ -104,7 +104,7 @@ export class Services extends Component {
         return (
             <div>
                 <h3 className="sky">Manage Services</h3>
-                <p><Link to="/services/viewer">View All</Link></p>
+                <p><Link to="/services/all">View All</Link></p>
 
                 <table className='table table-hover table-bordered table-striped'>
                     <thead>
@@ -1078,7 +1078,7 @@ export class ServiceEdit extends Component {
 
 
 
-export class ServiceViewer extends Component {
+export class ServiceAll extends Component {
 
     addSevice(){
         this.context.router.push('/services/add')
@@ -1094,7 +1094,7 @@ export class ServiceViewer extends Component {
 
                 <div>
                     <div className="col-xs-6">
-                        <Link to="/services/manage">Return to Manage Services</Link>   
+                        <Link to="/services">Return to Manage Services</Link>   
                     </div>
                     <div className="col-xs-6 text-right">
                         <button type="button" className="btn btn-primary" onClick={this.addSevice.bind(this)}>Add Service</button>&nbsp;
@@ -1145,6 +1145,6 @@ export class ServiceViewer extends Component {
     }
 }
 
-ServiceViewer.contextTypes = {
+ServiceAll.contextTypes = {
   router: React.PropTypes.object.isRequired
 };

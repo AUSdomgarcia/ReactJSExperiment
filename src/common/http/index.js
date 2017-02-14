@@ -128,6 +128,22 @@ let getLogs = function(id){
 
 
 
+
+{/* Rate Cards */}
+let getRateCards = function(){
+  return axios.get( baseURL + '/rate-cards/rate-cards');
+}
+let getRateCardServicesById = function(id){
+  return axios.get( baseURL + '/rate-cards/services?rate_type_id='+ id);  
+}
+let getRateCardsPersonnelEmployees = function(){
+  return axios.get( baseURL + '/rate-cards/personnels/employees');
+}
+
+
+
+
+
 export { 
   getServices, 
   getServiceByCategoryId, 
@@ -159,5 +175,9 @@ export {
   postServiceRateTypesCreate,
   postServiceRateTypesDelete,
 
-  getLogs
+  getLogs,
+
+  getRateCards,
+  getRateCardServicesById,
+  getRateCardsPersonnelEmployees
 }
