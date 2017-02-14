@@ -24,18 +24,20 @@ export class RateCard extends Component {
     componentDidMount(){
         let scope = this;
         getRateCards().then(function(response){
-            console.log('response', response);
+
+            console.log('/ratecard', response);
+
             if(response.data.payload.length!==0){
-                return;
                 // filter archive and ratecard
                 scope.setState({rateCardArr:response.data.payload});
+
                 scope.setState({archiveRateCardArr:response.data.payload});
             }
         });
     }
 
     componentWillMount(){
-        //
+        window.sessionStorage.clear();
     }
 
     handleEdit(evt){
@@ -43,14 +45,24 @@ export class RateCard extends Component {
     }
     
     render(){
-        let activeRateCards = null;
-        let archiveRateCards = null;
+        let activeRateCards = <tr><td colSpan={5}>No data.</td></tr>;
+        let archiveRateCards = <tr><td colSpan={5}>No data.</td></tr>;
+        let scope = this;
 
         if(this.state.rateCardArr.length !== 0){
             activeRateCards = 
             this.state.rateCardArr.map(function(data){
                 return (
-                    <tr>Some tables tds</tr>
+                    <tr key={data.id}>
+                        <td>{data.name}</td>
+                        <td>{data.description}</td>
+                        <td>{data.version}</td>
+                        <td>
+                            <button className='btn btn-primary' onClick={scope.handleEdit.bind(scope)}>Edit</button>
+                            <button className='btn btn-primary'>View</button>
+                            <button className='btn btn-warning'>Archive</button>
+                        </td>
+                    </tr>
                 )
             })
         }
@@ -84,7 +96,7 @@ export class RateCard extends Component {
                             </thead>
 
                             <tbody>
-                                <tr>
+                                {/*<tr>
                                     <td>2017 Rate Card</td>
                                     <td>This is the baseline Rate card for 2017</td>
                                     <td>V1.1</td>
@@ -93,7 +105,8 @@ export class RateCard extends Component {
                                         <button className='btn btn-primary'>View</button>
                                         <button className='btn btn-warning'>Archive</button>
                                     </td>
-                                </tr>
+                                </tr>*/}
+                                {activeRateCards}
                             </tbody>
                         </table>
 
@@ -200,8 +213,8 @@ export class RateCardAdd extends Component {
     }
 
     onNext(){
-        let ratecarddesc = window.sessionStorage.getItem('ratecarddesc');
-        let ratecardname = window.sessionStorage.getItem('ratecardname');
+        let ratecarddesc = window.sessionStorage.getItem('ratecarddesc') || "";
+        let ratecardname = window.sessionStorage.getItem('ratecardname')  || "";
 
         if(ratecardname.length===0 || ratecarddesc.length===0){
             if(confirm('Kindly input rate card name or rate card decription')){
@@ -284,13 +297,14 @@ export class RateCardChoose extends Component {
 
     componentWillMount(){
         // Update when available
-        let arr = JSON.parse(window.sessionStorage.getItem('includedServiceArr'));
+        let arr = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || [];
 
         console.log('/RatecardChoose', arr);
 
         if(arr.length!==0){
             this.setState({ includedServiceArr: arr });
         }
+
         this.setState({ totalServices: this.state.includedServiceArr.length });
 
         let scope = this;
@@ -343,8 +357,10 @@ export class RateCardChoose extends Component {
         this.setState({includedServiceArr: []});
 
         this.setState({ totalServices: 0});
+
+        let resetArr = [];
         
-        window.sessionStorage.setItem('includedServiceArr', JSON.stringify(this.state.includedServiceArr) );
+        window.sessionStorage.setItem('includedServiceArr', JSON.stringify(resetArr) );
 
         window.sessionStorage.setItem('selectedRateTypeId', evt.target.value);
     }
@@ -411,10 +427,10 @@ export class RateCardChoose extends Component {
     }
 
     onNext(){
-        let selectedRateTypeId = window.sessionStorage.getItem('selectedRateTypeId');
-        let includedServiceArr = window.sessionStorage.getItem('includedServiceArr');
+        let selectedRateTypeId = window.sessionStorage.getItem('selectedRateTypeId') || 0;
+        let includedServiceArr = window.sessionStorage.getItem('includedServiceArr') || [];
             
-        let checkArr = JSON.parse(includedServiceArr);
+        let checkArr = (includedServiceArr.length!==0) ? JSON.parse(includedServiceArr) : [];
 
         console.log(selectedRateTypeId, includedServiceArr);
 
@@ -431,7 +447,7 @@ export class RateCardChoose extends Component {
 
     checkStored(id){
         let bool = false;
-        let checkBoxer = JSON.parse(window.sessionStorage.getItem('includedServiceArr'));
+        let checkBoxer = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || [];
         
         checkBoxer.map(function(data){
             if(+id===+data.service_id){
@@ -582,7 +598,7 @@ export class RateCardPermission extends Component {
     }
 
     componentWillMount(){
-        let arr = JSON.parse(window.sessionStorage.getItem('permittedUserArr'));
+        let arr = JSON.parse(window.sessionStorage.getItem('permittedUserArr')) || [];
         
         console.log('RateCardPermission', arr);
 
@@ -599,7 +615,7 @@ export class RateCardPermission extends Component {
     }
     
     onNext(){
-        let arr = JSON.parse(window.sessionStorage.getItem('permittedUserArr'));
+        let arr = JSON.parse(window.sessionStorage.getItem('permittedUserArr')) || [];
         if(arr.length===0){
             if(confirm('No selected user')){
                 return;
@@ -753,9 +769,61 @@ export class RateCardView extends Component {
 {/* R A T E C A R D  S A V E */}
 import CategoryTreeView from '../../common/categoryTreeView/categoryTreeView.js';
 import PermissionView from '../../common/permissionView/permissionView.js';
+import {postRateCardCreate} from '../../common/http';
 
 export class RateCardSave extends Component {
-    
+
+    constructor(props){
+        super(props);
+        this.state = {
+            name: "",
+            description: "",
+            rate_type_id: 0,
+            service_ids: "",
+            permitted_user_ids: "",
+        }
+    }
+
+    // FIRST CHECK SESSION then change state
+
+    componentWillMount(){
+        if(window.sessionStorage.getItem('ratecardname')){
+            this.setState({ name : window.sessionStorage.getItem('ratecardname') });
+        }
+
+        if(window.sessionStorage.getItem('ratecarddesc')){
+            this.setState({ description : window.sessionStorage.getItem('ratecarddesc') });
+        }
+
+        if(window.sessionStorage.getItem('selectedRateTypeId')){
+            this.setState({ rate_type_id : window.sessionStorage.getItem('selectedRateTypeId') });
+        }
+
+        if(window.sessionStorage.getItem('includedServiceArr')){
+            this.setState({ service_ids : window.sessionStorage.getItem('includedServiceArr') });
+        }
+
+        if(window.sessionStorage.getItem('permittedUserArr')){
+            this.setState({ permitted_user_ids : window.sessionStorage.getItem('permittedUserArr') });
+        }
+    }
+
+    onSave(){
+        let scope = this;
+        postRateCardCreate({
+            name: this.state.name,
+            description: this.state.description,
+            rate_type_id: this.state.rate_type_id,
+            service_ids: this.state.service_ids,
+            permitted_user_ids: this.state.permitted_user_ids,
+            default_user_ids: this.state.permitted_user_ids
+
+        }).then(function(response){
+            console.log(response);
+            scope.context.router.push('/ratecard');
+        });
+    }
+
     render(){
         
         return(
@@ -777,7 +845,9 @@ export class RateCardSave extends Component {
                         <br />
                     
                         <Link className='btn btn-default pull-left' to='/ratecard/permission'>Back</Link>
-                        <Link className='btn btn-primary pull-right' to='/ratecard'>Save</Link>
+                        <button type="button" className="btn btn-primary pull-right" onClick={this.onSave.bind(this)}>Save</button>
+                        {/*<Link className='btn btn-primary pull-right' to='/ratecard'>Save</Link>*/}
+                   
                     </div>
                 </div>
 
@@ -786,3 +856,7 @@ export class RateCardSave extends Component {
         )
     }
 }
+
+RateCardSave.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};

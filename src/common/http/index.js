@@ -139,6 +139,10 @@ let getRateCardServicesById = function(id){
 let getRateCardsPersonnelEmployees = function(){
   return axios.get( baseURL + '/rate-cards/personnels/employees');
 }
+let postRateCardCreate = function(obj){
+  return axios.post( baseURL + '/rate-cards/rate-cards/create', obj);
+}
+
 
 
 
@@ -179,5 +183,6 @@ export {
 
   getRateCards,
   getRateCardServicesById,
-  getRateCardsPersonnelEmployees
+  getRateCardsPersonnelEmployees,
+  postRateCardCreate
 }
