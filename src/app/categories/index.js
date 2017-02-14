@@ -5,7 +5,7 @@ import xhr from 'jquery';
 import "./categories.scss";
 
 import {LevelTwo} from '../../common/_categories/leveltwo';
-import {RateType} from '../../common/rateType/index';
+import {RateType} from '../../common/rateType/';
 
 import sortable from 'sortablejs';
 

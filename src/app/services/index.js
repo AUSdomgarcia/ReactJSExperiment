@@ -389,8 +389,7 @@ export class ServiceAdd extends Component {
             console.log( serviceCategoryId, serviceId );
 
             getServiceByServiceIdWithServiceCategoryId(serviceCategoryId, serviceId).then(function(response){
-                console.log('ServiceCategoryAndServiceId', response);
-                console.log('ServiceCategoryAndServiceId_name', response.data.payload[0].name);
+                console.log('EditModeResponse', response);
 
                 scope.setState({serviceName: response.data.payload[0].name});
                 scope.setState({description: response.data.payload[0].description});
@@ -561,7 +560,9 @@ export class ServiceAdd extends Component {
             }
         }
 
+        let scope = this;
         let personnelFormat = [];
+
         this.state.servicePersonnelArr.map(function(data){
             let tempObj = {};
                 tempObj.id = data.myId;
@@ -581,6 +582,7 @@ export class ServiceAdd extends Component {
         console.log('Created_Time:', this.state.createdAt); // Not use 
         console.log('========== POST END ========================')
 
+
         // Edit False
         if(this.props.params.editmode==='0'){
             postServiceCreate({
@@ -596,6 +598,7 @@ export class ServiceAdd extends Component {
                 created_at: this.state.createdAt, // '2017-02-09 11:14:00' // <------ Mock time ,     this.state.createdAt,
             }).then(function(response){
                 console.log('onCreate', response);
+                scope.context.router.push('/services');
             });
         }
 
@@ -801,6 +804,9 @@ export class ServiceAdd extends Component {
     }
 }
 
+ServiceAdd.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
 
 
 
