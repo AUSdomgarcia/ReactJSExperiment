@@ -632,9 +632,13 @@ export class ServiceAdd extends Component {
                 created_at: this.state.createdAt, // '2017-02-09 11:14:00' // <------ Mock time ,     this.state.createdAt,
             }).then(function(response){
                 console.log('onCreate', response);
-                // scope.context.router.push('/services');
-                scope.displayAlert(true);
-            });
+                scope.context.router.push('/services');
+
+            }).catch(function(error){
+                if( error.status === 409){
+                    alert('RateType already in use.');
+                }
+            })
         }
 
         // Edit True 
@@ -658,6 +662,7 @@ export class ServiceAdd extends Component {
             }).then(function(response){
                 // scope.context.router.push('/services');
                 console.log('onUpdate', response);
+                alert('Save successfully!');
             });
         }
     }
@@ -691,6 +696,7 @@ export class ServiceAdd extends Component {
         let personnelList = null;
         let defaultStatus = null;
         let personnelsArrNotice = null;
+        let sameRateType = <span></span>
 
         if(this.state.level2Arr.length!==0 && this.state.level2ValueId !== null){
             level2SelectOptions = 
@@ -781,6 +787,7 @@ export class ServiceAdd extends Component {
                     {level3SelectOptions}
 
                     <div className="form-group">
+                        {sameRateType}
                         <label>Rate Type</label>
                         <select className="form-control" value={this.state.rateTypeValue} onChange={this.onRateTypeChange.bind(this)}>
                         { this.state.rateTypeArr.map(function(data){
