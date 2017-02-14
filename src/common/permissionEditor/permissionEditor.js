@@ -32,7 +32,7 @@ export class PermissionEditor extends Component {
                 scope.setState({employeesArr: response.data.payload});
             }
         });
-        
+
         if(this.props.defaultArr!==this.state.permittedUserArr){
             this.setState({permittedUserArr: this.props.defaultArr});
         }
@@ -187,9 +187,10 @@ export class PermissionEditor extends Component {
                 <br/>
 
                 {/* Permitted People */}
-                <div className='permitted-people maxheight300'>
-                    <h4>Permitted User</h4>
+                
+                <h4>Permitted User</h4>
 
+                <div className='permitted-people maxheight300'>
                     <table className='table table-bordered table-hover table-striped'>
                         <thead>
                             <tr>
