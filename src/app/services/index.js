@@ -6,6 +6,7 @@ import './services.scss';
 import {InputHelper} from '../../common/helpers/inputhelpers';
 
 import {ServicePersonnel} from '../../common/_services/servicePersonnel';
+import { Logs } from '../../common/_services/logs';
 
 import xhr from 'jquery';
 
@@ -369,6 +370,8 @@ export class ServiceAdd extends Component {
             personnelComp_previous_manhour: 0,
 
             activeStatus: 0,
+            
+            is_rate_type_changed: false,
         }
     }
 
@@ -384,18 +387,44 @@ export class ServiceAdd extends Component {
         if(this.props.params.editmode==='1'){
             // If edit mode load data when edit
             let serviceCategoryId = this.props.params.serviceCategoryId;
-            let serviceId = this.props.params.serviceid;
+            
+            // serviceId
+            let paramsServiceId = this.props.params.serviceid;
 
-            console.log( serviceCategoryId, serviceId );
+            console.log( serviceCategoryId, this.state.serviceId );
 
-            getServiceByServiceIdWithServiceCategoryId(serviceCategoryId, serviceId).then(function(response){
+            getServiceByServiceIdWithServiceCategoryId(serviceCategoryId, paramsServiceId ).then(function(response){
                 console.log('EditModeResponse', response);
 
                 scope.setState({serviceName: response.data.payload[0].name});
                 scope.setState({description: response.data.payload[0].description});
                 scope.setState({updatedAt: response.data.payload[0].updated_at});
                 scope.setState({createdAt: response.data.payload[0].created_at});
+                scope.setState({accountName: response.data.payload[0].user.name});
+                scope.setState({serviceId: response.data.payload[0].service_id});
+
+                // RateTypes
+                let rateTypeId = response.data.payload[0].rate_type.id;
+                getServiceRateTypes().then(function(response){
+                    scope.setState({ rateTypeArr: response.data.payload });
+                    scope.setState({ rateTypeValue: rateTypeId })
+                });
+
+                // Subtotal
+                let subtotal = response.data.payload[0].subtotal;
+                scope.setState({subtotal: Math.floor(subtotal)});
+
+                // Personnels
+                let personnel_users = response.data.payload[0].personnel_users;
+                scope.setState({servicePersonnelArr: personnel_users});
+
+                // Active state
+                let status = response.data.payload[0].is_active;
+                scope.setState({activeStatus: +status});      
             });
+
+
+            
 
 
         } else if(this.props.params.editmode==='0'){
@@ -454,6 +483,9 @@ export class ServiceAdd extends Component {
     }
 
     onRateTypeChange(evt){
+        if(this.props.params.editmode==='1') this.setState({is_rate_type_changed: true});
+
+        console.log('is_rate_type_changed:', this.state.is_rate_type_changed );
         this.setState({ rateTypeValue: evt.target.value });
     }
 
@@ -479,10 +511,10 @@ export class ServiceAdd extends Component {
         if(this._child.getIsReady() === false) return;
 
         // Get data from ServicePersonnel Component        
-        this.setState( { personnelComp_previous_myId : this._child.getValue().myId || 0 });
-        this.setState( { personnelComp_previous_personnel_id : this._child.getValue().personnelId || "" });
+        this.setState( { personnelComp_previous_myId : this._child.getValue().id || 0 });
+        this.setState( { personnelComp_previous_personnel_id : this._child.getValue().personnel_id || "" });
         this.setState( { personnelComp_previous_position : this._child.getValue().position || "" });
-        this.setState( { personnelComp_previous_manhour : this._child.getValue().manhour || 0 });
+        this.setState( { personnelComp_previous_manhour : this._child.getValue().manhours || 0 });
 
         let tempObj = this._child.getValue();
         let subtotal = 0;
@@ -500,7 +532,7 @@ export class ServiceAdd extends Component {
         // Mapping
         this.state.servicePersonnelArr.map(function(data){
             // check id
-            if(data.personnelId === tempObj.personnelId ){
+            if(data.personnel_id === tempObj.personnel_id ){
                 hasCopy = true;
             }
         });
@@ -525,7 +557,7 @@ export class ServiceAdd extends Component {
     calculateSubtotal(){
         let subtotal = 0;
         this.state.servicePersonnelArr.map(function(data){
-            subtotal += data.total;
+            subtotal += data.subtotal || (data.manhours * +data.manhour_rate);
         });
         this.setState({ subtotal: subtotal });
         console.log('Personnel_', this.state.servicePersonnelArr);
@@ -534,7 +566,7 @@ export class ServiceAdd extends Component {
     callbackDeleteSelf(id){
         let scope = this;
         for(var i=0; i < this.state.servicePersonnelArr.length; i++){
-            if(scope.state.servicePersonnelArr[i].personnelId.toString() === id.toString()){
+            if(scope.state.servicePersonnelArr[i].personnel_id.toString() === id.toString()){
                 scope.state.servicePersonnelArr.splice(i, 1);
             }
         }
@@ -565,10 +597,13 @@ export class ServiceAdd extends Component {
 
         this.state.servicePersonnelArr.map(function(data){
             let tempObj = {};
-                tempObj.id = data.myId;
-                tempObj.manhours = Math.floor(data.manhour);
+                tempObj.id = data.id;
+                tempObj.personnel_id = data.personnel_id;
+                tempObj.manhours = +data.manhours;
             personnelFormat.push(tempObj);
         });
+
+        let PersonnelJSON = JSON.stringify(personnelFormat);
 
         console.log('========== POST START====================')
         console.log('Service Name:', this.state.serviceName );
@@ -577,11 +612,10 @@ export class ServiceAdd extends Component {
         console.log('Level_2:', this.state.level2ValueId );
         console.log('Level_3:', this.state.level3ValueId );
         console.log('RateType_ID:', this.state.rateTypeValue );
-        console.log('Personnels:', personnelFormat); // Not use 
+        console.log('Personnels:', JSON.stringify( PersonnelJSON )); // Not use 
         console.log('Subtotal:', this.state.subtotal );
         console.log('Created_Time:', this.state.createdAt); // Not use 
-        console.log('========== POST END ========================')
-
+        console.log('========== POST END ========================');
 
         // Edit False
         if(this.props.params.editmode==='0'){
@@ -593,23 +627,24 @@ export class ServiceAdd extends Component {
                 sub_service_sub_category_id: this.state.level3ValueId || null,
                 rate_type_id: this.state.rateTypeValue,
                 is_active: this.state.activeStatus,
-                personnels: JSON.stringify( [{ "id": 1, "personnel_id": 1, "manhours": 100 }] ),  // <----- Mock Personnels
+                personnels: PersonnelJSON, // JSON.stringify( [{ "id": 1, "personnel_id": 1, "manhours": 100 }] ),  // <----- Mock Personnels
                 subtotal: this.state.subtotal,
                 created_at: this.state.createdAt, // '2017-02-09 11:14:00' // <------ Mock time ,     this.state.createdAt,
             }).then(function(response){
                 console.log('onCreate', response);
-                scope.context.router.push('/services');
+                // scope.context.router.push('/services');
+                scope.displayAlert(true);
             });
         }
 
         // Edit True 
         if(this.props.params.editmode==='1'){
-            let serviceId = this.props.params.serviceid;
 
-            console.log(serviceId); // NOT YET STILL WORKING ON UPDATE, AND FIXING PERSONNELS JSON
+            console.log('Saving Update Edit Mode', this.state.is_rate_type_changed);
 
             postServiceUpdate({
-                id: serviceId,
+                is_rate_type_changed: this.state.is_rate_type_changed,
+                id: +this.state.serviceId,
                 name: this.state.serviceName,
                 description: this.state.description,
                 service_category_id: this.state.serviceCategoryIdRef,
@@ -617,13 +652,36 @@ export class ServiceAdd extends Component {
                 sub_service_sub_category_id: this.state.level3ValueId || null,
                 rate_type_id: this.state.rateTypeValue,
                 is_active: this.state.activeStatus,
-                personnels: JSON.stringify( [{ "id": 1, "personnel_id": 1, "manhours": 100 }] ),
+                personnels: PersonnelJSON,
                 subtotal: this.state.subtotal,
                 created_at: this.state.createdAt,
             }).then(function(response){
+                // scope.context.router.push('/services');
                 console.log('onUpdate', response);
-            })
+            });
         }
+    }
+
+    displayAlert(isShow){   
+        let markup = <div></div>;
+
+        if(isShow){
+            markup = 
+            <div className="alert alert-danger" role="alert">
+                <span className="glyphicon glyphicon-exclamation-sign"></span> 
+                <span className="sr-only">Error:</span> Enter a valid email address 
+            </div>
+        }
+
+        return markup;
+    }
+
+    serviceLogs(){
+        let markup = <div></div>
+        if(this.props.params.editmode==='1'){
+            markup = (<Logs serviceid={this.props.params.serviceid}/>)
+        }
+        return markup;
     }
 
     render(){
@@ -632,7 +690,7 @@ export class ServiceAdd extends Component {
         let level3SelectOptions = null;
         let personnelList = null;
         let defaultStatus = null;
-        let arrlengthStatus = null;
+        let personnelsArrNotice = null;
 
         if(this.state.level2Arr.length!==0 && this.state.level2ValueId !== null){
             level2SelectOptions = 
@@ -664,18 +722,18 @@ export class ServiceAdd extends Component {
 
         if(this.state.servicePersonnelArr.length!==0){
             defaultStatus = <span></span>
-            arrlengthStatus = <span className="btn-warning">({ this.state.servicePersonnelArr.length })</span>
+            personnelsArrNotice = <span className="btn-warning">({ this.state.servicePersonnelArr.length })</span>
             
             personnelList = 
             this.state.servicePersonnelArr.map(function(data, index){
                 return ( <ServicePersonnel 
-                            personnelId={data.personnelId} 
+                            personnel_id={data.personnel_id} 
                             onDeleteSelf={scope.callbackDeleteSelf.bind(scope)} 
                             isEnable={false} 
-                            myId={data.myId}
+                            id={data.id}
                             position={data.position} 
-                            manhour={data.manhour} 
-                            key={data.personnelId} /> )
+                            manhours={data.manhours} 
+                            key={data.personnel_id} /> )
             } );
 
         } else {
@@ -686,6 +744,10 @@ export class ServiceAdd extends Component {
             <div>
                 <h3 className="sky">Manage Services: <small>{this.state.titleRef}</small></h3>
                 
+                <br />
+
+                {this.displayAlert()}
+
                 <br />
 
                 <Link to="/services/manage">Return to full list</Link>
@@ -731,11 +793,11 @@ export class ServiceAdd extends Component {
 
                     {/* SERVICE__PERSONNEL__EDITOR*/}
                     <ServicePersonnel 
-                        personnelId={ this.state.personnelComp_previous_personnel_id} 
+                        personnel_id={ this.state.personnelComp_previous_personnel_id} 
                         isEnable={true} 
-                        myId={this.state.personnelComp_previous_myId}
+                        id={this.state.personnelComp_previous_myId}
                         position={ this.state.personnelComp_previous_position} 
-                        manhour={ this.state.personnelComp_previous_manhour} 
+                        manhours={ this.state.personnelComp_previous_manhour} 
                         ref={(child) => { this._child = child; }} />
 
                     <p className="personnel-btn-wrapper">
@@ -792,12 +854,16 @@ export class ServiceAdd extends Component {
 
                     <br className="clearfix"/>
 
-                    <h3>Added Personnel(s) {arrlengthStatus}</h3>
+                    <h3>Added Personnel(s) {personnelsArrNotice}</h3>
                     {defaultStatus}
                     {personnelList}
                     
                 </div>
+
+                <br />
             
+                { this.serviceLogs() }
+
             <br className="clearfix"/>
             </div>
         )

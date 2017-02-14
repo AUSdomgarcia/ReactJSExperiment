@@ -11,11 +11,12 @@ export class ServicePersonnel extends Component {
         this.state = {
             personnelArr: [],
 
-            manHourRate: 0,
-            manHourValue: 1,
-            myId: 0,
+            manhour_rate: 0,
+            manhours: 1,
+            id: 0,
+
             debugPerBox: 0,
-            personnelId: "",
+            personnel_id: "",
             position: "",
 
             isReady: false
@@ -25,12 +26,12 @@ export class ServicePersonnel extends Component {
         let scope = this;
         this.getValue = function(){
             return {
-                total: scope.state.manHourRate * scope.state.manHourValue,
-                manhour: scope.state.manHourValue,
-                personnelId: scope.state.personnelId,
-                multiplier: scope.state.manHourRate,
+                subtotal: scope.state.manhour_rate * scope.state.manhours,
+                manhours: scope.state.manhours,
+                personnel_id: scope.state.personnel_id,
+                multiplier: scope.state.manhour_rate,
                 position: scope.state.position,
-                myId: scope.state.myId
+                id: scope.state.id
             }
         }
 
@@ -40,19 +41,24 @@ export class ServicePersonnel extends Component {
     }
 
     // componentWillReceiveProps(nextProps){
-    //     if(nextProps.manhour !== this.state.manHourValue){
-    //         this.setState({manHourValue: nextProps.manhour});
+    //     if(nextProps.manhour !== this.state.manhours){
+    //         this.setState({manhours: nextProps.manhour});
     //         this.setState({position: this.props.position});
-    //         this.setState({personnelId: this.props.personnelId});
+    //         this.setState({personnel_id: this.props.personnel_id});
     //     }
     // }
 
     componentWillMount(){
         if(this.props.isEnable===false){
-            this.setState({personnelId: this.props.personnelId});
-            this.setState({position: this.props.position});
-            this.setState({manHourValue: this.props.manhour});
-            this.setState({myId: this.props.myId});
+            this.setState({personnel_id: this.props.personnel_id});
+            if(this.props.position.hasOwnProperty('name')){
+                this.setState({position: this.props.position.name});
+            } else {
+                this.setState({position: this.props.position});
+            }
+            
+            this.setState({manhours: this.props.manhours});
+            this.setState({id: this.props.id});
         }
     }
 
@@ -65,10 +71,10 @@ export class ServicePersonnel extends Component {
                 scope.setState({ personnelArr: response.data.payload });
 
                 // default
-                scope.setState({ manHourRate: +response.data.payload[0].manhour_rate});
-                scope.setState({ personnelId: response.data.payload[0].personnel_id });
+                scope.setState({ manhour_rate: +response.data.payload[0].manhour_rate});
+                scope.setState({ personnel_id: response.data.payload[0].personnel_id });
                 scope.setState({ position: response.data.payload[0].position.name });
-                scope.setState({ myid: response.data.payload[0].id });
+                scope.setState({ id: response.data.payload[0].id });
 
                 // Set AddPersonnel to ready
                 scope.setState({isReady: true});
@@ -78,9 +84,9 @@ export class ServicePersonnel extends Component {
 
     onChangeManHour(evt){
         let manhour = +evt.target.value
-        this.setState({manHourValue: manhour});
+        this.setState({manhours: manhour});
 
-        let total = this.state.manHourRate * this.state.manHourValue;
+        let total = this.state.manhour_rate * this.state.manhours;
 
         this.setState({ debugPerBox: total });
     }
@@ -91,17 +97,17 @@ export class ServicePersonnel extends Component {
         } else {
             return;
         }
-        this.props.onDeleteSelf(this.state.personnelId);
+        this.props.onDeleteSelf(this.state.personnel_id);
     }
 
     onChangePersonnel(event){
-        this.setState({personnelId: event.target.value});
+        this.setState({personnel_id: event.target.value});
         
         let dataset = event.target.options[event.target.selectedIndex].dataset;
         
-        this.setState({ manHourRate: dataset.manhourrate });
+        this.setState({ manhour_rate: dataset.manhour_rate });
         this.setState({ position: dataset.personnelposition });
-        this.setState({ myId: dataset.myid });
+        this.setState({ id: dataset.id });
     }
 
     render() {
@@ -112,15 +118,15 @@ export class ServicePersonnel extends Component {
 
         if(this.state.personnelArr.length !==0 && this.props.isEnable === true){
             personnelOption = 
-           <select className="form-control" value={this.state.personnelId} onChange={this.onChangePersonnel.bind(this)}>
+           <select className="form-control" value={this.state.personnel_id} onChange={this.onChangePersonnel.bind(this)}>
                 { this.state.personnelArr.map(function(data){
                     return (
                         <option 
                             key={data.id}
                             
-                            data-manhourrate={data.manhour_rate}
+                            data-manhour_rate={data.manhour_rate}
 
-                            data-myid={data.id}
+                            data-id={data.id}
 
                             data-personnelposition={data.position.name}
 
@@ -134,21 +140,21 @@ export class ServicePersonnel extends Component {
             <button type="button" className="btn btn-danger pull-right"  onClick={this.onDelete.bind(this)}><i className="fa fa-times"></i></button>
 
             personnelOption = 
-            <input type="text" className="form-control" value={this.state.position} disabled />
+            <input type="text" className="form-control" value={ this.state.position } disabled />
         }
 
         if(this.props.isEnable){
             
             manhourInput = 
-            <input type="number" value={this.state.manHourValue} className="form-control" onChange={this.onChangeManHour.bind(this)} />
+            <input type="number" value={this.state.manhours} className="form-control" onChange={this.onChangeManHour.bind(this)} />
         } else {
             manhourInput = 
-            <input type="number" value={this.state.manHourValue} className="form-control" onChange={this.onChangeManHour.bind(this)} disabled/>
+            <input type="number" value={this.state.manhours} className="form-control" onChange={this.onChangeManHour.bind(this)} disabled/>
         }
 
         return (
             <div className="group-box">
-                {/*<small><strong>Per box Value: </strong>{this.state.debugPerBox} , {this.state.manHourRate} , {this.state.manHourValue}</small>*/}
+                {/*<small><strong>Per box Value: </strong>{this.state.debugPerBox} , {this.state.manhour_rate} , {this.state.manhours}</small>*/}
                 <div className="form-group">
                     {closebtn}
                     <label>Personnel ID</label>

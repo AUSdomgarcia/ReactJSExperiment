@@ -2,7 +2,7 @@ import axios from 'axios';
 import jquery from 'jquery';
 
 const baseURL = 'http://www.cerebrum-api-staging.dev:8096/api'; // PROD
-// const baseURL = 'http://www.cerebrum-api-staging.dev:8096/api'; // LOCAL
+// const baseURL = 'http://172.16.100.102/api.cerebrum/public'; // LOCAL
 
 
 
@@ -118,6 +118,16 @@ let postPersonnelsDelete = function(obj){
 
 
 
+{/* Logs */}
+let getLogs = function(id){
+  return axios.get( baseURL + '/rate-cards/services/logs?service_id='+ id );
+}
+
+
+
+
+
+
 export { 
   getServices, 
   getServiceByCategoryId, 
@@ -147,5 +157,7 @@ export {
 
   getServiceRateTypes,
   postServiceRateTypesCreate,
-  postServiceRateTypesDelete
+  postServiceRateTypesDelete,
+
+  getLogs
 }

@@ -67,6 +67,7 @@ export class Categories extends Component {
     let level1Arr = this.state.categoryLevelOne;
         level1Arr.push(category);
 
+    // Co-op investigate .. tells setting state during unmount component
     postServiceCategoriesCreate({name: this.state.categoryName }).then(function(response){
       scope.setState({ categoryLevelOne: response.data.payload });
       scope.setState({ response_last_id: response.data.payload[response.data.payload.length-1].id });
