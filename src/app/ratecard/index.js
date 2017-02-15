@@ -24,15 +24,25 @@ export class RateCard extends Component {
 
     componentDidMount(){
         let scope = this;
+        let tempRateCard = [];
+        let tempArchived = [];
+        
         getRateCards().then(function(response){
 
             console.log('/ratecard', response);
 
             if(response.data.payload.length!==0){
                 // filter archive and ratecard
-                scope.setState({rateCardArr:response.data.payload});
-
-                scope.setState({archiveRateCardArr:response.data.payload});
+                response.data.payload.map(function(data){
+                    if(data.is_archived==='0'){
+                        tempRateCard.push(data);
+                    } else {
+                        tempArchived.push(data);
+                    }
+                })
+                
+                scope.setState({rateCardArr: tempRateCard});
+                scope.setState({archiveRateCardArr: tempArchived });
             }
         });
     }
@@ -46,26 +56,53 @@ export class RateCard extends Component {
         let id = xhr(evt.target)[0].dataset.storeid;
         let scope = this;
 
-        if(id!==undefined || id!==null){
-            getRateCardById(id).then(function(response){
-                console.log('>>>>', id, response);
+        if(id===undefined || id===null) return;
 
-                window.sessionStorage.setItem('id', id);
-                window.sessionStorage.setItem('ratecardname', response.data.payload[0].name);
-                window.sessionStorage.setItem('ratecarddesc', response.data.payload[0].description);
-                window.sessionStorage.setItem('selectedRateTypeId', response.data.payload[0].rate_type_id);
-                window.sessionStorage.setItem('includedServiceArr', JSON.stringify(response.data.payload[0].services));
-                window.sessionStorage.setItem('permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
+        getRateCardById(id).then(function(response){
+            console.log('>>>>', id, response);
 
-                let delay = setTimeout(function(){
-                    clearTimeout(delay);
-                    
-                    window.sessionStorage.setItem('editmode', 'ok');
+            window.sessionStorage.setItem('id', id);
+            window.sessionStorage.setItem('ratecardname', response.data.payload[0].name);
+            window.sessionStorage.setItem('ratecarddesc', response.data.payload[0].description);
+            window.sessionStorage.setItem('selectedRateTypeId', response.data.payload[0].rate_type_id);
+            window.sessionStorage.setItem('includedServiceArr', JSON.stringify(response.data.payload[0].services));
+            window.sessionStorage.setItem('permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
 
-                    scope.context.router.push('/ratecard/add');
-                }, 100);
-            });
-        }
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                
+                window.sessionStorage.setItem('editmode', 'ok');
+
+                scope.context.router.push('/ratecard/add');
+            }, 100);
+        });
+    }
+
+    onArchive(){
+        let id = xhr(evt.target)[0].dataset.storeid;
+        let scope = this;
+        if(id===undefined || id===null) return;
+    }
+
+    onViewHandler(evt){
+        let id = xhr(evt.target)[0].dataset.storeid;
+        let scope = this;
+        if(id===undefined || id===null) return;
+
+        getRateCardById(id).then(function(response){
+            window.sessionStorage.setItem('id', id);
+            window.sessionStorage.setItem('ratecardname', response.data.payload[0].name);
+            window.sessionStorage.setItem('ratecarddesc', response.data.payload[0].description);
+            window.sessionStorage.setItem('selectedRateTypeId', response.data.payload[0].rate_type_id);
+            window.sessionStorage.setItem('includedServiceArr', JSON.stringify(response.data.payload[0].services));
+            window.sessionStorage.setItem('permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
+
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                // window.sessionStorage.setItem('editmode', 'ok');
+                scope.context.router.push('/ratecard/save');
+            }, 100);
+        });
     }
     
     render(){
@@ -83,8 +120,8 @@ export class RateCard extends Component {
                         <td>{data.version}</td>
                         <td>
                             <button className='btn btn-primary' data-storeid={data.id} onClick={scope.handleEdit.bind(scope)}>Edit</button>
-                            <button className='btn btn-primary'>View</button>
-                            <button className='btn btn-warning'>Archive</button>
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onViewHandler.bind(scope)}>View</button>
+                            <button className='btn btn-warning' data-storeid={data.id} onClick={scope.onArchive.bind(scope)} >Archive</button>
                         </td>
                     </tr>
                 )
