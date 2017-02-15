@@ -9,7 +9,8 @@ import {
     getServiceRateTypes,
     getRateCardServicesById,
     getRateCardsPersonnelEmployees,
-    getRateCardById } from '../../common/http';
+    getRateCardById,
+    postRateCardAction } from '../../common/http';
 
 export class RateCard extends Component {
     
@@ -24,27 +25,30 @@ export class RateCard extends Component {
 
     componentDidMount(){
         let scope = this;
-        let tempRateCard = [];
-        let tempArchived = [];
         
         getRateCards().then(function(response){
-
             console.log('/ratecard', response);
-
             if(response.data.payload.length!==0){
                 // filter archive and ratecard
-                response.data.payload.map(function(data){
-                    if(data.is_archived==='0'){
-                        tempRateCard.push(data);
-                    } else {
-                        tempArchived.push(data);
-                    }
-                })
-                
-                scope.setState({rateCardArr: tempRateCard});
-                scope.setState({archiveRateCardArr: tempArchived });
+                scope.segregateRateCard(response.data.payload);
             }
         });
+    }
+
+    segregateRateCard(dataArr){
+        let tempRateCard = [];
+        let tempArchived = [];
+
+        dataArr.map(function(data){
+            if(data.is_archived==='0'){
+                tempRateCard.push(data);
+            } else {
+                tempArchived.push(data);
+            }
+        });
+        
+        this.setState({rateCardArr: tempRateCard});
+        this.setState({archiveRateCardArr: tempArchived });
     }
 
     componentWillMount(){
@@ -78,15 +82,28 @@ export class RateCard extends Component {
         });
     }
 
-    onArchive(){
+    onBtnHandler(evt){
         let id = xhr(evt.target)[0].dataset.storeid;
+        let action = xhr(evt.target)[0].dataset.action;
         let scope = this;
+
         if(id===undefined || id===null) return;
+
+        postRateCardAction({
+            id: id,
+            action: action
+        }).then(function(response){
+            console.log('return', response);
+            scope.segregateRateCard(response.data.payload);
+        });
     }
 
     onViewHandler(evt){
         let id = xhr(evt.target)[0].dataset.storeid;
         let scope = this;
+        
+        window.sessionStorage.setItem('editmode', 'ok');
+
         if(id===undefined || id===null) return;
 
         getRateCardById(id).then(function(response){
@@ -121,7 +138,7 @@ export class RateCard extends Component {
                         <td>
                             <button className='btn btn-primary' data-storeid={data.id} onClick={scope.handleEdit.bind(scope)}>Edit</button>
                             <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onViewHandler.bind(scope)}>View</button>
-                            <button className='btn btn-warning' data-storeid={data.id} onClick={scope.onArchive.bind(scope)} >Archive</button>
+                            <button className='btn btn-warning' data-action="archive" data-storeid={data.id} onClick={scope.onBtnHandler.bind(scope)} >Archive</button>
                         </td>
                     </tr>
                 )
@@ -132,7 +149,15 @@ export class RateCard extends Component {
             archiveRateCards = 
             this.state.archiveRateCardArr.map(function(data){
                 return (
-                    <tr>Some tables tds</tr>
+                    <tr key={data.id}>
+                        <td>{data.name}</td>
+                        <td>{data.description}</td>
+                        <td>{data.version}</td>
+                        <td>
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onViewHandler.bind(scope)}>View</button>
+                            <button className='btn btn-warning' data-action="activate" data-storeid={data.id} onClick={scope.onBtnHandler.bind(scope)} >Activate</button>
+                        </td>
+                    </tr>
                 )
             })
         }
@@ -181,7 +206,7 @@ export class RateCard extends Component {
                             </thead>
 
                             <tbody>
-                                <tr>
+                                {/*<tr>
                                     <td>2017 Rate Card</td>
                                     <td>This is the baseline Rate card for 2017</td>
                                     <td>V1.1</td>
@@ -190,7 +215,9 @@ export class RateCard extends Component {
                                         <button className='btn btn-primary'>View</button>
                                         <button className='btn btn-warning'>Archive</button>
                                     </td>
-                                </tr>
+                                </tr>*/}
+                                
+                                {archiveRateCards}
                             </tbody>
                         </table>
                     </div>

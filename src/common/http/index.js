@@ -154,6 +154,9 @@ let postRateCardUpdate = function(obj){
 let postRateCardPreview = function(obj){
   return axios.post( baseURL + '/rate-cards/rate-cards/preview', obj);
 }
+let postRateCardAction = function(obj){
+  return axios.post( baseURL + '/rate-cards/rate-cards/action', obj);
+}
 
 
 
@@ -201,5 +204,6 @@ export {
   postRateCardCreate,
   postRateCardUpdate,
   getRateCardById,
-  postRateCardPreview
+  postRateCardPreview,
+  postRateCardAction
 }

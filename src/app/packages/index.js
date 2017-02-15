@@ -239,9 +239,26 @@ export class PackageRate extends Component {
 
 // Step4 - Permission Service
 
-import PermissionEditor from '../../common/permissionEditor/permissionEditor.js';
+import {PermissionEditor} from '../../common/permissionEditor/permissionEditor.js';
 
 export class PackagePermission extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            permittedUserArr: []
+        }
+    }
+
+    componentDidMount(){
+        //
+    }
+
+    componentWillMount(){
+        //
+    }
+
+    callbackonUpdateArray(){}
+
     render () {
         return (
             <div>
@@ -250,7 +267,10 @@ export class PackagePermission extends Component {
                 <div className='package-content'>
                     <div className='col-md-12'>
                         
-                        <PermissionEditor />
+                        <PermissionEditor 
+                            defaultArr={this.state.permittedUserArr} 
+                            onUpdateArray={this.callbackonUpdateArray.bind(this)} 
+                        />
 
                         <br />
 
