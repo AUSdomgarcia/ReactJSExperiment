@@ -62,12 +62,12 @@ ReactDOM.render(
             {/* R A T E  C A R D */}
             <Route path='ratecard'>
                 <IndexRoute component={RateCard} />
-                <Route path="/ratecard/add" component={RateCardAdd} />
+                <Route path="/ratecard/add(/:editmode)" component={RateCardAdd} />
                 <Route path="/ratecard/choose" component={RateCardChoose} />
                 <Route path="/ratecard/permission" component={RateCardPermission} />
                 <Route path="/ratecard/save" component={RateCardSave} />
-                <Route path="/ratecard/edit" component={RateCardEdit} />
-                <Route path="/ratecard/view" component={RateCardView} />
+                {/*<Route path="/ratecard/edit" component={RateCardEdit} />*/}
+                {/*<Route path="/ratecard/view" component={RateCardView} />*/}
             </Route>
 
             {/* C A T E G O R I E S */}

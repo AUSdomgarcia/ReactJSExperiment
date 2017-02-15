@@ -8,7 +8,8 @@ import {
     getRateCards,
     getServiceRateTypes,
     getRateCardServicesById,
-    getRateCardsPersonnelEmployees } from '../../common/http';
+    getRateCardsPersonnelEmployees,
+    getRateCardById } from '../../common/http';
 
 export class RateCard extends Component {
     
@@ -41,7 +42,30 @@ export class RateCard extends Component {
     }
 
     handleEdit(evt){
-        this.context.router.push('/ratecard/edit')
+        // this.context.router.push('/ratecard/edit');
+        let id = xhr(evt.target)[0].dataset.storeid;
+        let scope = this;
+
+        if(id!==undefined || id!==null){
+            getRateCardById(id).then(function(response){
+                console.log('>>>>', id, response);
+
+                window.sessionStorage.setItem('id', id);
+                window.sessionStorage.setItem('ratecardname', response.data.payload[0].name);
+                window.sessionStorage.setItem('ratecarddesc', response.data.payload[0].description);
+                window.sessionStorage.setItem('selectedRateTypeId', response.data.payload[0].rate_type_id);
+                window.sessionStorage.setItem('includedServiceArr', JSON.stringify(response.data.payload[0].services));
+                window.sessionStorage.setItem('permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
+
+                let delay = setTimeout(function(){
+                    clearTimeout(delay);
+                    
+                    window.sessionStorage.setItem('editmode', 'ok');
+
+                    scope.context.router.push('/ratecard/add');
+                }, 100);
+            });
+        }
     }
     
     render(){
@@ -58,7 +82,7 @@ export class RateCard extends Component {
                         <td>{data.description}</td>
                         <td>{data.version}</td>
                         <td>
-                            <button className='btn btn-primary' onClick={scope.handleEdit.bind(scope)}>Edit</button>
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.handleEdit.bind(scope)}>Edit</button>
                             <button className='btn btn-primary'>View</button>
                             <button className='btn btn-warning'>Archive</button>
                         </td>
@@ -96,16 +120,6 @@ export class RateCard extends Component {
                             </thead>
 
                             <tbody>
-                                {/*<tr>
-                                    <td>2017 Rate Card</td>
-                                    <td>This is the baseline Rate card for 2017</td>
-                                    <td>V1.1</td>
-                                    <td>
-                                        <button className='btn btn-primary' onClick={this.handleEdit.bind(this)}>Edit</button>
-                                        <button className='btn btn-primary'>View</button>
-                                        <button className='btn btn-warning'>Archive</button>
-                                    </td>
-                                </tr>*/}
                                 {activeRateCards}
                             </tbody>
                         </table>
@@ -767,9 +781,9 @@ export class RateCardView extends Component {
 
 
 {/* R A T E C A R D  S A V E */}
-import CategoryTreeView from '../../common/categoryTreeView/categoryTreeView.js';
-import PermissionView from '../../common/permissionView/permissionView.js';
-import {postRateCardCreate} from '../../common/http';
+import {CategoryTreeView} from '../../common/categoryTreeView/categoryTreeView.js';
+import {PermissionView} from '../../common/permissionView/permissionView.js';
+import {postRateCardCreate, postRateCardUpdate, postRateCardPreview} from '../../common/http';
 
 export class RateCardSave extends Component {
 
@@ -781,11 +795,11 @@ export class RateCardSave extends Component {
             rate_type_id: 0,
             service_ids: "",
             permitted_user_ids: "",
+            serviceCategory: []
         }
     }
 
     // FIRST CHECK SESSION then change state
-
     componentWillMount(){
         if(window.sessionStorage.getItem('ratecardname')){
             this.setState({ name : window.sessionStorage.getItem('ratecardname') });
@@ -806,11 +820,32 @@ export class RateCardSave extends Component {
         if(window.sessionStorage.getItem('permittedUserArr')){
             this.setState({ permitted_user_ids : window.sessionStorage.getItem('permittedUserArr') });
         }
+        
+        // Prepare Service Category
+        let includedServiceArr = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || []; 
+        let scope = this;
+        
+        if(includedServiceArr.length!==0){
+            let jsonToString = JSON.stringify(includedServiceArr);
+
+            postRateCardPreview({ service_ids: jsonToString})
+            .then(function(response){
+                console.log('ratecard/save', response);
+                scope.setState({ serviceCategory: response.data.payload });
+            });
+        }
     }
 
     onSave(){
         let scope = this;
-        postRateCardCreate({
+        let editmode = window.sessionStorage.getItem('editmode') || null;
+        let id = window.sessionStorage.getItem('id') || 0;
+
+        // Update
+        if(editmode!==null){
+            console.log('update');
+            postRateCardUpdate({
+            id: id,
             name: this.state.name,
             description: this.state.description,
             rate_type_id: this.state.rate_type_id,
@@ -818,10 +853,27 @@ export class RateCardSave extends Component {
             permitted_user_ids: this.state.permitted_user_ids,
             default_user_ids: this.state.permitted_user_ids
 
-        }).then(function(response){
-            console.log(response);
-            scope.context.router.push('/ratecard');
-        });
+            }).then(function(response){
+                console.log(response);
+                scope.context.router.push('/ratecard');
+            });
+            
+        // Create
+        } else {
+            console.log('create');
+            postRateCardCreate({
+            name: this.state.name,
+            description: this.state.description,
+            rate_type_id: this.state.rate_type_id,
+            service_ids: this.state.service_ids,
+            permitted_user_ids: this.state.permitted_user_ids,
+            default_user_ids: this.state.permitted_user_ids
+
+            }).then(function(response){
+                console.log(response);
+                scope.context.router.push('/ratecard');
+            });
+        }
     }
 
     render(){
@@ -834,13 +886,17 @@ export class RateCardSave extends Component {
 
                     <div className='col-md-12'>
 
-                        <CategoryTreeView />
+                        <CategoryTreeView
+                            serviceCategory={this.state.serviceCategory}
+                            ratecardname={this.state.name}
+                            ratecarddesc={this.state.description}
+                         />
 
                         <br />
 
                         <h3>Rate Card Permission</h3>
                         
-                        <PermissionView />
+                        <PermissionView permittedUser={this.state.permitted_user_ids}/>
 
                         <br />
                     

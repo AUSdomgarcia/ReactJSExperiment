@@ -133,6 +133,9 @@ let getLogs = function(id){
 let getRateCards = function(){
   return axios.get( baseURL + '/rate-cards/rate-cards');
 }
+let getRateCardById = function(id){
+  return axios.get( baseURL + '/rate-cards/rate-cards?id='+ id); 
+}
 let getRateCardServicesById = function(id){
   return axios.get( baseURL + '/rate-cards/services?rate_type_id='+ id);  
 }
@@ -142,6 +145,13 @@ let getRateCardsPersonnelEmployees = function(){
 let postRateCardCreate = function(obj){
   return axios.post( baseURL + '/rate-cards/rate-cards/create', obj);
 }
+let postRateCardUpdate = function(obj){
+  return axios.post( baseURL + '/rate-cards/rate-cards/update', obj);
+}
+let postRateCardPreview = function(obj){
+  return axios.post( baseURL + '/rate-cards/rate-cards/preview', obj);
+}
+
 
 
 
@@ -184,5 +194,8 @@ export {
   getRateCards,
   getRateCardServicesById,
   getRateCardsPersonnelEmployees,
-  postRateCardCreate
+  postRateCardCreate,
+  postRateCardUpdate,
+  getRateCardById,
+  postRateCardPreview
 }
