@@ -7,14 +7,61 @@ import CalcView from '../../common/calcview/calcview';
 import CategoryTreeView from '../../common/categoryTreeView/categoryTreeView';
 import PermissionView from '../../common/permissionView/permissionView';
 
+import {getRateCardPackages} from '../../common/http';
+
+
 // Landing Page
 export class Packages extends Component {
-    
+    constructor(props){
+        super(props);
+        this.state = {
+            packages: []
+        }
+    }
+
     componentDidMount(){
-        // mounted
+        window.sessionStorage.clear();
+    }
+
+    componentWillMount(){
+        let scope = this;
+        getRateCardPackages().then(function(response){
+            console.log('/packages', response);
+            
+            if(response.data.payload.length!==0){
+                scope.setState({packages: response.data.payload });
+            }
+        });
+    }
+
+    onManagePackages(evt){
+        //
+    }
+
+    onDeletePackages(evt){
+        //
     }
 
     render() {
+        let package_td = <tr><td colSpan={3} >No data.</td></tr>
+        let scope = this;
+
+        if(this.state.packages.length!==0){
+            package_td = 
+            this.state.packages.map(function(data){
+                return (
+                    <tr key={data.id}>
+                        <td>{data.name}</td>
+                        <td>{data.products}</td>
+                        <td>
+                            <button className='btn btn-primary' data-unique={data.id} onClick={scope.onManagePackages.bind(scope)}>Manage</button>
+                            <button className='btn btn-danger'  data-unique={data.id} onClick={scope.onDeletePackages.bind(scope)}>Delete</button>
+                        </td>
+                    </tr>
+                )
+            });
+        }
+
         return (
             <div>
                 <AsideNav path={this.props.location.pathname}/>
@@ -33,23 +80,7 @@ export class Packages extends Component {
                         </thead>
 
                         <tbody>
-                            <tr>
-                                <td>Unilever Web Package</td>
-                                <td>14</td>
-                                <td>
-                                    <button className='btn btn-primary'>Manage</button>
-                                    <button className='btn btn-danger'>Delete</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Big Idea</td>
-                                <td>25</td>
-                                <td>
-                                    <button className='btn btn-primary'>Manage</button>
-                                    <button className="btn btn-danger">Delete</button>
-                                </td>
-                            </tr>
-                            
+                            {package_td}
                         </tbody>
                     </table>
 
@@ -78,7 +109,38 @@ export class Packages extends Component {
 
 // Step1 - Add Service
 export class PackageAdd extends Component {
-    
+    constructor(props){
+        super(props);
+        this.state = {
+            name: "",
+            description: ""
+        }
+    }
+    componentWillMount(){
+        let WSpackagename = window.sessionStorage.getItem('packagename');
+        let WSpackagedesc = window.sessionStorage.getItem('packagedesc');
+        
+        if(WSpackagename){
+            this.setState({name: WSpackagename})
+        }
+        if(WSpackagedesc){
+            this.setState({description: WSpackagedesc})
+        }
+    }
+    componentDidMount(){
+        //
+    }
+
+    onChangeName(evt){
+        this.setState({name:evt.target.value});
+        window.sessionStorage.setItem('packagename',evt.target.value);
+    }
+
+    onChangeDescription(evt){
+        this.setState({description:evt.target.value});
+        window.sessionStorage.setItem('packagedesc',evt.target.value);
+    }
+
     render(){
         return (
             <div>
@@ -89,9 +151,9 @@ export class PackageAdd extends Component {
                         <form>
                             <div className='form-group'>
                                 <label>Package name</label>
-                                <input className='form-control' type='text' />
-                                <label>Package Description</label>
-                                <input className='form-control' type='text' />
+                                <input className='form-control' type='text' value={this.state.name} onChange={this.onChangeName.bind(this)} />
+                                <label>Package Description</label> 
+                                <input className='form-control' type='text'  value={this.state.description} onChange={this.onChangeDescription.bind(this)} />
                             </div>
                         </form>
                         
@@ -115,11 +177,23 @@ export class PackageAdd extends Component {
 
 
 
-import ConnectedTable from '../../common/connectedTable/connectedTable.js';
+import {ConnectedTable} from '../../common/connectedTable/connectedTable.js';
 
 // Step2 - Choose Service
 export class PackageChoose extends Component {
     
+    constructor(props){
+        super(props);
+    }
+
+    componentDidMount(){
+        //
+    }
+
+    componentWillMount(){
+        //
+    }
+
     render(){
         return (
             <div>

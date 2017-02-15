@@ -164,6 +164,17 @@ let postRateCardAction = function(obj){
 
 
 
+{/* Packages */}
+let getRateCardPackages = function(){
+  return axios.get( baseURL + '/rate-cards/packages' );
+}
+
+
+
+
+
+
+
 export { 
   getServices, 
   getServiceByCategoryId, 
@@ -205,5 +216,7 @@ export {
   postRateCardUpdate,
   getRateCardById,
   postRateCardPreview,
-  postRateCardAction
+  postRateCardAction,
+
+  getRateCardPackages
 }
