@@ -101,12 +101,13 @@ export class RateCard extends Component {
     onViewHandler(evt){
         let id = xhr(evt.target)[0].dataset.storeid;
         let scope = this;
-        
+
         window.sessionStorage.setItem('editmode', 'ok');
 
         if(id===undefined || id===null) return;
 
         getRateCardById(id).then(function(response){
+
             window.sessionStorage.setItem('id', id);
             window.sessionStorage.setItem('ratecardname', response.data.payload[0].name);
             window.sessionStorage.setItem('ratecarddesc', response.data.payload[0].description);
@@ -381,9 +382,8 @@ export class RateCardChoose extends Component {
 
         if(arr.length!==0){
             this.setState({ includedServiceArr: arr });
+            this.setState({ totalServices: arr.length });
         }
-
-        this.setState({ totalServices: this.state.includedServiceArr.length });
 
         let scope = this;
         let id = 0;
@@ -489,9 +489,12 @@ export class RateCardChoose extends Component {
 
         this.setState({ includedServiceArr: this.state.includedServiceArr });
 
-        window.sessionStorage.setItem('includedServiceArr', JSON.stringify(this.state.includedServiceArr) );
+        let updatedArr = JSON.stringify(this.state.includedServiceArr);
+        window.sessionStorage.setItem('includedServiceArr', updatedArr);
         
-        console.log('includedServiceArr', window.sessionStorage.getItem('includedServiceArr') );
+        // console.log('includedServiceArr', window.sessionStorage.getItem('includedServiceArr') );
+
+        console.log('>>', this.state.includedServiceArr.length); 
     }
     
     getCategoryName(data){
@@ -510,7 +513,7 @@ export class RateCardChoose extends Component {
             
         let checkArr = (includedServiceArr.length!==0) ? JSON.parse(includedServiceArr) : [];
 
-        console.log(selectedRateTypeId, includedServiceArr);
+        // console.log(selectedRateTypeId, includedServiceArr);
 
         if(checkArr.length===0){
             if(confirm('No selected Service')){
@@ -884,15 +887,19 @@ export class RateCardSave extends Component {
         if(window.sessionStorage.getItem('permittedUserArr')){
             this.setState({ permitted_user_ids : window.sessionStorage.getItem('permittedUserArr') });
         }
-        
+
         // Prepare Service Category
         let includedServiceArr = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || []; 
         let scope = this;
+
+        // console.log('current selected services:', includedServiceArr.length, window.sessionStorage.getItem('includedServiceArr') );
         
         if(includedServiceArr.length!==0){
             let jsonToString = JSON.stringify(includedServiceArr);
 
-            postRateCardPreview({ service_ids: jsonToString})
+            console.log('current selected services:', jsonToString ); 
+
+            postRateCardPreview({ service_ids: jsonToString })
             .then(function(response){
                 console.log('ratecard/save', response);
                 scope.setState({ serviceCategory: response.data.payload });
