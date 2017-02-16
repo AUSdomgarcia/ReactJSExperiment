@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import './connectedTable.scss';
-import {getRateCards} from '../../common/http';
+import {getRateCards, getRateCardById} from '../../common/http';
+import xhr from 'jquery';
 
 export class ConnectedTable extends Component {
 
@@ -8,6 +9,8 @@ export class ConnectedTable extends Component {
         super(props);
         this.state = {
             ratecards: [],
+            services:[],
+            added_services:[],
             ratecard_id: 0,
         }
     }
@@ -18,45 +21,157 @@ export class ConnectedTable extends Component {
 
     componentWillMount(){
         let scope = this;
+        
+        if(this.props.addedServices!==this.state.added_services){
+            this.setState({added_services:this.props.addedServices});
+        }
 
         getRateCards().then(function(response){
             if(response.data.payload.length!==0){
                 scope.setState({ratecards:response.data.payload});
-                scope.manageRateType(response);
+                scope.manageSelectedRateCard(response);
             }
         });
     }
 
-    manageRateType(res){
-        let WSratecardId = window.sessionStorage.getItem('rateCardId');
+    manageSelectedRateCard(res){
+        let scope = this;
+        let WSratecardId = +window.sessionStorage.getItem('rateCardId') || 0;
+        let id = 0;
 
-        if(WSratecardId){
-            this.setState({ratecard_id: WSratecardId});
+        if(WSratecardId!==0){
+            id = WSratecardId;
         } else {
-            this.setState({ratecard_id: res.data.payload[0].id});
+            id = res.data.payload[0].id;
         }
+        this.setState({ratecard_id: id});
+        this.getRateCardServicesById(id);
+    }
 
-        // do some server request
+    getRateCardServicesById(id){
+        let scope = this;
+        getRateCardById(id).then(function(response){
+            console.log('/getServices_byRateCardId', response);
+            if(response.data.payload.length!==0){
+                let services = response.data.payload[0].services;
+                scope.setState({services});
+            }
+        });
     }
     
     onSelectRateCard(evt){
         let id = evt.target.value;
-        let scope = this;
-
         if(id===null || id===undefined) return;
 
         this.setState({ratecard_id: id});
+        this.getRateCardServicesById(id);
         window.sessionStorage.setItem('rateCardId', id);
+
+        let empty = [];
+        window.sessionStorage.setItem('added_services', JSON.stringify(empty));
+        this.setState({added_services: empty}, function(){
+            this.props.onUpdate(this.state.added_services);
+        });
+    }
+
+    onAddService(evt){
+        let index = xhr(evt.target)[0].dataset.index;
+        let id = xhr(evt.target)[0].dataset.id;
+
+        if(id===null || id===undefined) return;
+        let exists = false;
+        let currIndex = 0;
+        let services = this.state.services;
+
+        if(this.state.added_services.length===0){
+            this.state.added_services.push(services[index]);
+            this.setState({added_services:this.state.added_services});
+            window.sessionStorage.setItem('added_services', JSON.stringify(this.state.added_services));
+            this.props.onUpdate(this.state.added_services);
+            return;
+        }
+        // Check Availability
+        for (let i = 0; i < this.state.added_services.length; i++) {
+            if (+this.state.added_services[i].id === +id) {
+                currIndex = i;
+                exists = true;
+            }
+        }
+
+        if(exists===true){
+            if(confirm('Already in use.')){return;} else {return;}
+        }
+        if(exists===false){
+            this.state.added_services.push(services[index]);
+        }
+        this.setState({added_services: this.state.added_services});
+        this.props.onUpdate(this.state.added_services);
+    }
+
+    onRemoveService(evt){
+        let index = xhr(evt.target)[0].dataset.index;
+        if(index===undefined || index===null) return;
+
+        this.state.added_services.splice(index, 1);
+        this.setState({added_services: this.state.added_services});
+        this.props.onUpdate(this.state.added_services);
     }
     
     render(){
-        let ratecardOptions = <option>No options.</option>
+        let scope = this;
+        let ratecardOptions = <option>No options.</option>;
+        let servicesTable = <tr><td colSpan={6}>No data.</td></tr>;
+        let addedServicesTable = <tr><td colSpan={6}>No data.</td></tr>;
 
         if(this.state.ratecards.length!==0){
             ratecardOptions = 
             this.state.ratecards.map(function(data){
                 return (
                     <option value={data.id} key={data.id}>{data.name}</option>
+                )
+            });
+        }
+
+        if(this.state.services.length!==0){
+            servicesTable =
+            this.state.services.map(function(data, index){
+                return (
+                    <tr key={data.id}>
+                        <td>{data.service_id}</td>
+                        <td>{data.category.name}</td>
+                        <td>{data.name}</td>
+                        <td>{data.description}</td>
+                        <td>{data.subtotal}</td>
+                        <td>
+                            <button type="button" 
+                            data-index={index}
+                            data-id={data.id}
+                            className="btn btn-primary" 
+                            onClick={scope.onAddService.bind(scope)}>Add</button>
+                        </td>
+                    </tr>
+                )
+            });
+        }
+
+        if(this.state.added_services.length!==0){
+            addedServicesTable =
+            this.state.added_services.map(function(data, index){
+                return (
+                    <tr key={data.id}>
+                        <td>{data.service_id}</td>
+                        <td>{data.category.name}</td>
+                        <td>{data.name}</td>
+                        <td>{data.description}</td>
+                        <td>{data.subtotal}</td>
+                        <td>
+                            <button type="button" 
+                            data-index={index}
+                            data-id={data.id} 
+                            className="btn btn-danger" 
+                            onClick={scope.onRemoveService.bind(scope)}>Remove</button>
+                        </td>
+                    </tr>
                 )
             });
         }
@@ -88,17 +203,7 @@ export class ConnectedTable extends Component {
                         </thead>
 
                         <tbody>
-                            <tr>
-                                <td>S-001</td>
-                                <td>Digital Strategy</td>
-                                <td>Digital Consultation</td>
-                                <td>Is a global Solutions</td>
-                                <td>70,000</td>
-                                <td>
-                                    <button className='btn btn-primary'>Add</button>
-                                </td>
-                            </tr>
-                            
+                            {servicesTable}
                         </tbody>
                     </table>
                 </div>
@@ -121,17 +226,7 @@ export class ConnectedTable extends Component {
                         </thead>
 
                         <tbody>
-                            <tr>
-                                <td>S-001</td>
-                                <td>Digital Strategy</td>
-                                <td>Digital Consultation</td>
-                                <td>Is a global Solutions</td>
-                                <td>70,000</td>
-                                <td>
-                                    <button className='btn btn-danger'>Remove</button>
-                                </td>
-                            </tr>
-                            
+                            {addedServicesTable}
                         </tbody>
                     </table>
                 </div>

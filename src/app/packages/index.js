@@ -3,12 +3,12 @@ import {Link} from 'react-router';
 
 import {AsideNav} from './aside';
 
-import CalcView from '../../common/calcview/calcview';
-import CategoryTreeView from '../../common/categoryTreeView/categoryTreeView';
-import PermissionView from '../../common/permissionView/permissionView';
+import {CalcView} from '../../common/calcview/calcview';
+import {CategoryTreeView} from '../../common/categoryTreeView/categoryTreeView';
+import {PermissionView} from '../../common/permissionView/permissionView';
 
-import {getRateCardPackages} from '../../common/http';
-
+import {getRateCardPackages, postPackageDelete, getRateCardPackageById} from '../../common/http';
+import xhr from 'jquery';
 
 // Landing Page
 export class Packages extends Component {
@@ -20,10 +20,6 @@ export class Packages extends Component {
     }
 
     componentDidMount(){
-        window.sessionStorage.clear();
-    }
-
-    componentWillMount(){
         let scope = this;
         getRateCardPackages().then(function(response){
             console.log('/packages', response);
@@ -34,12 +30,58 @@ export class Packages extends Component {
         });
     }
 
-    onManagePackages(evt){
-        //
+    componentWillMount(){
+        window.sessionStorage.clear();
     }
 
-    onDeletePackages(evt){
-        //
+    onManagePackage(evt){
+        let id = xhr(evt.target)[0].dataset.id;
+        let scope = this;
+
+        if(id===null||id===undefined){ return; }
+
+        getRateCardPackageById(id).then(function(response){
+            console.log('on manage', response);
+
+            window.sessionStorage.setItem('packageId', id);
+            window.sessionStorage.setItem('packagename', response.data.payload[0].name);
+            window.sessionStorage.setItem('packagedesc', response.data.payload[0].description);
+            window.sessionStorage.setItem('added_services', JSON.stringify(response.data.payload[0].services));
+            window.sessionStorage.setItem('permittedPackageUser', JSON.stringify(response.data.payload[0].permitted_users));
+            window.sessionStorage.setItem('package_discount', response.data.payload[0].discount);
+            window.sessionStorage.setItem('rateCardId', response.data.payload[0].rate_card_id);
+
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                window.sessionStorage.setItem('packageEditMode', 'ok');
+                scope.context.router.push('/packages/add');
+            }, 100);
+        });
+    }
+
+    onDeletePackage(evt){
+        let id = xhr(evt.target)[0].dataset.id;
+        let scope = this;
+
+        if(id===null||id===undefined) return;
+
+        if(confirm('Do you want to delete')){
+            //
+        } else {
+            return;
+        }
+        
+        this.state.packages.map(function(data, index){
+            if(+data.id === +id){   
+                scope.state.packages.splice(index, 1);
+            }
+        });
+
+        this.setState({packages:this.state.packages});
+
+        postPackageDelete({id:id}).then(function(response){
+            console.log(response);
+        });
     }
 
     render() {
@@ -54,8 +96,8 @@ export class Packages extends Component {
                         <td>{data.name}</td>
                         <td>{data.products}</td>
                         <td>
-                            <button className='btn btn-primary' data-unique={data.id} onClick={scope.onManagePackages.bind(scope)}>Manage</button>
-                            <button className='btn btn-danger'  data-unique={data.id} onClick={scope.onDeletePackages.bind(scope)}>Delete</button>
+                            <button className='btn btn-primary' data-id={data.id} onClick={scope.onManagePackage.bind(scope)}>Manage</button>
+                            <button className='btn btn-danger'  data-id={data.id} onClick={scope.onDeletePackage.bind(scope)}>Delete</button>
                         </td>
                     </tr>
                 )
@@ -96,6 +138,9 @@ export class Packages extends Component {
     }
 }
 
+Packages.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
 
 
 
@@ -141,6 +186,20 @@ export class PackageAdd extends Component {
         window.sessionStorage.setItem('packagedesc',evt.target.value);
     }
 
+    onNext(){
+        let WSname = window.sessionStorage.getItem('packagename') || "";
+        let WSdesc = window.sessionStorage.getItem('packagedesc') || "";
+        if(WSname.length===0 || WSdesc.length===0){
+            if(confirm('No description or name.')){
+                return;
+            } else {
+                return;
+            }
+        }else{
+            this.context.router.push('/packages/choose');
+        }
+    }
+
     render(){
         return (
             <div>
@@ -158,7 +217,7 @@ export class PackageAdd extends Component {
                         </form>
                         
                         <Link className='btn btn-default pull-left' to='/packages'>Back</Link>
-                        <Link className='btn btn-primary pull-right' to='/packages/choose'>Next</Link>   
+                        <button type="button" className='btn btn-primary pull-right' onClick={this.onNext.bind(this)}>Next</button>
                     </div>
 
                 </div>
@@ -167,6 +226,10 @@ export class PackageAdd extends Component {
         )
     }
 }
+
+PackageAdd.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
 
 
 
@@ -184,6 +247,10 @@ export class PackageChoose extends Component {
     
     constructor(props){
         super(props);
+        this.state = {
+            count: 0,
+            added_services: []
+        }
     }
 
     componentDidMount(){
@@ -191,7 +258,34 @@ export class PackageChoose extends Component {
     }
 
     componentWillMount(){
-        //
+        let WSaddedServices = window.sessionStorage.getItem('added_services');
+        console.log(WSaddedServices);
+
+        let temp = (WSaddedServices)? JSON.parse(WSaddedServices) : [];
+        
+        if(temp.length!==0){
+            this.setState({added_services:temp});
+            this.setState({count:temp.length});
+        }
+    }
+
+    callbackUpdate(addedServices){
+        this.setState({added_services: addedServices});
+        window.sessionStorage.setItem('added_services', JSON.stringify(addedServices));
+        window.sessionStorage.setItem('package_discount', 1);
+    }
+
+    onNext(){
+        let WSaddedServices = window.sessionStorage.getItem('added_services');
+        let temp = (WSaddedServices)? JSON.parse(WSaddedServices) : [];
+        
+        if(temp.length===0){
+            if(confirm('No added Services.')){
+                return;
+            } else { return; }
+        } else {
+            this.context.router.push('/packages/rate');
+        }
     }
 
     render(){
@@ -203,10 +297,12 @@ export class PackageChoose extends Component {
 
                     <div className='col-md-12'>
                         
-                        <ConnectedTable />  
+                        <ConnectedTable 
+                            addedServices={this.state.added_services} 
+                            onUpdate={this.callbackUpdate.bind(this)}/>  
                       
                         <Link className='btn btn-default pull-left' to='/packages/add'>Back</Link>
-                        <Link className='btn btn-primary pull-right' to='/packages/rate'>Next</Link>
+                        <button type="button" className="btn btn-primary pull-right" onClick={this.onNext.bind(this)}>Next</button>
                     </div>
 
                 </div>
@@ -216,6 +312,12 @@ export class PackageChoose extends Component {
         )
     }
 }
+
+PackageChoose.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
+
+
 
 
 
@@ -235,14 +337,64 @@ export class PackageRate extends Component {
         super(props);
 
         this.state = {
-            'package_total': 20000,
-            'package_discount': 0,
-            'package_rate': 18000
+            'package_total': 0,
+            'package_discount': 1,
+            'package_rate': 0
         }
     }
 
-    onChangeHandler(evt){
+    componentDidMount(){
+        //
+    }
 
+    componentWillMount(){
+        let WSaddedServices = window.sessionStorage.getItem('added_services');
+        let temp = (WSaddedServices)? JSON.parse(WSaddedServices) : [];
+        let comulative = 0;
+
+        if(temp.length!==0){
+            temp.map(function(data){
+                comulative += +data.subtotal;
+            });
+        }
+
+        let WSpackageDiscount = window.sessionStorage.getItem('package_discount') || 1;
+        let discount = +WSpackageDiscount;
+        this.setState({package_discount: discount});
+
+        this.setState({package_total: comulative}, function(){
+            this.computePackageRate(discount);
+        });
+    }
+
+    computePackageRate(discount){
+        console.log('>>discount ', discount);
+
+        let packageTotal = +this.state.package_total;
+        let discounted   = packageTotal * discount / 100;
+        let packageRate  = packageTotal - discounted;
+            packageRate  = packageRate.toFixed(2);
+
+            console.log(discounted, this.state.package_total, packageRate);
+
+        this.setState({package_rate: packageRate });
+        window.sessionStorage.setItem('package_rate', packageRate);
+    }
+
+    onDiscountChange(evt){
+        console.log('called');
+
+        let discount = +evt.target.value;
+        if(discount > 100 || discount < 1){
+            alert('Should be greater then 1 and not exceed 100');
+            discount = 1;
+        }
+        
+        this.setState({package_discount: discount});
+
+        window.sessionStorage.setItem('package_discount', discount);
+
+        this.computePackageRate(discount);
     }
 
     render () {
@@ -259,7 +411,7 @@ export class PackageRate extends Component {
                                     <label>Total Package Rate</label>
                                 </div>
                                 <div className="col-xs-9">
-                                    <input type='text' className='form-control' value={this.state.package_total} onChange={this.onChangeHandler.bind(this)} disabled />
+                                    <input type='number' className='form-control' value={this.state.package_total} disabled />
                                 </div>
                             </div>
                             
@@ -270,7 +422,7 @@ export class PackageRate extends Component {
                                     <label>Discount</label>
                                 </div>
                                 <div className="col-xs-9">
-                                    <input type='text' className='form-control' value={this.state.package_discount} onChange={this.onChangeHandler.bind(this)} />
+                                    <input type='number' className='form-control' value={this.state.package_discount} onChange={this.onDiscountChange.bind(this)} />
                                 </div>
                             </div>
 
@@ -281,7 +433,7 @@ export class PackageRate extends Component {
                                     <label>Package Rate</label>
                                 </div>
                                 <div className="col-xs-9">
-                                    <input type='text' className='form-control' value={this.state.package_rate} onChange={this.onChangeHandler.bind(this)} disabled />
+                                    <input type='number' className='form-control' value={this.state.package_rate} disabled />
                                 </div>
                             </div>
 
@@ -319,7 +471,7 @@ export class PackagePermission extends Component {
     constructor(props){
         super(props);
         this.state = {
-            permittedUserArr: []
+            permittedUsers: []
         }
     }
 
@@ -328,10 +480,24 @@ export class PackagePermission extends Component {
     }
 
     componentWillMount(){
-        //
+        let temp = JSON.parse(window.sessionStorage.getItem('permittedPackageUser')) || [];
+        if(temp.length!==0){
+            this.setState({permittedUsers: temp});
+        }
     }
 
-    callbackonUpdateArray(){}
+    callbackUpdate(permittedUsers){
+        this.setState({permittedUsers});
+        window.sessionStorage.setItem('permittedPackageUser', JSON.stringify(permittedUsers));
+    }
+
+    onNext(){
+        let temp = JSON.parse(window.sessionStorage.getItem('permittedPackageUser')) || [];
+        if(temp.length===0){
+            if(confirm('No selected user')){ return;} else {return; }
+        }
+        this.context.router.push('/packages/save');
+    }
 
     render () {
         return (
@@ -342,14 +508,14 @@ export class PackagePermission extends Component {
                     <div className='col-md-12'>
                         
                         <PermissionEditor 
-                            defaultArr={this.state.permittedUserArr} 
-                            onUpdateArray={this.callbackonUpdateArray.bind(this)} 
+                            defaultArr={this.state.permittedUsers} 
+                            onUpdateArray={this.callbackUpdate.bind(this)} 
                         />
 
                         <br />
 
                         <Link className='btn btn-default pull-left' to='/packages/rate'>Back</Link>
-                        <Link className='btn btn-primary pull-right' to='/packages/save'>Next</Link>
+                        <button type="button" className="btn btn-primary pull-right" onClick={this.onNext.bind(this)}>Next</button>
                     </div>
                 </div>
 
@@ -359,6 +525,9 @@ export class PackagePermission extends Component {
     }
 }
 
+PackagePermission.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
 
 
 
@@ -370,10 +539,206 @@ export class PackagePermission extends Component {
 
 
 
+
+import {postRateCardPreview, postPackageCreate, postPackageUpdate} from '../../common/http';
 // Step4 - Save Service
 export class PackageSave extends Component {
 
+    constructor(props){
+        super(props);
+        this.state = {
+            categories: [],
+            name: "",
+            description: "",
+            permitted_user_ids: "",
+
+            total: 0,
+            discount: 0,
+            rate: 0,
+
+            ratecard_id: 0,
+            service_ids: [],
+            
+            packageId: 0,
+
+            savingMode: null,
+        }
+    }
+
+    componentDidMount(){
+        //
+    }
+
+    componentWillMount(){
+        let scope = this;
+
+        let WSname = window.sessionStorage.getItem('packagename') || "Default";
+        let WSdecription = window.sessionStorage.getItem('packagedesc') || "Default";
+        // Name
+        this.setState({name: WSname});
+        // Description
+        this.setState({description: WSdecription});
+
+        let includedServices = JSON.parse(window.sessionStorage.getItem('added_services')) || [];
+            
+        if(includedServices.length!==0){
+            let services = JSON.stringify(includedServices);
+            this.setState({service_ids: services});
+
+            postRateCardPreview({ service_ids: services })
+            .then(function(response){
+                console.log('/package/save', response);
+                scope.setState({categories: response.data.payload});
+            });
+        }
+        // Total Package by Services
+        let comulative = 0;
+        let WSservices = JSON.parse(window.sessionStorage.getItem('added_services')) || [];
+            if(WSservices.length!==0){
+                WSservices.map(function(data){
+                    comulative += +data.subtotal; 
+                });
+                this.setState({total: comulative});
+            }
+        
+        // Discount 
+        let WSdiscount = window.sessionStorage.getItem('package_discount') || 0;
+            this.setState({discount: WSdiscount});
+
+        // Package Rate
+        let discounted = comulative * (WSdiscount/100);
+            discounted = comulative - discounted;
+            this.setState({rate: discounted.toFixed(2)});
+
+        // Permitted User
+        let WSpermittedUsers = window.sessionStorage.getItem('permittedPackageUser');
+        console.log(WSpermittedUsers)
+        this.setState({permitted_user_ids: WSpermittedUsers });
+
+        let WSratecardId = window.sessionStorage.getItem('rateCardId') || 0;
+            this.setState({ratecard_id: +WSratecardId});
+
+        let WSpackageId = window.sessionStorage.getItem('packageId') || 0;
+            this.setState({ packageId: WSpackageId });
+
+        let WSsavingMode = window.sessionStorage.getItem('savingMode') || null;
+            this.setState({ savingMode: WSsavingMode });
+    }
+
+    onSave(){
+        let scope = this;
+        let packageEditMode = window.sessionStorage.getItem('packageEditMode') || null;
+
+        console.log('id:', this.state.packageId);
+        console.log('name:', this.state.name);
+        console.log('description:', this.state.description);
+        console.log('package_rate:', this.state.rate);
+        console.log('total_package_rate:', this.state.total);
+        console.log('discount:', this.state.discount);
+        console.log('rate_card_id:', this.state.ratecard_id);
+        console.log('service_ids:', this.state.service_ids);
+        console.log('permitted_user_ids:', this.state.permitted_user_ids);
+
+        if(packageEditMode!=null){
+            postPackageUpdate({
+                id: this.state.packageId,
+                name: this.state.name,
+                description: this.state.description,
+                package_rate: this.state.rate,
+                total_package_rate: this.state.total,
+                discount: this.state.discount,
+                rate_card_id: this.state.ratecard_id,
+                service_ids: this.state.service_ids,
+                permitted_user_ids: this.state.permitted_user_ids
+            }).then(function(response){
+                console.log('jeffreyWay update', response);
+                alert('Package Updated');
+            });
+
+        } else {
+            postPackageCreate({
+                name: this.state.name,
+                description: this.state.description,
+                package_rate: this.state.rate,
+                total_package_rate: this.state.total,
+                discount: this.state.discount,
+                rate_card_id: this.state.ratecard_id,
+                service_ids: this.state.service_ids,
+                permitted_user_ids: this.state.permitted_user_ids
+            }).then(function(response){
+                console.log('jeffreyWay create', response);
+                let id = response.data.payload;
+                window.sessionStorage.setItem('packageId', id);
+
+                scope.previewById(id);
+            });
+        }
+    }
+
+    previewById(id){
+        let scope = this;
+        // Edit button should Show after
+        window.sessionStorage.setItem('savingMode', 'ok');
+
+        getRateCardPackageById(id).then(function(response){
+            window.sessionStorage.setItem('packageId', id);
+            window.sessionStorage.setItem('packagename', response.data.payload[0].name);
+            window.sessionStorage.setItem('packagedesc', response.data.payload[0].description);
+            window.sessionStorage.setItem('added_services', JSON.stringify(response.data.payload[0].services));
+            window.sessionStorage.setItem('permittedPackageUser', JSON.stringify(response.data.payload[0].permitted_users));
+            window.sessionStorage.setItem('package_discount', response.data.payload[0].discount);
+            window.sessionStorage.setItem('rateCardId', response.data.payload[0].rate_card_id);
+
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                window.location.reload()
+                // scope.context.router.push('/packages/save');
+                // window.location.href = window.location.origin + '/packages/save'; 
+            }, 100);
+        });
+    }
+
+
+    onEdit(){
+        let id = window.sessionStorage.getItem('packageId', id);
+        let scope = this;
+        getRateCardPackageById(id).then(function(response){
+            console.log('onEdit', response, id);
+
+            window.sessionStorage.clear();
+
+            window.sessionStorage.setItem('packageId', id);
+            window.sessionStorage.setItem('packagename', response.data.payload[0].name);
+            window.sessionStorage.setItem('packagedesc', response.data.payload[0].description);
+            window.sessionStorage.setItem('added_services', JSON.stringify(response.data.payload[0].services));
+            window.sessionStorage.setItem('permittedPackageUser', JSON.stringify(response.data.payload[0].permitted_users));
+            window.sessionStorage.setItem('package_discount', response.data.payload[0].discount);
+            window.sessionStorage.setItem('rateCardId', response.data.payload[0].rate_card_id);
+
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                window.sessionStorage.setItem('packageEditMode', 'ok');
+                scope.context.router.push('/packages/add');
+            }, 100);
+        });
+    }
+
     render () {
+        let scope = this;
+        let saveAndBackBtn = <span></span>;
+        let editBtn = <span></span>;
+
+        if(this.state.savingMode!==null){
+            editBtn =
+            <button type="button" className="btn btn-primary pull-right" onClick={this.onEdit.bind(this)}>Edit</button>
+        } else {
+            saveAndBackBtn =
+            <div>
+                <Link className='btn btn-default pull-left' to='/packages/permission'>Back</Link>
+                <button type="button" className="btn btn-primary pull-right" onClick={this.onSave.bind(this)}>Save</button>
+            </div>
+        }
+
         return (
             <div>
                 <AsideNav path={this.props.location.pathname}/>
@@ -381,20 +746,32 @@ export class PackageSave extends Component {
                 <div className='package-content'>
 
                     <div className='col-md-12'>
-                        
-                        <CategoryTreeView />
 
-                        <CalcView />
+                        <CategoryTreeView
+                            serviceCategory={this.state.categories}
+                            ratecardname={this.state.name}
+                            ratecarddesc={this.state.description}
+                        />
+
+                        <CalcView 
+                            total={this.state.total}
+                            discount={this.state.discount}
+                            rate={this.state.rate}
+                        />
                         
                         <h3>Package Permission</h3>
 
-                        <PermissionView />    
+                        <PermissionView 
+                            permittedUser={this.state.permitted_user_ids}
+                        />
 
                         <br />
 
-                        <Link className='btn btn-default pull-left' to='/packages/permission'>Back</Link>
-                        <Link className='btn btn-primary pull-right' to='/packages/preview'>Save</Link>
+                   {editBtn}
+                   {saveAndBackBtn}
                     </div>
+
+
                 </div>
 
             <br className='clearfix' /><br />
@@ -402,6 +779,11 @@ export class PackageSave extends Component {
         )
     }
 }
+
+PackageSave.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
+
 
 
 

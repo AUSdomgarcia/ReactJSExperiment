@@ -427,6 +427,8 @@ export class RateCardChoose extends Component {
             console.log(response.data);
             if(response.data.payload.length!==0){
                 scope.setState({ serviceArr: response.data.payload })
+            } else {
+                scope.setState({ serviceArr: [] });
             }
         });
 
@@ -556,31 +558,30 @@ export class RateCardChoose extends Component {
         if(this.state.serviceArr.length!==0 && this.state.rateTypeArr.length!==0){
             servicesDynamic = 
             this.state.serviceArr.map(function(data){
-                return (
-                    <tr key={data.id}>
-                        <td>
-                            <label data-storeid={data.id} 
-                                onChange={scope.onCheckBoxHandler.bind(scope)}>
-                                <input type="checkbox" value={data.id} defaultChecked={scope.checkStored(data.id)}/>
-                                <span>{data.service_id}</span>
-                            </label>
-                        </td>
-                        <td>
-                            { scope.getCategoryName(data) }
-                        </td>
-                        <td>
-                            {data.name}
-                        </td>
-                        <td>
-                            {data.description}
-                        </td>
-                        <td>
-                            {+data.subtotal}
-                        </td>
-                    </tr>
-                )
+                if(data.category!==null){
+                    return (
+                        <tr key={data.id}>
+                            <td>
+                                <label data-storeid={data.id} 
+                                    onChange={scope.onCheckBoxHandler.bind(scope)}>
+                                    <input type="checkbox" value={data.id} defaultChecked={scope.checkStored(data.id)}/>
+                                    <span>{data.service_id}</span>
+                                </label>
+                            </td>
+                            <td>{data.category.name}</td>
+                            <td>
+                                {data.name}
+                            </td>
+                            <td>
+                                {data.description}
+                            </td>
+                            <td>
+                                {+data.subtotal}
+                            </td>
+                        </tr>
+                    )
+                }
             });
-
         }
 
         return(
@@ -717,7 +718,9 @@ export class RateCardPermission extends Component {
 
                     <div className='col-md-12'>
                         
-                        <PermissionEditor defaultArr={this.state.permittedUserArr} onUpdateArray={this.callbackonUpdateArray.bind(this)} />
+                        <PermissionEditor 
+                        defaultArr={this.state.permittedUserArr} 
+                        onUpdateArray={this.callbackonUpdateArray.bind(this)} />
 
                         <br />
 

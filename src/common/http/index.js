@@ -168,7 +168,18 @@ let postRateCardAction = function(obj){
 let getRateCardPackages = function(){
   return axios.get( baseURL + '/rate-cards/packages' );
 }
-
+let getRateCardPackageById = function(id){
+  return axios.get( baseURL + '/rate-cards/packages?id='+id);
+}
+let postPackageCreate = function(obj){
+  return axios.post( baseURL + '/rate-cards/packages/create', obj);
+}
+let postPackageUpdate = function(obj){
+  return axios.post( baseURL + '/rate-cards/packages/update', obj);
+}
+let postPackageDelete = function(obj){
+  return axios.post( baseURL + '/rate-cards/packages/delete', obj);
+}
 
 
 
@@ -218,5 +229,9 @@ export {
   postRateCardPreview,
   postRateCardAction,
 
-  getRateCardPackages
+  getRateCardPackages,
+  postPackageCreate,
+  postPackageUpdate,
+  postPackageDelete,
+  getRateCardPackageById
 }

@@ -2,10 +2,26 @@ import React, {Component} from 'react';
 
 import './calcview.scss';
 
-export default class CalcView extends Component {
+export class CalcView extends Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            rate: 0,
+            total: 0,
+            discount: 0
+        }
+    }
 
-    onChangeHandler(evt){
-        console.log(evt.target.value);
+    componentWillMount(){
+        if(this.state.rate!==this.props.rate){
+            this.setState({rate:this.props.rate});
+        }
+        if(this.state.total!==this.props.total){
+            this.setState({total:this.props.total});
+        }
+        if(this.state.discount!==this.props.discount){
+            this.setState({discount:this.props.discount});
+        }
     }
 
     render() {
@@ -17,7 +33,7 @@ export default class CalcView extends Component {
                             <label>Total Package Rate</label>
                         </div>
                         <div className='col-xs-6'>
-                            <input type='text' value='20,000' onChange={this.onChangeHandler.bind(this)} disabled/>
+                            <input type='text' value={this.state.total} disabled/>
                         </div>
                     </div>
                     <br />
@@ -27,7 +43,7 @@ export default class CalcView extends Component {
                             <label>Discount</label>
                         </div>
                         <div className='col-xs-6'>
-                            <input type='text' value='10%' onChange={this.onChangeHandler.bind(this)}/>
+                            <input type='text' value={this.state.discount + '%'} disabled/>
                         </div>
                     </div>
                     <br />
@@ -37,7 +53,7 @@ export default class CalcView extends Component {
                             <label>Package Rate</label>
                         </div>
                         <div className='col-xs-6'>
-                            <input type='text' value='18,000' onChange={this.onChangeHandler.bind(this)} disabled/>
+                            <input type='text' value={this.state.rate} disabled/>
                         </div>
                     </div>
 
