@@ -11,7 +11,8 @@ import sortable from 'sortablejs';
 
 import {getServiceCategoriesRoot,
         postServiceCategoriesCreate,
-        postServiceCategoriesUpdate
+        postServiceCategoriesUpdate,
+        postRatecardServiceCategoriesSortServiceCategories
       } from '../../common/http';
 
 export class Categories extends Component {
@@ -24,6 +25,8 @@ export class Categories extends Component {
       categoryName:  "",
       response_last_id: null,
     };
+
+    this.parentMe = this;
   }
 
   componentDidMount(){
@@ -43,7 +46,27 @@ export class Categories extends Component {
     {
       animation: 100,
       handle: '.myHandle',
-      ghostClass: 'ghost'
+      ghostClass: 'ghost',
+      onSort: function(e){
+        let items = e.to.children;
+        let result = [];
+        
+        for (var i = 0; i < items.length; i++) {
+            let id = xhr(items[i])[0].dataset.id;
+            let order = i;
+            result.push({id, order});
+        }
+
+        console.log('level1-done', JSON.stringify(result));
+
+        postRatecardServiceCategoriesSortServiceCategories(
+          { categories_sort: JSON.stringify(result) }
+        )
+        .then(function(response){
+          console.log(response);
+        });
+
+      }
     });
   }
   
@@ -145,12 +168,12 @@ export class Categories extends Component {
         {/* Category Listing */}
         <div className="category-list">
           <ul style={{margin:"0"}} id="SortableLevelOne">
-            { scope.state.categoryLevelOne.map(function(currentData, index){
+            { scope.state.categoryLevelOne.map(function(data, index){
                 return ( 
-                  <li key={currentData.id}>
+                  <li key={data.id} data-id={data.id}>
                     <span className="myHandle">::</span>
-                    <LevelTwo parentData={currentData} 
-                              sortableId={currentData.id} 
+                    <LevelTwo parentData={data} 
+                              sortableId={data.id} 
                               onDelete={scope.callbackDelete.bind(scope)} 
                               onUpdate={scope.callbackUpdate.bind(scope)} />
                   </li>

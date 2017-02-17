@@ -10,7 +10,8 @@ import {
     getServiceCategories_subCategories_level3_byParentId,
     postServiceCategories_subCategories_create,
     postServiceCategories_subCategories_delete,
-    postServiceCategories_subCategories_update
+    postServiceCategories_subCategories_update,
+    postRatecardServiceCategoriesSortServiceSubCategories
     
     } from '../http';
 
@@ -57,7 +58,26 @@ export class LevelThree extends Component {
             
             scope.hackSortableInstance = sortable.create( el , {
                 animation: 100,
-                handle: '.myHandle'
+                handle: '.myHandle',
+                onSort: function(e){
+                    var items = e.to.children;
+                    var result = [];
+                    
+                    for (var i = 0; i < items.length; i++) {
+                        let id = xhr(items[i])[0].dataset.id;
+                        let order = i;
+                        result.push({id, order});
+                    }
+
+                    console.log('level3-done', result);
+                    
+                    postRatecardServiceCategoriesSortServiceSubCategories({ 
+                        categories_sort: JSON.stringify(result) 
+                    })
+                    .then(function(response){
+                    console.log(response);
+                    });
+                }
             });
 
             // console.log(this.props.sortableId);
@@ -275,7 +295,7 @@ export class LevelThree extends Component {
                             hasLevel3 = true;
 
                             return (
-                                <li key={data.id}>
+                                <li key={data.id} data-id={data.id}>
                                     <span className="myHandle">::</span>
                                     <LevelThree 
                                         nextLevel={3} 

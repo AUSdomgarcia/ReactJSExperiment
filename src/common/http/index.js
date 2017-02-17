@@ -186,6 +186,17 @@ let postPackageDelete = function(obj){
 
 
 
+
+{/* Sortable */}
+let postRatecardServiceCategoriesSortServiceCategories = function(obj){
+  return axios.post( baseURL + '/rate-cards/service-categories/sort-service-categories', obj);
+}
+let postRatecardServiceCategoriesSortServiceSubCategories = function(obj){
+  return axios.post( baseURL + '/rate-cards/service-categories/sort-service-sub_categories', obj);
+}
+
+
+
 export { 
   getServices, 
   getServiceByCategoryId, 
@@ -233,5 +244,8 @@ export {
   postPackageCreate,
   postPackageUpdate,
   postPackageDelete,
-  getRateCardPackageById
+  getRateCardPackageById,
+
+  postRatecardServiceCategoriesSortServiceCategories,
+  postRatecardServiceCategoriesSortServiceSubCategories
 }

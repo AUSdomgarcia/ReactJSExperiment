@@ -10,7 +10,10 @@ import sortable from 'sortablejs';
 import { 
     postServiceCategoriesDelete,
     postServiceCategories_subCategories_create,
-    postServiceCategories_subCategories_update } from '../../common/http';
+    postServiceCategories_subCategories_update,
+postRatecardServiceCategoriesSortServiceSubCategories,
+getServiceCategories_subCategories_level2_byParentId
+ } from '../../common/http';
 
 export class LevelTwo extends Component {
 
@@ -47,11 +50,35 @@ export class LevelTwo extends Component {
 
         scope.hackSortableInstance = sortable.create( el , {
             animation: 100,
-            handle: '.myHandle'
+            handle: '.myHandle',
+            onSort: function(e){
+                var items = e.to.children;
+                var result = [];
+                
+                for (var i = 0; i < items.length; i++) {
+                    let id = xhr(items[i])[0].dataset.id;
+                    let order = i;
+                    result.push({id, order});
+                }
+
+                console.log('level2-done', JSON.stringify(result) );
+
+                postRatecardServiceCategoriesSortServiceSubCategories({ 
+                    categories_sort: JSON.stringify(result) 
+                })
+                .then(function(response){
+                    console.log(response);
+                });
+            }
         });
     }
 
+    onEndSortableLevel2(evt){
+        console.log('old', evt.oldIndex, 'new', evt.newIndex);
+    }
+
     componentWillReceiveProps(nextProps){
+        /*
         if(nextProps.parentData['sub_categories']===undefined) return;
 
         let tempArr = nextProps.parentData['sub_categories'];
@@ -66,6 +93,24 @@ export class LevelTwo extends Component {
                 this.setState({ currentVersion: tempArr[tempArr.length-1].version });
             }
         }
+        */
+    }
+
+    componentWillMount(){
+        let scope = this;
+        this.setState({ myCurrentId: this.props.parentData.id });
+
+        getServiceCategories_subCategories_level2_byParentId(this.props.sortableId).then(function(response){
+            if(response.data.hasOwnProperty('payload')){
+                if(response.data.payload.length!==0){
+                    
+                    console.log('categories/level2', response.data.payload);
+
+                    scope.setState({ categoryLevelTwo: response.data.payload });
+                    scope.setState({ currentVersion: response.data.payload[response.data.payload.length-1].version });
+                }
+            }
+        });
     }
 
     onManageBtn(){
@@ -236,11 +281,10 @@ export class LevelTwo extends Component {
             level2 = 
                 this.state.categoryLevelTwo
                     .map(function(data){
-                        if( data.level ==="2" ){
-                            hasLevel2 = true;
-
+                        // if( data.level ==="2" ){
+                            // hasLevel2 = true;
                             return (
-                                <li key={data.id}>
+                                <li key={data.id} data-id={data.id}>
                                     <span className="myHandle">::</span>
                                     <LevelThree 
                                         nextLevel={2}
@@ -252,7 +296,7 @@ export class LevelTwo extends Component {
                                         onUpdate={scope.callbackUpdate.bind(scope)} 
                                     />
                                 </li> )
-                        }
+                        // }
                     })
             
             if(hasLevel2 === false){

@@ -27,9 +27,12 @@ export class ConnectedTable extends Component {
         }
 
         getRateCards().then(function(response){
-            if(response.data.payload.length!==0){
-                scope.setState({ratecards:response.data.payload});
-                scope.manageSelectedRateCard(response);
+            console.log('getRateCards', response);
+            if(response.data.hasOwnProperty('payload')){
+                if(response.data.payload.length!==0){
+                    scope.setState({ratecards:response.data.payload});
+                    scope.manageSelectedRateCard(response);
+                }
             }
         });
     }
@@ -52,9 +55,11 @@ export class ConnectedTable extends Component {
         let scope = this;
         getRateCardById(id).then(function(response){
             console.log('/getServices_byRateCardId', response);
-            if(response.data.payload.length!==0){
-                let services = response.data.payload[0].services;
-                scope.setState({services});
+            if(response.data.hasOwnProperty('payload')){
+                if(response.data.payload.length!==0){
+                    let services = response.data.payload[0].services;
+                    scope.setState({services});
+                }
             }
         });
     }

@@ -909,6 +909,11 @@ export class RateCardSave extends Component {
             });
         }
     }
+    
+    callbackUpdateServiceCategory(serviceCategory){
+        this.setState({serviceCategory});
+        // Your Working here
+    }
 
     onSave(){
         let scope = this;
@@ -964,6 +969,7 @@ export class RateCardSave extends Component {
                             serviceCategory={this.state.serviceCategory}
                             ratecardname={this.state.name}
                             ratecarddesc={this.state.description}
+                            onUpdateServiceCategory={this.callbackUpdateServiceCategory.bind(this)}
                          />
 
                         <br />
