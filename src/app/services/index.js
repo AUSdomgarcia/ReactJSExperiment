@@ -42,6 +42,7 @@ export class Services extends Component {
     componentDidMount(){
         let scope = this;
         getServices().then(function(response){
+            if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
                 scope.setState({ categoriesArr: response.data.payload })    
             }
@@ -69,6 +70,7 @@ export class Services extends Component {
 
         postServiceCategoriesDelete({id: id}).then(function(response){
             console.log('deleted', response);
+            if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
                 scope.setState({ categoriesArr: response.data.payload });    
             }
@@ -444,6 +446,7 @@ export class ServiceAdd extends Component {
             // Get Level2
             getServiceCategories_subCategories_level2_byParentId(this.state.serviceCategoryIdRef)
             .then(function(response){
+                if(response.data.hasOwnProperty('payload')===false) return;
                 if(response.data.payload.length===0){
                     scope.setState({ level2ValueId: null });
                     return;
@@ -460,6 +463,7 @@ export class ServiceAdd extends Component {
                         if(!isNaN(level3IndexZeroId)){
                             getServiceCategories_subCategories_level3_byParentId(level3IndexZeroId)
                             .then(function(response){
+                                if(response.data.hasOwnProperty('payload')===false) return;
                                 if(response.data.payload.length===0) return;
                                 scope.setState({ level3Arr: response.data.payload });
                                 scope.setState({ level3ValueId: response.data.payload[0].id});
@@ -496,6 +500,7 @@ export class ServiceAdd extends Component {
 
         getServiceCategories_subCategories_level3_byParentId(evt.target.value)
         .then(function(response){
+            if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
                 scope.setState({ level3Arr: response.data.payload });
             } else {

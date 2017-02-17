@@ -13,6 +13,7 @@ export class Logs extends Component {
     componentDidMount(){
         let scope = this;
         getLogs(this.props.serviceid).then(function(response){
+            if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
                 scope.setState({ logsArr: response.data.payload });    
             }

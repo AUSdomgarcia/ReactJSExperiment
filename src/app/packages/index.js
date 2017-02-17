@@ -23,7 +23,7 @@ export class Packages extends Component {
         let scope = this;
         getRateCardPackages().then(function(response){
             console.log('/packages', response);
-            
+            if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
                 scope.setState({packages: response.data.payload });
             }

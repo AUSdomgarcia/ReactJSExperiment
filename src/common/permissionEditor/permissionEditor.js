@@ -29,6 +29,7 @@ export class PermissionEditor extends Component {
 
         getRateCardsPersonnelEmployees().then(function(response){
             console.log('permission_editor', response);
+            if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
                 scope.setState({employees: response.data.payload});
                 // copy
@@ -48,6 +49,7 @@ export class PermissionEditor extends Component {
         let exists = false;
         let currIndex = 0;
         let employee = this.state.employees;
+        let scope = this;
 
         if(id===undefined || id===null) return;
         if(index===undefined || index===null) return;
@@ -57,7 +59,14 @@ export class PermissionEditor extends Component {
         // initial when 0
         if(this.state.permittedUsers.length===0){
             console.log('once');
-            this.state.permittedUsers.push(employee[index]);
+            // this.state.permittedUsers.push(employee[index]);
+             this.state.employees.map(function(data){
+                //  console.log('what?', +data.employee_number, +id);
+                if(+data.employee_number === +id){
+                    scope.state.permittedUsers.push(data);
+                }
+            });
+
             this.setState({ permittedUsers: this.state.permittedUsers });
 
             // window.sessionStorage.setItem('permittedUsers', JSON.stringify(this.state.permittedUsers) );
@@ -84,15 +93,16 @@ export class PermissionEditor extends Component {
         }
         
         if(exists===false){
-            this.state.permittedUsers.push(employee[index]);
+            this.state.employees.map(function(data){
+                if(+data.employee_number === +id){
+                    scope.state.permittedUsers.push(data);
+                }
+            });
+            // this.state.permittedUsers.push(employee[index]);
         }
-
         this.setState({ permittedUsers: this.state.permittedUsers });
-
         // window.sessionStorage.setItem('permittedUsers', JSON.stringify(this.state.permittedUsers) );
-
         // console.log('permittedUsers', window.sessionStorage.getItem('permittedUsers') );
-    
         this.props.onUpdateArray(this.state.permittedUsers);
     }
 
@@ -174,7 +184,7 @@ export class PermissionEditor extends Component {
             employeesTable = 
             this.state.employees_filtered.map(function(data, index){
                 return (
-                    <tr key={data.id}>
+                    <tr key={data.employee_number}>
                         <td>{data.first_name} {data.middle_name} {data.family_name}</td>
                         <td>{data.company_email}</td>
                         <td>
@@ -193,7 +203,7 @@ export class PermissionEditor extends Component {
             permittedUser = 
             this.state.permittedUsers.map(function(data, index){
                 return (
-                    <tr key={data.id}>
+                    <tr key={data.employee_number}>
                         <td>{data.first_name} {data.middle_name} {data.family_name}</td>
                         <td>{data.company_email}</td>
                         <td>

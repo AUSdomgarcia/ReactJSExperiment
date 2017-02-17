@@ -37,6 +37,7 @@ export class Categories extends Component {
       
       scope.setState({ categoryLevelOne: response.data.payload });
 
+      if(response.data.hasOwnProperty('payload')===false) return;
       if(response.data.payload.length!==0){
         scope.setState({response_last_id: response.data.payload[response.data.payload.length-1].id});
       }
@@ -92,6 +93,7 @@ export class Categories extends Component {
 
     // Co-op investigate .. tells setting state during unmount component
     postServiceCategoriesCreate({name: this.state.categoryName }).then(function(response){
+      if(response.data.hasOwnProperty('payload')===false) return;
       scope.setState({ categoryLevelOne: response.data.payload });
       scope.setState({ response_last_id: response.data.payload[response.data.payload.length-1].id });
     });

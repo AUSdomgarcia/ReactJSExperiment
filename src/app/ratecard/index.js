@@ -28,6 +28,7 @@ export class RateCard extends Component {
         
         getRateCards().then(function(response){
             console.log('/ratecard', response);
+            if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
                 // filter archive and ratecard
                 scope.segregateRateCard(response.data.payload);
@@ -390,6 +391,7 @@ export class RateCardChoose extends Component {
         let wsratetypeid = window.sessionStorage.getItem('selectedRateTypeId');
 
         getServiceRateTypes().then(function(response){
+            if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
                 scope.setState({ rateTypeArr: response.data.payload });        
 
@@ -406,7 +408,7 @@ export class RateCardChoose extends Component {
                 
                 getRateCardServicesById(id).then(function(response){
                     console.log('get_services_by_id', response.data.payload);
-                    
+                    if(response.data.hasOwnProperty('payload')===false) return;
                     if(response.data.payload.length!==0){
                         scope.setState({ serviceArr: response.data.payload })
                     }
@@ -425,6 +427,7 @@ export class RateCardChoose extends Component {
         // 
         getRateCardServicesById(id).then(function(response){
             console.log(response.data);
+            if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
                 scope.setState({ serviceArr: response.data.payload })
             } else {

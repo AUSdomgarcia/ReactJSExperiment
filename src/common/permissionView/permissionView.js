@@ -24,6 +24,7 @@ export class PermissionView extends Component {
 
         getRateCardsPersonnelEmployeesByDefault()
             .then(function(response){
+                if(response.data.hasOwnProperty('payload')===false) return;
                 if(response.data.payload.length!==0){
                     scope.setState({employeeDefault: response.data.payload});            
                 }
