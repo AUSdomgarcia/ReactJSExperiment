@@ -22,33 +22,28 @@ export class Personnel extends Component {
       // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
 
       this.state = {
-        rateTypeArr: [],
-        editData: [],
-
-        personnelArr: [],
-        
-        personnelFilter: [],
-
+        personnels: [],
+        personnelscopy: [],
         isUpdated: false
       }
   }
 
-  componentDidMount(){
+  componentWillMount(){
     let scope = this;
     let ta = null;
 
     // xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
     //     console.log('current personnels', data.payload);
-    //     scope.setState({ personnelArr: data.payload });
+    //     scope.setState({ personnels: data.payload });
     //     // copy
-    //     scope.setState({ personnelFilter: data.payload });
+    //     scope.setState({ personnelscopy: data.payload });
     // });
 
     getServicePersonnels().then(function(response){
       console.log('personnels', response.data.payload);
-        scope.setState({ personnelArr: response.data.payload });
+        scope.setState({ personnels: response.data.payload });
         // copy
-        scope.setState({ personnelFilter: response.data.payload });
+        scope.setState({ personnelscopy: response.data.payload });
     });
   }
 
@@ -57,43 +52,42 @@ export class Personnel extends Component {
   }
 
   callbackAdded(addValue){
-    this.setState({personnelArr: addValue});
+    this.setState({personnels: addValue});
     this.setState({isUpdated:false});
     // copy
-    this.setState({ personnelFilter: addValue });
+    this.setState({ personnelscopy: addValue });
   }
 
   callbackUpdate(addValue){
-    this.setState({personnelArr: addValue});
+    this.setState({personnels: addValue});
     this.context.router.push('/personnel');
     this.setState({isUpdated:true});
     // copy
-    this.setState({ personnelFilter: addValue });
+    this.setState({ personnelscopy: addValue });
   }
   
   callbackDeletePersonnel(id){
     let scope = this;
-     this.state.personnelArr.map(function(data, index){
+     this.state.personnels.map(function(data, index){
         if(data.id === +id){
-          scope.state.personnelArr.splice(index, 1);
-          scope.setState({ personnelArr: scope.state.personnelArr });   
+          scope.state.personnels.splice(index, 1);
+          scope.setState({ personnels: scope.state.personnels });   
           // copy
-          scope.setState({ personnelFilter: scope.state.personnelArr });
+          scope.setState({ personnelscopy: scope.state.personnels });
         }
     });
 
-    this.redirectWhenNoArr();
+    this.redirectPersonnel();
   }
 
-  redirectWhenNoArr(){
-    if(this.state.personnelArr.length===0){
+  redirectPersonnel(){
+    if(this.state.personnels.length===0){
       this.context.router.push('/personnel');
     }
   }
 
-  callbackFilter(filteredData){
-    // console.log(filteredData);
-    this.setState({ personnelFilter: filteredData });
+  callbackFiltered(filters){
+    this.setState({ personnelscopy: filters });
   }
 
   render() {
@@ -141,8 +135,8 @@ export class Personnel extends Component {
               {/*<input id="personnel-searchbox" type="text" className="form-control" placeholder="Search for..." onChange={this.onFilter.bind(this)} />*/}
 
               <FilteredList 
-                data={this.state.personnelArr}
-                onFilter={this.callbackFilter.bind(this)}
+                data={this.state.personnels}
+                onFilter={this.callbackFiltered.bind(this)}
               />
 
               <span className="input-group-btn">
@@ -155,7 +149,7 @@ export class Personnel extends Component {
         </div>
 
         <PersonnelList
-          parentData={this.state.personnelFilter} 
+          parentData={this.state.personnelscopy} 
           onDelete={this.callbackDeletePersonnel.bind(this)}/>
 
       </div>

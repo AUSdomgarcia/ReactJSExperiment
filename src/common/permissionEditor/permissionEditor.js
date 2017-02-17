@@ -10,8 +10,9 @@ export class PermissionEditor extends Component {
     constructor(props){
         super(props);
         this.state = {
-            employeesArr: [],
-            permittedUserArr: []
+            employees: [],
+            employees_filtered:[],
+            permittedUsers: []
         };
     }
 
@@ -29,12 +30,15 @@ export class PermissionEditor extends Component {
         getRateCardsPersonnelEmployees().then(function(response){
             console.log('permission_editor', response);
             if(response.data.payload.length!==0){
-                scope.setState({employeesArr: response.data.payload});
+                scope.setState({employees: response.data.payload});
+                // copy
+                scope.setState({employees_filtered: response.data.payload});
+                console.log('employess', response.data.payload);
             }
         });
 
-        if(this.props.defaultArr!==this.state.permittedUserArr){
-            this.setState({permittedUserArr: this.props.defaultArr});
+        if(this.props.defaultArr!==this.state.permittedUsers){
+            this.setState({permittedUsers: this.props.defaultArr});
         }
     }
 
@@ -43,7 +47,7 @@ export class PermissionEditor extends Component {
         let index = xhr(evt.target)[0].dataset.index;
         let exists = false;
         let currIndex = 0;
-        let employee = this.state.employeesArr;
+        let employee = this.state.employees;
 
         if(id===undefined || id===null) return;
         if(index===undefined || index===null) return;
@@ -51,21 +55,21 @@ export class PermissionEditor extends Component {
         console.log(index, id); 
 
         // initial when 0
-        if(this.state.permittedUserArr.length===0){
+        if(this.state.permittedUsers.length===0){
             console.log('once');
-            this.state.permittedUserArr.push(employee[index]);
-            this.setState({ permittedUserArr: this.state.permittedUserArr });
+            this.state.permittedUsers.push(employee[index]);
+            this.setState({ permittedUsers: this.state.permittedUsers });
 
-            // window.sessionStorage.setItem('permittedUserArr', JSON.stringify(this.state.permittedUserArr) );
-            // console.log('permittedUserArr', window.sessionStorage.getItem('permittedUserArr') );
+            // window.sessionStorage.setItem('permittedUsers', JSON.stringify(this.state.permittedUsers) );
+            // console.log('permittedUsers', window.sessionStorage.getItem('permittedUsers') );
             
-            this.props.onUpdateArray(this.state.permittedUserArr);
+            this.props.onUpdateArray(this.state.permittedUsers);
             return;
         }
 
         // checking
-        for (let i = 0; i < this.state.permittedUserArr.length; i++) {
-            if (+this.state.permittedUserArr[i].employee_number === +id) {
+        for (let i = 0; i < this.state.permittedUsers.length; i++) {
+            if (+this.state.permittedUsers[i].employee_number === +id) {
                 currIndex = i;
                 exists = true;
             }
@@ -80,44 +84,98 @@ export class PermissionEditor extends Component {
         }
         
         if(exists===false){
-            this.state.permittedUserArr.push(employee[index]);
+            this.state.permittedUsers.push(employee[index]);
         }
 
-        this.setState({ permittedUserArr: this.state.permittedUserArr });
+        this.setState({ permittedUsers: this.state.permittedUsers });
 
-        // window.sessionStorage.setItem('permittedUserArr', JSON.stringify(this.state.permittedUserArr) );
+        // window.sessionStorage.setItem('permittedUsers', JSON.stringify(this.state.permittedUsers) );
 
-        // console.log('permittedUserArr', window.sessionStorage.getItem('permittedUserArr') );
+        // console.log('permittedUsers', window.sessionStorage.getItem('permittedUsers') );
     
-        this.props.onUpdateArray(this.state.permittedUserArr);
+        this.props.onUpdateArray(this.state.permittedUsers);
     }
 
     onRemoveEmployee(evt){
         let index = xhr(evt.target)[0].dataset.index;
         if(index===undefined || index===null) return;
 
-        this.state.permittedUserArr.splice(index, 1);
+        this.state.permittedUsers.splice(index, 1);
 
-        this.setState({ permittedUserArr: this.state.permittedUserArr });
+        this.setState({ permittedUsers: this.state.permittedUsers });
 
-        this.props.onUpdateArray(this.state.permittedUserArr);
+        this.props.onUpdateArray(this.state.permittedUsers);
 
-        // window.sessionStorage.setItem('permittedUserArr', JSON.stringify(this.state.permittedUserArr) );
+        // window.sessionStorage.setItem('permittedUsers', JSON.stringify(this.state.permittedUsers) );
 
-        // console.log('permittedUserArr', window.sessionStorage.getItem('permittedUserArr') );
+        // console.log('permittedUsers', window.sessionStorage.getItem('permittedUsers') );
+    }
+
+    onKeyPress(event){
+        let word = event.target.value;
+        let scope = this;
+
+        if(event.key==='Enter'){
+            this.setState({employees_filtered: this.state.employees });
+            
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                scope.processFilter(word);
+            }, 100);
+        }
+    }
+
+    onFilterUsers(event){
+        this.processFilter(event.target.value);
+    }
+
+    processFilter(word){
+        let updatedList = this.state.employees_filtered || [];
+        if(updatedList.length===0) return;
+        
+        let scope = this;
+        let filtered = [];
+        let typed = word.trim();
+
+        updatedList.map(function(data, index, arr){
+            // by email
+            if( data.company_email.toLowerCase().includes(typed)){
+                filtered.push(data);
+                scope.setState({employees_filtered:filtered});
+            // by first name
+            } else if( data.first_name.toLowerCase().includes(typed)){
+                filtered.push(data);
+                scope.setState({employees_filtered:filtered});
+            // by family name
+            } else if( data.family_name.toLowerCase().includes(typed)){
+                filtered.push(data);
+                scope.setState({employees_filtered:filtered});
+            // by middle name
+            } else if( data.middle_name.toLowerCase().includes(typed)){
+                filtered.push(data);
+                scope.setState({employees_filtered:filtered});
+            // by nick name
+            } else if(data.nick_name!==null){
+                data.nick_name.toLowerCase().includes(typed);
+                filtered.push(data);
+                scope.setState({employees_filtered:filtered});
+            }
+        });
+
+        if(word.length===0) this.setState({employees_filtered: this.state.employees });
     }
     
     render(){
-        let employees = <tr><td colSpan={3}>Loading..</td></tr>;
+        let employeesTable = <tr><td colSpan={3}>Loading..</td></tr>;
         let permittedUser = <tr><td colSpan={3}>No data.</td></tr>;
         let scope = this;
 
-        if(this.state.employeesArr.length!==0){
-            employees = 
-            this.state.employeesArr.map(function(data, index){
+        if(this.state.employees_filtered.length!==0){
+            employeesTable = 
+            this.state.employees_filtered.map(function(data, index){
                 return (
                     <tr key={data.id}>
-                        <td>{data.first_name} {data.middle_name} {data.last_name}</td>
+                        <td>{data.first_name} {data.middle_name} {data.family_name}</td>
                         <td>{data.company_email}</td>
                         <td>
                             <button 
@@ -131,12 +189,12 @@ export class PermissionEditor extends Component {
             });
         }
 
-        if(this.state.permittedUserArr.length!==0){
+        if(this.state.permittedUsers.length!==0){
             permittedUser = 
-            this.state.permittedUserArr.map(function(data, index){
+            this.state.permittedUsers.map(function(data, index){
                 return (
                     <tr key={data.id}>
-                        <td>{data.first_name} {data.middle_name} {data.last_name}</td>
+                        <td>{data.first_name} {data.middle_name} {data.family_name}</td>
                         <td>{data.company_email}</td>
                         <td>
                             <button 
@@ -161,7 +219,11 @@ export class PermissionEditor extends Component {
                             <i className='fa fa-search'></i>
                         </button>
                     </span>
-                    <input type='text' className='form-control' placeholder='Search for...' />
+                    <input type='text' 
+                        className='form-control' 
+                        onChange={this.onFilterUsers.bind(this)}
+                        onKeyPress={this.onKeyPress.bind(this)}
+                        placeholder='Search for...' />
                 </div>
 
                 <br />
@@ -178,7 +240,7 @@ export class PermissionEditor extends Component {
                         </thead>
 
                         <tbody>
-                            {employees}
+                            {employeesTable}
                         </tbody>
                     </table>
                 </div>
