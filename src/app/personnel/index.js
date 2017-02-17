@@ -55,7 +55,9 @@ export class Personnel extends Component {
     this.setState({personnels: addValue});
     this.setState({isUpdated:false});
     // copy
-    this.setState({ personnelscopy: addValue });
+    this.setState({ personnelscopy: addValue }, function(){
+      alert('Successfully addded new personnel');
+    });
   }
 
   callbackUpdate(addValue){
@@ -63,7 +65,9 @@ export class Personnel extends Component {
     this.context.router.push('/personnel');
     this.setState({isUpdated:true});
     // copy
-    this.setState({ personnelscopy: addValue });
+    this.setState({ personnelscopy: addValue }, function(){
+      alert('Updated personnel');
+    });
   }
   
   callbackDeletePersonnel(id){

@@ -460,6 +460,7 @@ export class ServiceAdd extends Component {
                         if(!isNaN(level3IndexZeroId)){
                             getServiceCategories_subCategories_level3_byParentId(level3IndexZeroId)
                             .then(function(response){
+                                if(response.data.payload.length===0) return;
                                 scope.setState({ level3Arr: response.data.payload });
                                 scope.setState({ level3ValueId: response.data.payload[0].id});
                             });
