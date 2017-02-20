@@ -131,7 +131,7 @@ let getLogs = function(id){
 
 {/* Rate Cards */}
 let getRateCards = function(){
-  return axios.get( baseURL + '/rate-cards/rate-cards');
+  return axios.get( baseURL + '/rate-cards/rate-cards?active=baymax');
 }
 let getRateCardById = function(id){
   return axios.get( baseURL + '/rate-cards/rate-cards?id='+ id); 

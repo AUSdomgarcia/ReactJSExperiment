@@ -27,6 +27,9 @@ export class PermissionEditor extends Component {
     componentWillMount(){
         let scope = this;
 
+        let includedServiceArr = window.sessionStorage.getItem('includedServiceArr') || [];
+        console.log('permissionEditor', includedServiceArr);
+
         getRateCardsPersonnelEmployees().then(function(response){
             console.log('permission_editor', response);
             if(response.data.hasOwnProperty('payload')===false) return;
@@ -34,7 +37,7 @@ export class PermissionEditor extends Component {
                 scope.setState({employees: response.data.payload});
                 // copy
                 scope.setState({employees_filtered: response.data.payload});
-                console.log('employess', response.data.payload);
+                console.log('employess', response.data.payload.length);
             }
         });
 

@@ -47,6 +47,13 @@ export class CategoryTreeView extends Component {
         }
     }
 
+    callbackOnDrag(){
+        this.props.onDrag();
+    }
+    callbackOnDrop(services){
+        this.props.onDrop(services);
+    }
+
     render(){
         let scope = this;
         let servicesElement = <div>No Category.</div>
@@ -63,8 +70,12 @@ export class CategoryTreeView extends Component {
                             <div><strong>Description</strong></div>
                             <div><strong>Cost</strong></div>
                         </div>
-
-                        <ServiceViewer uniqueId={data.id} servicesRef={data.services} />
+                        
+                        <ServiceViewer 
+                            onDrag={scope.callbackOnDrag.bind(scope)} 
+                            onDrop={scope.callbackOnDrop.bind(scope)}
+                            uniqueId={data.id} 
+                            servicesRef={data.services} />
                     </div>
                 )
             })

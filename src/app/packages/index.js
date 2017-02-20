@@ -723,6 +723,18 @@ export class PackageSave extends Component {
         });
     }
 
+    callbackUpdateServiceCategory(serviceCategory){
+        this.setState({serviceCategory});
+    }
+
+    callbackOndrop(){
+        this.setState({enableSave:true});
+    }
+    
+    callbackOndrag(){
+        this.setState({enableSave:false});
+    }
+
     render () {
         let scope = this;
         let saveAndBackBtn = <span></span>;
@@ -751,6 +763,9 @@ export class PackageSave extends Component {
                             serviceCategory={this.state.categories}
                             ratecardname={this.state.name}
                             ratecarddesc={this.state.description}
+                            onUpdateServiceCategory={this.callbackUpdateServiceCategory.bind(this)}
+                            onDrag={this.callbackOndrag.bind(this)}
+                            onDrop={this.callbackOndrop.bind(this)}
                         />
 
                         <CalcView 

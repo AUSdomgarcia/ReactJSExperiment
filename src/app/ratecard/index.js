@@ -63,6 +63,8 @@ export class RateCard extends Component {
 
         if(id===undefined || id===null) return;
 
+        window.sessionStorage.clear();
+
         getRateCardById(id).then(function(response){
             console.log('>>>>', id, response);
 
@@ -75,9 +77,7 @@ export class RateCard extends Component {
 
             let delay = setTimeout(function(){
                 clearTimeout(delay);
-                
-                window.sessionStorage.setItem('editmode', 'ok');
-
+                window.sessionStorage.setItem('ratecardAction', 'edit');
                 scope.context.router.push('/ratecard/add');
             }, 100);
         });
@@ -103,9 +103,10 @@ export class RateCard extends Component {
         let id = xhr(evt.target)[0].dataset.storeid;
         let scope = this;
 
-        window.sessionStorage.setItem('editmode', 'ok');
-
+        // window.sessionStorage.setItem('editmode', 'ok');
         if(id===undefined || id===null) return;
+
+        window.sessionStorage.clear();
 
         getRateCardById(id).then(function(response){
 
@@ -118,10 +119,15 @@ export class RateCard extends Component {
 
             let delay = setTimeout(function(){
                 clearTimeout(delay);
-                // window.sessionStorage.setItem('editmode', 'ok');
+                window.sessionStorage.setItem('ratecardAction', 'view');
                 scope.context.router.push('/ratecard/save');
             }, 100);
         });
+    }
+
+    onCreate(){
+        window.sessionStorage.setItem('ratecardAction', 'create');
+        this.context.router.push('/ratecard/add');
     }
     
     render(){
@@ -138,8 +144,8 @@ export class RateCard extends Component {
                         <td>{data.description}</td>
                         <td>{data.version}</td>
                         <td>
-                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.handleEdit.bind(scope)}>Edit</button>
-                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onViewHandler.bind(scope)}>View</button>
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.handleEdit.bind(scope)}>Edit</button>&nbsp;
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onViewHandler.bind(scope)}>View</button>&nbsp;
                             <button className='btn btn-warning' data-action="archive" data-storeid={data.id} onClick={scope.onBtnHandler.bind(scope)} >Archive</button>
                         </td>
                     </tr>
@@ -163,6 +169,7 @@ export class RateCard extends Component {
                 )
             })
         }
+        
 
         return (
             <div>
@@ -189,7 +196,12 @@ export class RateCard extends Component {
                         </table>
 
                         <div className='footer-container clearfix'>
-                            <Link to='/ratecard/add' className='btn btn-primary pull-right'>Create Rate Card</Link> {/* <------------------------------------- CREATE CARD */}
+                            
+                        {/*
+                            <Link to='/ratecard/add' className='btn btn-primary pull-right'>Create Rate Card</Link>
+                        */}
+                        <button type="button" className="btn btn-primary pull-right" onClick={this.onCreate.bind(this)}>Create Rate Card</button>
+                    
                         </div>
                     </div>
 
@@ -868,7 +880,8 @@ export class RateCardSave extends Component {
             rate_type_id: 0,
             service_ids: "",
             permitted_user_ids: "",
-            serviceCategory: []
+            serviceCategory: [],
+            enableSave: true,
         }
     }
 
@@ -886,30 +899,50 @@ export class RateCardSave extends Component {
             this.setState({ rate_type_id : window.sessionStorage.getItem('selectedRateTypeId') });
         }
 
-        if(window.sessionStorage.getItem('includedServiceArr')){
-            this.setState({ service_ids : window.sessionStorage.getItem('includedServiceArr') });
-        }
-
         if(window.sessionStorage.getItem('permittedUserArr')){
             this.setState({ permitted_user_ids : window.sessionStorage.getItem('permittedUserArr') });
         }
+
+        // if(window.sessionStorage.getItem('includedServiceArr')){
+        //     this.setState({ service_ids : window.sessionStorage.getItem('includedServiceArr') });
+        // }
 
         // Prepare Service Category
         let includedServiceArr = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || []; 
         let scope = this;
 
         // console.log('current selected services:', includedServiceArr.length, window.sessionStorage.getItem('includedServiceArr') );
-        
+        let add_order_property_includedServices = [];
         if(includedServiceArr.length!==0){
-            let jsonToString = JSON.stringify(includedServiceArr);
-
-            console.log('current selected services:', jsonToString ); 
-
-            postRateCardPreview({ service_ids: jsonToString })
-            .then(function(response){
-                console.log('ratecard/save', response);
-                scope.setState({ serviceCategory: response.data.payload });
+            includedServiceArr.map(function(data, index){
+                add_order_property_includedServices.push({ service_id: data.service_id, order: index });
             });
+
+            let json = JSON.stringify(add_order_property_includedServices);
+            
+            let id = window.sessionStorage.getItem('id') || 0;
+
+            let ratecardAction = window.sessionStorage.getItem('ratecardAction') || null;
+
+            console.log('current selected services:', json, id); 
+
+            switch(ratecardAction){
+                case 'view': case 'edit':
+                postRateCardPreview({ service_ids: json, rate_card_id: parseInt(id) })
+                .then(function(response){
+                    console.log('ratecard/save/editmode/:1', response);
+                    scope.setState({ serviceCategory: response.data.payload });
+                });
+                break;
+                
+                case 'create':
+                postRateCardPreview({ service_ids: json })
+                .then(function(response){
+                    console.log('ratecard/save/editmode/:0', response);
+                    scope.setState({ serviceCategory: response.data.payload });
+                });
+                break;
+            }
         }
     }
     
@@ -920,18 +953,30 @@ export class RateCardSave extends Component {
 
     onSave(){
         let scope = this;
-        let editmode = window.sessionStorage.getItem('editmode') || null;
+        let ratecardAction = window.sessionStorage.getItem('ratecardAction') || null;
         let id = window.sessionStorage.getItem('id') || 0;
 
+        // if(this.state.enableSave===false) return;
+
+        console.log('ratecardAction:', ratecardAction, 'id:', id);
+
         // Update
-        if(editmode!==null){
+        if(ratecardAction==='edit' && this.state.enableSave===true){
             console.log('update');
+
+            let service_ids = [];
+            this.state.serviceCategory.map(function(data){
+                service_ids = service_ids.concat(data.services);
+            });
+
+            console.log(JSON.stringify(service_ids));
+
             postRateCardUpdate({
             id: id,
             name: this.state.name,
             description: this.state.description,
             rate_type_id: this.state.rate_type_id,
-            service_ids: this.state.service_ids,
+            service_ids: JSON.stringify(service_ids),
             permitted_user_ids: this.state.permitted_user_ids,
             default_user_ids: this.state.permitted_user_ids
 
@@ -941,13 +986,21 @@ export class RateCardSave extends Component {
             });
             
         // Create
-        } else {
+        } else if(ratecardAction==='create' && this.state.enableSave===true){
             console.log('create');
+
+            let service_ids = [];
+            this.state.serviceCategory.map(function(data){
+                service_ids = service_ids.concat(data.services);
+            });
+
+            console.log(JSON.stringify(service_ids));
+
             postRateCardCreate({
             name: this.state.name,
             description: this.state.description,
             rate_type_id: this.state.rate_type_id,
-            service_ids: this.state.service_ids,
+            service_ids: JSON.stringify(service_ids),
             permitted_user_ids: this.state.permitted_user_ids,
             default_user_ids: this.state.permitted_user_ids
 
@@ -956,6 +1009,36 @@ export class RateCardSave extends Component {
                 scope.context.router.push('/ratecard');
             });
         }
+    }
+
+    callbackOndrag(){
+        this.setState({enableSave:false});
+    }
+
+    callbackOndrop(changeService){
+        console.log('services/output/ratecard/save', changeService);
+        
+        if(this.state.serviceCategory.length===0) return;
+
+        this.state.serviceCategory.map(function(data){
+            let services = data.services;
+                (function(array){
+                    array.map(function(servicesData){
+                        changeService.map(function(changeData){   
+                            if(+servicesData.id === +changeData.id){
+                                servicesData.order = changeData.order;
+                                console.log('called', data);
+                            }
+                        })
+                    });
+                })(services);
+        });
+
+        console.log('before send', JSON.stringify(this.state.serviceCategory));
+
+        this.setState({serviceCategory: this.state.serviceCategory}, function(){
+            this.setState({enableSave: true});
+        });
     }
 
     render(){
@@ -973,6 +1056,8 @@ export class RateCardSave extends Component {
                             ratecardname={this.state.name}
                             ratecarddesc={this.state.description}
                             onUpdateServiceCategory={this.callbackUpdateServiceCategory.bind(this)}
+                            onDrag={this.callbackOndrag.bind(this)}
+                            onDrop={this.callbackOndrop.bind(this)}
                          />
 
                         <br />
@@ -984,7 +1069,7 @@ export class RateCardSave extends Component {
                         <br />
                     
                         <Link className='btn btn-default pull-left' to='/ratecard/permission'>Back</Link>
-                        <button type="button" className="btn btn-primary pull-right" onClick={this.onSave.bind(this)}>Save</button>
+                        <button type="button" className={"btn btn-primary pull-right " + (this.state.enableSave ? '' : 'disabled')} onClick={this.onSave.bind(this)}>Save</button>
                         {/*<Link className='btn btn-primary pull-right' to='/ratecard'>Save</Link>*/}
                    
                     </div>

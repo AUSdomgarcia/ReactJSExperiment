@@ -24,6 +24,8 @@ export class Categories extends Component {
       categoryLevelOne : [],
       categoryName:  "",
       response_last_id: null,
+      isRearrage: false,
+      enableSave: false,
     };
 
     this.parentMe = this;
@@ -132,8 +134,40 @@ export class Categories extends Component {
     });
   }
 
+  onReArrange(){
+    this.setState({isRearrage: true});
+    xhr('.myHandle.-layer1').show();
+  }
+
+  onCancelReArrange(){
+    this.setState({isRearrage: false});
+    xhr('.myHandle.-layer1').hide();
+  }
+
+  onSaveReArrange(){
+
+  }
+
   render() {
-    var scope = this;
+    let scope = this;
+    let rearrage = <span></span>
+
+    if(this.state.isRearrage){
+      rearrage = <span>
+                  <button type="button" 
+                    className={"btn btn-success " + (this.state.enableSave ? '' : 'disabled')} 
+                    onClick={this.onSaveReArrange.bind(this)}>Save
+                  </button>&nbsp;
+                    
+                  <button type="button" 
+                    className="btn btn-default" 
+                    onClick={this.onCancelReArrange.bind(this)}>Cancel
+                  </button>
+                </span>
+    } else {
+      rearrage = 
+      <button type="button" className="btn btn-default" onClick={this.onReArrange.bind(this)}>Rearrange</button>
+    }
 
     return (
       <div>
@@ -154,7 +188,7 @@ export class Categories extends Component {
           </div>
           <div className="col-xs-6">
             <div className="pull-right">
-              <button type="button" className="btn btn-default">Rearrange</button>&nbsp;
+              {rearrage}&nbsp;
               <button type="button" className="btn btn-primary" onClick={this.onAddLevel.bind(this)}>Add Level</button>
             </div>
           </div>
@@ -173,7 +207,10 @@ export class Categories extends Component {
             { scope.state.categoryLevelOne.map(function(data, index){
                 return ( 
                   <li key={data.id} data-id={data.id}>
-                    <span className="myHandle">::</span>
+                    <span className="myHandle -layer1">
+                      <i className="fa fa-ellipsis-v"></i>
+                      <i className="fa fa-ellipsis-v"></i>
+                    </span>
                     <LevelTwo parentData={data} 
                               sortableId={data.id} 
                               onDelete={scope.callbackDelete.bind(scope)} 

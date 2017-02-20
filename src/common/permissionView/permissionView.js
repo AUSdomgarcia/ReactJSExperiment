@@ -15,9 +15,7 @@ export class PermissionView extends Component {
     componentWillMount(){
         let permittedUser = JSON.parse(this.props.permittedUser) || [];
         let scope = this;
-        
-        console.log('BALITANGINA', permittedUser, typeof permittedUser);
-
+        // console.log('BALITANGINA', permittedUser, typeof permittedUser);
         if(permittedUser.length!==0){
             this.setState({permittedUserRef: permittedUser});
         }
