@@ -15,9 +15,7 @@ export class ConnectedTable extends Component {
         }
     }
 
-    componentDidMount(){
-        //
-    }
+    componentDidMount(){}
 
     componentWillMount(){
         let scope = this;
@@ -27,7 +25,7 @@ export class ConnectedTable extends Component {
         }
 
         getRateCardsActive().then(function(response){
-            console.log('getRateCards', response);
+            console.log('getRateCards active', response);
             if(response.data.hasOwnProperty('payload')){
                 if(response.data.payload.length!==0){
                     scope.setState({ratecards:response.data.payload});
@@ -48,13 +46,17 @@ export class ConnectedTable extends Component {
             id = res.data.payload[0].id;
         }
         this.setState({ratecard_id: id});
+        
+        window.sessionStorage.setItem('rateCardId', id);
+
         this.getRateCardServicesById(id);
     }
 
     getRateCardServicesById(id){
         let scope = this;
         getRateCardById(id).then(function(response){
-            console.log('/getServices_byRateCardId', response);
+            console.log('/getServices_packages_ratecard_by_id', response);
+
             if(response.data.hasOwnProperty('payload')){
                 if(response.data.payload.length!==0){
                     let services = response.data.payload[0].services;
@@ -66,11 +68,13 @@ export class ConnectedTable extends Component {
     
     onSelectRateCard(evt){
         let id = evt.target.value;
+        let scope = this;
         if(id===null || id===undefined) return;
 
-        this.setState({ratecard_id: id});
-        this.getRateCardServicesById(id);
-        window.sessionStorage.setItem('rateCardId', id);
+        this.setState({ratecard_id: id}, function(){
+            scope.getRateCardServicesById(id);
+            window.sessionStorage.setItem('rateCardId', id);
+        });
 
         let empty = [];
         window.sessionStorage.setItem('added_services', JSON.stringify(empty));
@@ -93,6 +97,8 @@ export class ConnectedTable extends Component {
             this.setState({added_services:this.state.added_services});
             window.sessionStorage.setItem('added_services', JSON.stringify(this.state.added_services));
             this.props.onUpdate(this.state.added_services);
+
+            console.log(services[index]);
             return;
         }
         // Check Availability
@@ -108,6 +114,7 @@ export class ConnectedTable extends Component {
         }
         if(exists===false){
             this.state.added_services.push(services[index]);
+            console.log(services[index]);
         }
         this.setState({added_services: this.state.added_services});
         this.props.onUpdate(this.state.added_services);

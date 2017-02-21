@@ -48,9 +48,7 @@ export class RateCard extends Component {
 
     componentWillMount(){
         let scope = this;
-        
-        window.sessionStorage.clear();
-    
+        // window.sessionStorage.clear();
         getRateCardsDefault().then(function(response){
             console.log('/ratecard', response);
             if(response.data.hasOwnProperty('payload')===false) return;
@@ -911,9 +909,8 @@ export class RateCardSave extends Component {
                     scope.setState({ serviceCategory: response.data.payload });
                 });
                 scope.setState({isViewMode:true});
-
                 break;
-                
+                ///
                 case 'edit':
                     let isRetain = window.sessionStorage.getItem('includedServiceArr')===window.sessionStorage.getItem('bck_includedServiceArr');
                     console.log('using edit_mode, isRetain:', isRetain);
@@ -931,9 +928,8 @@ export class RateCardSave extends Component {
                             scope.setState({ serviceCategory: response.data.payload });
                         });
                     }
-
                 break;
-                
+                ///
                 case 'create':
                 postRateCardPreview({ service_ids: json })
                 .then(function(response){

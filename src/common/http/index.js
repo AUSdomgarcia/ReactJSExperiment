@@ -32,6 +32,12 @@ let postServiceDelete = function(obj){
 let getServiceByServiceIdWithServiceCategoryId = function(categoryId, serviceId){
   return axios.get( baseURL + '/rate-cards/services?id=' + serviceId + '&service_category_id=' + categoryId);
 }
+let getRateCardServicesAll = function(){
+  return axios.get( baseURL + '/rate-cards/services' );
+}
+let getServicesById = function(id){
+  return axios.get( baseURL + '/rate-cards/services?id=' + id);
+}
 
 
 
@@ -202,12 +208,15 @@ let postRatecardServiceCategoriesSortServiceSubCategories = function(obj){
 
 export { 
   getServices, 
+  getServicesById,
+  
   getServiceByCategoryId, 
   getServiceCreateDetails,
   postServiceCategoriesDelete,
   postServiceCategories_subCategories_create,
   postServiceCategories_subCategories_update,
   postServiceCategories_subCategories_delete,
+  getRateCardServicesAll,
 
   getServiceCategoriesRoot,
   postServiceCategoriesCreate,

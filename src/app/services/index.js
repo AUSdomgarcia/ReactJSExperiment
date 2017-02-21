@@ -216,7 +216,7 @@ export class ManageServices extends Component {
 
     render(){
         let scope = this;
-        let services = null;
+        let services = <tr><td colSpan={5}>No Data.</td></tr>;
 
         if(this.state.serviceArr.length!==0){
             services = 
@@ -398,6 +398,9 @@ export class ServiceAdd extends Component {
             getServiceByServiceIdWithServiceCategoryId(serviceCategoryId, paramsServiceId ).then(function(response){
                 console.log('EditModeResponse', response);
 
+                if(response.data.hasOwnProperty('payload')===false) return;
+                if(response.data.payload.ength===0) return;
+
                 scope.setState({serviceName: response.data.payload[0].name});
                 scope.setState({description: response.data.payload[0].description});
                 scope.setState({updatedAt: response.data.payload[0].updated_at});
@@ -472,7 +475,11 @@ export class ServiceAdd extends Component {
                     }
                 }
             });
-        }
+        
+        } else if(this.props.params.editmode==='2'){
+            console.log('nothing to happen getting from session');
+        }  
+
     }
 
     callbackDisabledInput(newValue){
@@ -1083,17 +1090,153 @@ export class ServiceEdit extends Component {
 
 
 
+import {getRateCardServicesAll, getServicesById} from '../../common/http';
 
 export class ServiceAll extends Component {
 
-    addSevice(){
-        this.context.router.push('/services/add')
+    constructor(props){
+        super(props);
+        this.state = {
+            services: []
+        }
     }
+    
+    componentWillMount(){
+        let scope = this;
+        getRateCardServicesAll().then(function(response){
+            if(response.data.hasOwnProperty('payload')){
+                if(response.data.payload.length!==0){
+                    console.log('service all', response);
+                    scope.setState({services: response.data.payload})
+                }
+            }
+        })
+    }
+    
+    componentDidMount(){
+        // 
+    }
+
+    addSevice(){
+        this.context.router.push('/services/add');
+    }
+
     extractAll(){
         // 
     }
 
+    onEdit(evt){
+        let id = xhr(evt.target)[0].dataset.storeid;
+        let scope = this;
+
+        if(id===undefined || id===null ) return;
+
+        getServicesById(id).then(function(response){
+            console.log('work around', response);
+
+            if(response.data.hasOwnProperty('payload')){
+                if(response.data.payload.length!==0){
+                    let res = response.data.payload[0];
+                    let category_id = res.id;
+                    let title = res.name;
+                    let id = res.id;
+                    // parang yung dati but this time gagamit ako ng sessionStorage
+                    scope.context.router.push('/services/edit/'+category_id+'/'+title+'/'+2+'/'+id);
+
+                    window.sessionStorage.setItem('service_created_at', res.created_at);
+                    window.sessionStorage.setItem('service_updated_at', res.updated_at);
+                    window.sessionStorage.setItem('service_created_by', res.user.name);
+                    window.sessionStorage.setItem('service_name', res.name);
+                    window.sessionStorage.setItem('service_description', res.description);
+                    window.sessionStorage.setItem('service_is_active', res.is_active);
+                    window.sessionStorage.setItem('service_rate_type', res.rate_type.id);
+                    
+                    // layer 1
+                    window.sessionStorage.setItem('service_category_id', res.service_category_id);
+                    
+                    // layer 2
+                    if(res.service_sub_category_id!==null){
+                        window.sessionStorage.setItem('service_sub_category_id', res.service_sub_category_id);
+                    }
+                    
+                    // layer 3
+                    if(res.sub_service_sub_category_id!==null){
+                        window.sessionStorage.setItem('sub_service_sub_category_id', res.sub_service_sub_category_id);
+                    }
+
+                    // Personnel users
+                    window.sessionStorage.setItem('personnel_users', JSON.stringify(res.personnel_users));
+
+                }
+            }
+        });
+    }
+
+    onDelete(evt){
+        let id = xhr(evt.target)[0].dataset.storeid;
+        let scope = this;
+
+        if(id===undefined || id===null ) return;
+
+        if(confirm('Do you want to delete?')){
+            //
+        } else {
+            return;
+        }
+        
+        this.state.services.map(function(data, index){
+            if(+data.id === +id){
+                scope.state.services.splice(index, 1);
+                scope.setState({services: scope.state.services});
+            }
+        });
+
+        // delete
+        postServiceDelete({id:id}).then(function(response){
+            console.log('after delete', response);
+        });
+    }
+
+    getRateTypeBy(data){
+        let name = "no-data";
+        if(data.hasOwnProperty('rate_type')){
+            if(data.hasOwnProperty('rate_type')){
+                if(data.rate_type.hasOwnProperty('name') ){
+                    name = data.rate_type.name;
+                }
+            }
+        }
+        return name;
+    }
+
     render(){
+        let scope = this;
+        let servicesTable = <tr><td colSpan={8}>No data.</td></tr>
+
+        if(this.state.services.length!==0){
+            servicesTable = 
+            this.state.services.map(function(data){
+                return (
+                    <tr key={data.id}>
+                        <td>{data.service_id}</td>
+                        <td>{'inconsistent_category'}</td>
+                        <td>{data.name}</td>
+                        <td>{data.description}</td>
+                        <td>{'inconsistent_name'}</td>
+                        <td>{data.subtotal}</td>
+                        <td>{data.is_active}</td>
+                        <td>
+                            <button type="button" className="btn btn-default" data-storeid={data.id} onClick={scope.onEdit.bind(scope)}>Edit</button>&nbsp;
+                            <button type="button" className="btn btn-danger"  data-storeid={data.id} onClick={scope.onDelete.bind(scope)}>
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                )
+            });
+        }
+
+
         return (
             <div>
                 <h3 className="sky">Manage Services</h3>
@@ -1109,7 +1252,7 @@ export class ServiceAll extends Component {
                     <br className="clearfix" />                
                 </div>
                 
-                <p>Total Services: 100</p>
+                <p>Total Services: {(this.state.services.length!==0 ? this.state.services.length : 0)}</p>
 
                 <br />
 
@@ -1128,19 +1271,7 @@ export class ServiceAll extends Component {
                     </thead>
 
                     <tbody>
-                        <tr>
-                          <td>S-001</td>
-                          <td>Digital Strategy</td>
-                          <td>Digital Consultant</td>
-                          <td>Digital Trendspotting, Web and Social Media best practices</td>
-                          <td>Standard</td>
-                          <td>20,000</td>
-                          <td>Active</td>
-                          <td>
-                            <button type="button" className="btn btn-default">Edit</button>
-                            <button type="button" className="btn btn-danger">Close</button>
-                          </td>
-                        </tr>
+                        {servicesTable}
                     </tbody>                           
                 </table>
 
