@@ -26,16 +26,7 @@ export class RateCard extends Component {
     }
 
     componentDidMount(){
-        let scope = this;
-        
-        getRateCards().then(function(response){
-            console.log('/ratecard', response);
-            if(response.data.hasOwnProperty('payload')===false) return;
-            if(response.data.payload.length!==0){
-                // filter archive and ratecard
-                scope.segregateRateCard(response.data.payload);
-            }
-        });
+        //
     }
 
     segregateRateCard(dataArr){
@@ -49,55 +40,88 @@ export class RateCard extends Component {
                 tempArchived.push(data);
             }
         });
-        
+        console.log('active', tempRateCard.length, 'archive', tempArchived.length);
         this.setState({rateCardArr: tempRateCard});
         this.setState({archiveRateCardArr: tempArchived });
     }
 
     componentWillMount(){
+        let scope = this;
+        
         window.sessionStorage.clear();
+    
+        getRateCards().then(function(response){
+            console.log('/ratecard', response);
+            if(response.data.hasOwnProperty('payload')===false) return;
+            if(response.data.payload.length!==0){
+                // filter archive and ratecard
+                scope.segregateRateCard(response.data.payload);
+            }
+        });
     }
 
-    handleEdit(evt){
-        // this.context.router.push('/ratecard/edit');
-        let id = xhr(evt.target)[0].dataset.storeid;
+    setupEditModeById(id, cb){
         let scope = this;
-
-        if(id===undefined || id===null) return;
-
         window.sessionStorage.clear();
-
         getRateCardById(id).then(function(response){
             console.log('>>>>', id, response);
-
+            // origin
             window.sessionStorage.setItem('id', id);
             window.sessionStorage.setItem('ratecardname', response.data.payload[0].name);
             window.sessionStorage.setItem('ratecarddesc', response.data.payload[0].description);
             window.sessionStorage.setItem('selectedRateTypeId', response.data.payload[0].rate_type_id);
             window.sessionStorage.setItem('includedServiceArr', JSON.stringify(response.data.payload[0].services));
             window.sessionStorage.setItem('permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
-
+            // bckup
             window.sessionStorage.setItem('bck_id', id);
             window.sessionStorage.setItem('bck_ratecardname', response.data.payload[0].name);
             window.sessionStorage.setItem('bck_ratecarddesc', response.data.payload[0].description);
             window.sessionStorage.setItem('bck_selectedRateTypeId', response.data.payload[0].rate_type_id);
             window.sessionStorage.setItem('bck_includedServiceArr', JSON.stringify(response.data.payload[0].services));
             window.sessionStorage.setItem('bck_permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
+            // callback
+            cb();
+        });
+    }
 
+    onEdit(evt){
+        let id = xhr(evt.target)[0].dataset.storeid;
+        let scope = this;
+        if(id===undefined || id===null) return;
+        
+        this.setupEditModeById(id, function(){
             let delay = setTimeout(function(){
                 clearTimeout(delay);
                 window.sessionStorage.setItem('ratecardAction', 'edit');
                 scope.context.router.push('/ratecard/add');
-            }, 100);
+            }, 16);
         });
     }
 
-    onBtnHandler(evt){
+    onView(evt){
+        let id = xhr(evt.target)[0].dataset.storeid;
+        let scope = this;
+        if(id===undefined || id===null) return;
+        
+        window.sessionStorage.clear();
+
+        this.setupEditModeById(id, function(){
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                window.sessionStorage.setItem('ratecardAction', 'view');
+                scope.context.router.push('/ratecard/save');
+            }, 16);
+        });
+    }
+
+    onArchive(evt){
         let id = xhr(evt.target)[0].dataset.storeid;
         let action = xhr(evt.target)[0].dataset.action;
         let scope = this;
 
         if(id===undefined || id===null) return;
+
+        console.log('before send archived', id, action);
 
         postRateCardAction({
             id: id,
@@ -108,37 +132,11 @@ export class RateCard extends Component {
         });
     }
 
-    onViewHandler(evt){
-        let id = xhr(evt.target)[0].dataset.storeid;
-        let scope = this;
-
-        // window.sessionStorage.setItem('editmode', 'ok');
-        if(id===undefined || id===null) return;
-
-        window.sessionStorage.clear();
-
-        getRateCardById(id).then(function(response){
-
-            window.sessionStorage.setItem('id', id);
-            window.sessionStorage.setItem('ratecardname', response.data.payload[0].name);
-            window.sessionStorage.setItem('ratecarddesc', response.data.payload[0].description);
-            window.sessionStorage.setItem('selectedRateTypeId', response.data.payload[0].rate_type_id);
-            window.sessionStorage.setItem('includedServiceArr', JSON.stringify(response.data.payload[0].services));
-            window.sessionStorage.setItem('permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
-
-            let delay = setTimeout(function(){
-                clearTimeout(delay);
-                window.sessionStorage.setItem('ratecardAction', 'view');
-                scope.context.router.push('/ratecard/save');
-            }, 100);
-        });
-    }
-
     onCreate(){
         window.sessionStorage.setItem('ratecardAction', 'create');
         this.context.router.push('/ratecard/add');
     }
-    
+
     render(){
         let activeRateCards = <tr><td colSpan={5}>No data.</td></tr>;
         let archiveRateCards = <tr><td colSpan={5}>No data.</td></tr>;
@@ -153,9 +151,9 @@ export class RateCard extends Component {
                         <td>{data.description}</td>
                         <td>{data.version}</td>
                         <td>
-                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.handleEdit.bind(scope)}>Edit</button>&nbsp;
-                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onViewHandler.bind(scope)}>View</button>&nbsp;
-                            <button className='btn btn-warning' data-action="archive" data-storeid={data.id} onClick={scope.onBtnHandler.bind(scope)} >Archive</button>
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onEdit.bind(scope)}>Edit</button>&nbsp;
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onView.bind(scope)}>View</button>&nbsp;
+                            <button className='btn btn-warning' data-action="archive" data-storeid={data.id} onClick={scope.onArchive.bind(scope)} >Archive</button>
                         </td>
                     </tr>
                 )
@@ -171,8 +169,8 @@ export class RateCard extends Component {
                         <td>{data.description}</td>
                         <td>{data.version}</td>
                         <td>
-                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onViewHandler.bind(scope)}>View</button>
-                            <button className='btn btn-warning' data-action="activate" data-storeid={data.id} onClick={scope.onBtnHandler.bind(scope)} >Activate</button>
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onView.bind(scope)}>View</button>&nbsp;
+                            <button className='btn btn-warning' data-action="activate" data-storeid={data.id} onClick={scope.onArchive.bind(scope)} >Activate</button>
                         </td>
                     </tr>
                 )
@@ -204,13 +202,8 @@ export class RateCard extends Component {
                             </tbody>
                         </table>
 
-                        <div className='footer-container clearfix'>
-                            
-                        {/*
-                            <Link to='/ratecard/add' className='btn btn-primary pull-right'>Create Rate Card</Link>
-                        */}
-                        <button type="button" className="btn btn-primary pull-right" onClick={this.onCreate.bind(this)}>Create Rate Card</button>
-                    
+                            <div className='footer-container clearfix'>
+                            <button type="button" className="btn btn-primary pull-right" onClick={this.onCreate.bind(this)}>Create Rate Card</button>
                         </div>
                     </div>
 
@@ -229,17 +222,6 @@ export class RateCard extends Component {
                             </thead>
 
                             <tbody>
-                                {/*<tr>
-                                    <td>2017 Rate Card</td>
-                                    <td>This is the baseline Rate card for 2017</td>
-                                    <td>V1.1</td>
-                                    <td>
-                                        <button className='btn btn-primary'>Edit</button>
-                                        <button className='btn btn-primary'>View</button>
-                                        <button className='btn btn-warning'>Archive</button>
-                                    </td>
-                                </tr>*/}
-                                
                                 {archiveRateCards}
                             </tbody>
                         </table>
@@ -891,37 +873,22 @@ export class RateCardSave extends Component {
             permitted_user_ids: "",
             serviceCategory: [],
             enableSave: true,
-            isChanged: '0'
+            isChanged: '0',
+            isViewMode: false,
         }
     }
 
     // FIRST CHECK SESSION then change state
     componentWillMount(){
-        if(window.sessionStorage.getItem('ratecardname')){
-            this.setState({ name : window.sessionStorage.getItem('ratecardname') });
-        }
-
-        if(window.sessionStorage.getItem('ratecarddesc')){
-            this.setState({ description : window.sessionStorage.getItem('ratecarddesc') });
-        }
-
-        if(window.sessionStorage.getItem('selectedRateTypeId')){
-            this.setState({ rate_type_id : window.sessionStorage.getItem('selectedRateTypeId') });
-        }
-
-        if(window.sessionStorage.getItem('permittedUserArr')){
-            this.setState({ permitted_user_ids : window.sessionStorage.getItem('permittedUserArr') });
-        }
-
-        // if(window.sessionStorage.getItem('includedServiceArr')){
-        //     this.setState({ service_ids : window.sessionStorage.getItem('includedServiceArr') });
-        // }
+        if(window.sessionStorage.getItem('ratecardname')) this.setState({ name : window.sessionStorage.getItem('ratecardname') });
+        if(window.sessionStorage.getItem('ratecarddesc')) this.setState({ description : window.sessionStorage.getItem('ratecarddesc') });
+        if(window.sessionStorage.getItem('selectedRateTypeId')) this.setState({ rate_type_id : window.sessionStorage.getItem('selectedRateTypeId') });
+        if(window.sessionStorage.getItem('permittedUserArr')) this.setState({ permitted_user_ids : window.sessionStorage.getItem('permittedUserArr') });
 
         // Prepare Service Category
         let includedServiceArr = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || []; 
         let scope = this;
 
-        // console.log('current selected services:', includedServiceArr.length, window.sessionStorage.getItem('includedServiceArr') );
         let servicesWithOrder = [];
         if(includedServiceArr.length!==0){
             includedServiceArr.map(function(data, index){
@@ -929,9 +896,7 @@ export class RateCardSave extends Component {
             });
 
             let json = JSON.stringify(servicesWithOrder);
-            
             let id = window.sessionStorage.getItem('id') || 0;
-
             let ratecardAction = window.sessionStorage.getItem('ratecardAction') || null;
 
             console.log('current selected services:', json, id); 
@@ -943,13 +908,15 @@ export class RateCardSave extends Component {
                     console.log('ratecard/save/editmode/:2', response, parseInt(id));
                     scope.setState({ serviceCategory: response.data.payload });
                 });
-                break
+                scope.setState({isViewMode:true});
+
+                break;
                 
                 case 'edit':
-                    let isChangedServices = window.sessionStorage.getItem('includedServiceArr')===window.sessionStorage.getItem('bck_includedServiceArr');
-                    console.log(isChangedServices);
+                    let isRetain = window.sessionStorage.getItem('includedServiceArr')===window.sessionStorage.getItem('bck_includedServiceArr');
+                    console.log('using edit_mode, isRetain:', isRetain);
 
-                    if(isChangedServices){
+                    if(isRetain){
                         postRateCardPreview({rate_card_id: parseInt(id)})
                         .then(function(response){
                             console.log('ratecard/save/editmode/:2', response, parseInt(id));
@@ -978,7 +945,6 @@ export class RateCardSave extends Component {
     
     callbackUpdateServiceCategory(serviceCategory){
         this.setState({serviceCategory});
-        // Your Working here
     }
 
     getChanges(){
@@ -1023,12 +989,16 @@ export class RateCardSave extends Component {
         let ratecardAction = window.sessionStorage.getItem('ratecardAction') || null;
         let id = window.sessionStorage.getItem('id') || 0;
 
-        // if(this.state.enableSave===false) return;
-
         console.log('ratecardAction:', ratecardAction, 'id:', id);
 
+        // View
+        if(ratecardAction==='view' && this.state.enableSave===true){
+            window.sessionStorage.setItem('ratecardAction','edit');
+            this.setState({isViewMode:false});
+            this.context.router.push('/ratecard/add');
+
         // Update
-        if((ratecardAction==='edit' || ratecardAction==='view')&& this.state.enableSave===true){
+        } else if( ratecardAction==='edit' && this.state.enableSave===true){
             console.log('update');
 
             let service_ids = [];
@@ -1110,6 +1080,15 @@ export class RateCardSave extends Component {
         this.setState({isChanged:changeService.changed});
     }
 
+    onBack(){
+        let ratecardAction = window.sessionStorage.getItem('ratecardAction');
+        if(ratecardAction==='view'){
+            this.context.router.push('/ratecard');
+        } else{
+            this.context.router.push('/ratecard/permission');
+        }
+    }
+
     render(){
         
         return(
@@ -1137,10 +1116,16 @@ export class RateCardSave extends Component {
 
                         <br />
                     
-                        <Link className='btn btn-default pull-left' to='/ratecard/permission'>Back</Link>
-                        <button type="button" className={"btn btn-primary pull-right " + (this.state.enableSave ? '' : 'disabled')} onClick={this.onSave.bind(this)}>Save</button>
-                        {/*<Link className='btn btn-primary pull-right' to='/ratecard'>Save</Link>*/}
-                   
+                        <button 
+                            type="button" 
+                            className="btn btn-default pull-left" 
+                            onClick={this.onBack.bind(this)}>Back
+                            </button>
+                        <button 
+                            type="button" 
+                            className={"btn btn-primary pull-right " + (this.state.enableSave ? '' : 'disabled')} 
+                            onClick={this.onSave.bind(this)}>{ (this.state.isViewMode ? 'Edit' : 'Save') }
+                        </button>
                     </div>
                 </div>
 
