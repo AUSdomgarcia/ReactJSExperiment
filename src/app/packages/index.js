@@ -963,7 +963,7 @@ export class PackageSave extends Component {
 
         } else if(packageAction==='create'){
             console.log('create');
-
+            
             postPackageCreate({
                 name: this.state.name,
                 description: this.state.description,
@@ -1064,7 +1064,10 @@ export class PackageSave extends Component {
         
         } else if(this.state.packageAction==='update'){
             actionBtn =
+            <div>
+                <Link className='btn btn-default pull-left' to='/packages/permission'>Back</Link>
                 <button type="button" className="btn btn-success pull-right" onClick={this.onUpdate.bind(this)}>Update</button>
+            </div>
         }
 
         return (
