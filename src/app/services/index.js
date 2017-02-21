@@ -259,6 +259,7 @@ export class ManageServices extends Component {
                     </div>
 
                     <div className="col-xs-6 text-right">
+
                         {/*<Link 
                             className="btn btn-primary" 
                             to={'/services/edit/' 
@@ -769,7 +770,7 @@ export class ServiceAdd extends Component {
 
                 <br />
 
-                <Link to="/services/manage">Return to full list</Link>
+                <Link to="/services">Return to full list</Link>
 
                 <br />
 
@@ -1137,11 +1138,12 @@ export class ServiceAll extends Component {
             if(response.data.hasOwnProperty('payload')){
                 if(response.data.payload.length!==0){
                     let res = response.data.payload[0];
-                    let category_id = res.id;
+                    let service_category_id = res.service_category_id;
                     let title = res.name;
                     let id = res.id;
+                    
                     // parang yung dati but this time gagamit ako ng sessionStorage
-                    scope.context.router.push('/services/edit/'+category_id+'/'+title+'/'+2+'/'+id);
+                    scope.context.router.push('/services/edit/'+service_category_id+'/'+title+'/'+ 1 +'/'+id);
 
                     window.sessionStorage.setItem('service_created_at', res.created_at);
                     window.sessionStorage.setItem('service_updated_at', res.updated_at);
@@ -1156,16 +1158,16 @@ export class ServiceAll extends Component {
                     
                     // layer 2
                     if(res.service_sub_category_id!==null){
-                        window.sessionStorage.setItem('service_sub_category_id', res.service_sub_category_id);
+                        // window.sessionStorage.setItem('service_sub_category_id', res.service_sub_category_id);
                     }
-                    
+
                     // layer 3
                     if(res.sub_service_sub_category_id!==null){
-                        window.sessionStorage.setItem('sub_service_sub_category_id', res.sub_service_sub_category_id);
+                        // window.sessionStorage.setItem('sub_service_sub_category_id', res.sub_service_sub_category_id);
                     }
 
                     // Personnel users
-                    window.sessionStorage.setItem('personnel_users', JSON.stringify(res.personnel_users));
+                    // window.sessionStorage.setItem('personnel_users', JSON.stringify(res.personnel_users));
 
                 }
             }
