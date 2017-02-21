@@ -59,7 +59,7 @@ export class ServiceViewer extends Component {
 
                 console.log('ratecard/save/onEnd', result);
 
-                scope.props.onDrop( result );
+                scope.props.onDrop({json: result, changed: '0'});
             },
             
             onSort: function(e){
@@ -69,9 +69,9 @@ export class ServiceViewer extends Component {
                     result.push({ id: xhr(items[i])[0].dataset.id, service_id: xhr(items[i])[0].dataset.id, order: i });
                 }
 
-                console.log('ratecard/save/onEnd', result);
+                console.log('ratecard/save/onSort', result);
 
-                scope.props.onDrop( result );
+                scope.props.onDrop({json: result, changed: '1'});
                 
                 scope.setState({useSort:true});
                 window.sessionStorage.setItem('useSort','true');
@@ -89,7 +89,7 @@ export class ServiceViewer extends Component {
                 return (
                     <li key={data.id} data-id={data.id} className='with-draggable-child clearfix'>
                         <span className='my-handle'>:: </span>
-                        <div className='three-column'>{data.name}</div>    
+                        <div className='three-column'>{data.name}</div>{/*<strong>[{data.order}]</strong> */}    
                         <div className='three-column'>{data.description}</div>    
                         <div className='three-column'>{data.subtotal}</div>    
                     </li>

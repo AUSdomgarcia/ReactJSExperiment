@@ -50,8 +50,8 @@ export class CategoryTreeView extends Component {
     callbackOnDrag(){
         this.props.onDrag();
     }
-    callbackOnDrop(services){
-        this.props.onDrop(services);
+    callbackOnDrop(result){
+        this.props.onDrop(result);
     }
 
     render(){
