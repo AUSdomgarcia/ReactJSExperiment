@@ -10,7 +10,8 @@ import {
     getRateCardServicesById,
     getRateCardsPersonnelEmployees,
     getRateCardById,
-    postRateCardAction } from '../../common/http';
+    postRateCardAction,
+    getRateCardsDefault } from '../../common/http';
 
 export class RateCard extends Component {
     
@@ -50,7 +51,7 @@ export class RateCard extends Component {
         
         window.sessionStorage.clear();
     
-        getRateCards().then(function(response){
+        getRateCardsDefault().then(function(response){
             console.log('/ratecard', response);
             if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
@@ -72,6 +73,8 @@ export class RateCard extends Component {
             window.sessionStorage.setItem('selectedRateTypeId', response.data.payload[0].rate_type_id);
             window.sessionStorage.setItem('includedServiceArr', JSON.stringify(response.data.payload[0].services));
             window.sessionStorage.setItem('permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
+            console.log('raw', response.data.payload[0].permitted_users);
+
             // bckup
             window.sessionStorage.setItem('bck_id', id);
             window.sessionStorage.setItem('bck_ratecardname', response.data.payload[0].name);
@@ -381,18 +384,18 @@ export class RateCardChoose extends Component {
     componentWillMount(){
         // Update when available
         let arr = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || [];
-
-        console.log('/RatecardChoose', arr);
-
-        if(arr.length!==0){
-            this.setState({ includedServiceArr: arr });
-            this.setState({ totalServices: arr.length });
-        }
-
         let scope = this;
         let id = 0;
         let wsratetypeid = window.sessionStorage.getItem('selectedRateTypeId');
 
+        console.log('/RatecardChoose', arr);
+
+        if(arr.length!==0){
+            this.setState({ totalServices: arr.length });
+            this.setState({ includedServiceArr: arr });
+        }
+
+        // getRateTypes
         getServiceRateTypes().then(function(response){
             if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
@@ -401,7 +404,6 @@ export class RateCardChoose extends Component {
                 if(wsratetypeid){
                     id = wsratetypeid;
                     scope.setState({rateTypeValue: id});
-
                 } else {
                     // Fetch rateType automatically
                     id = scope.state.rateTypeArr[0].id;
@@ -505,15 +507,15 @@ export class RateCardChoose extends Component {
         console.log('>>', this.state.includedServiceArr.length); 
     }
     
-    getCategoryName(data){
-        let name = "no-name";
-        if(data.category!==null){
-            if(data.category.hasOwnProperty('name')){
-                name = data.category.name;
-            }
-        }
-        return name;
-    }
+    // getCategoryName(data){
+    //     let name = "no-name";
+    //     if(data.category!==null){
+    //         if(data.category.hasOwnProperty('name')){
+    //             name = data.category.name;
+    //         }
+    //     }
+    //     return name;
+    // }
 
     onNext(){
         let selectedRateTypeId = window.sessionStorage.getItem('selectedRateTypeId') || 0;
@@ -536,7 +538,7 @@ export class RateCardChoose extends Component {
 
     checkStored(id){
         let bool = false;
-        let checkBoxer = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || [];
+        let checkBoxer = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || this.state.includedServiceArr;
         
         checkBoxer.map(function(data){
             if(+id===+data.service_id){
@@ -1015,7 +1017,6 @@ export class RateCardSave extends Component {
                 rate_type_id: scope.state.rate_type_id,
                 service_ids: JSON.stringify(service_ids),
                 permitted_user_ids: scope.state.permitted_user_ids,
-                default_user_ids: scope.state.permitted_user_ids
                 }).then(function(response){
                     console.log(response);
                     scope.context.router.push('/ratecard');
@@ -1039,7 +1040,6 @@ export class RateCardSave extends Component {
             rate_type_id: this.state.rate_type_id,
             service_ids: JSON.stringify(service_ids),
             permitted_user_ids: this.state.permitted_user_ids,
-            default_user_ids: this.state.permitted_user_ids
 
             }).then(function(response){
                 console.log(response);

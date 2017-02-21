@@ -130,7 +130,10 @@ let getLogs = function(id){
 
 
 {/* Rate Cards */}
-let getRateCards = function(){
+let getRateCardsDefault = function(){
+  return axios.get( baseURL + '/rate-cards/rate-cards');
+}
+let getRateCardsActive = function(){
   return axios.get( baseURL + '/rate-cards/rate-cards?active=baymax');
 }
 let getRateCardById = function(id){
@@ -230,7 +233,8 @@ export {
 
   getLogs,
 
-  getRateCards,
+  getRateCardsActive,
+  getRateCardsDefault,
   getRateCardServicesById,
   getRateCardsPersonnelEmployees,
   getRateCardsPersonnelEmployeesByDefault,

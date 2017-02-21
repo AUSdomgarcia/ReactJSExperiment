@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import './connectedTable.scss';
-import {getRateCards, getRateCardById} from '../../common/http';
+import {getRateCardsActive, getRateCardById} from '../../common/http';
 import xhr from 'jquery';
 
 export class ConnectedTable extends Component {
@@ -26,7 +26,7 @@ export class ConnectedTable extends Component {
             this.setState({added_services:this.props.addedServices});
         }
 
-        getRateCards().then(function(response){
+        getRateCardsActive().then(function(response){
             console.log('getRateCards', response);
             if(response.data.hasOwnProperty('payload')){
                 if(response.data.payload.length!==0){
