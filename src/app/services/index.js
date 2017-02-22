@@ -338,6 +338,7 @@ ManageServices.contextTypes = {
 
 {/*----------------------------------->>> Y O U R  W O R K I N G  H E R E <<<---------------------------------------------*/}
 
+import {getServicePersonnelsByRateTypeId, getServiceCategoriesRoot} from '../../common/http';
 export class ServiceAdd extends Component {
 
     constructor(props){
@@ -347,11 +348,14 @@ export class ServiceAdd extends Component {
             titleRef: "",
             serviceCategoryIdRef: "",
 
+            level1Arr: "",
+            level1ValueId: "default",
+            
             level2Arr: "",
-            level2ValueId: null,
+            level2ValueId: "default",
             
             level3Arr: "",
-            level3ValueId: null,
+            level3ValueId: "default",
 
             serviceId: "",
             accountName: "",
@@ -365,6 +369,7 @@ export class ServiceAdd extends Component {
             rateTypeValue: "",
 
             servicePersonnelArr: [],
+            personnels_data: [],
             subtotal: 0,
 
             personnelComp_previous_myId: 0,
@@ -378,61 +383,82 @@ export class ServiceAdd extends Component {
         }
     }
 
+    // componentWillMount(){
+    //     this.setState({ titleRef: this.props.params.title });
+    //     this.setState({ serviceCategoryIdRef: this.props.params.serviceCategoryId }); 
+    // }
+
     componentWillMount(){
         this.setState({ titleRef: this.props.params.title });
         this.setState({ serviceCategoryIdRef: this.props.params.serviceCategoryId }); 
-    }
+        
+        window.sessionStorage.setItem('serviceCategoryIdRef', this.props.params.serviceCategoryId)
 
-    componentDidMount(){
+
         console.log('EDIT_MODE', this.props.params.editmode, '1=true, 0=false');
         let scope = this;
 
+        let serviceCategoryId = this.props.params.serviceCategoryId;
+        // serviceId
+        let paramsServiceId = this.props.params.serviceid;
+
+        /////////////////////////////////
+        // EDIT MODE
+        /////////////////////////////////
         if(this.props.params.editmode==='1'){
             // If edit mode load data when edit
-            let serviceCategoryId = this.props.params.serviceCategoryId;
-            
-            // serviceId
-            let paramsServiceId = this.props.params.serviceid;
-
-            console.log( serviceCategoryId, this.state.serviceId );
+            console.log( serviceCategoryId, paramsServiceId );
 
             getServiceByServiceIdWithServiceCategoryId(serviceCategoryId, paramsServiceId ).then(function(response){
+                
                 console.log('EditModeResponse', response);
+
+                let res = response.data.payload[0];
 
                 if(response.data.hasOwnProperty('payload')===false) return;
                 if(response.data.payload.ength===0) return;
 
-                scope.setState({serviceName: response.data.payload[0].name});
-                scope.setState({description: response.data.payload[0].description});
-                scope.setState({updatedAt: response.data.payload[0].updated_at});
-                scope.setState({createdAt: response.data.payload[0].created_at});
-                scope.setState({accountName: response.data.payload[0].user.name});
-                scope.setState({serviceId: response.data.payload[0].service_id});
+                // INPUT FIELDS 
+                scope.setState({serviceName: res.name});
+                scope.setState({description: res.description});
+                scope.setState({updatedAt: res.updated_at});
+                scope.setState({createdAt: res.created_at});
+                scope.setState({accountName: res.user.name});
+                scope.setState({serviceId: res.service_id});
 
-                // RateTypes
-                let rateTypeId = response.data.payload[0].rate_type.id;
+                // SET RATETYPE OPTION
+                let id = res.rate_type.id;
                 getServiceRateTypes().then(function(response){
                     scope.setState({ rateTypeArr: response.data.payload });
-                    scope.setState({ rateTypeValue: rateTypeId })
+                    scope.setState({ rateTypeValue: id });
+                }); 
+
+                // SET PERSONNEL OPTION INSIDE COMPONENT
+                getServicePersonnelsByRateTypeId(id).then(function(response){
+                    if(response.data.payload.length!==0){
+                        scope.setState({personnels_data: response.data.payload});
+                    }
                 });
 
-                // Subtotal
-                let subtotal = response.data.payload[0].subtotal;
-                scope.setState({subtotal: Math.floor(subtotal)});
+                // SET Subtotal
+                let subtotal = res.subtotal;
+                scope.setState({subtotal: +subtotal});
 
-                // Personnels
-                let personnel_users = response.data.payload[0].personnel_users;
+                // SET PERSONNELS
+                let personnel_users = res.personnel_users;
                 scope.setState({servicePersonnelArr: personnel_users});
 
                 // Active state
-                let status = response.data.payload[0].is_active;
+                let status = res.is_active;
                 scope.setState({activeStatus: +status});      
             });
 
 
             
 
-
+        /////////////////////////////////
+        // NORMAL MODE
+        /////////////////////////////////
         } else if(this.props.params.editmode==='0'){
             // Get Details when Created From Server
             getServiceCreateDetails().then(function(response){
@@ -441,46 +467,87 @@ export class ServiceAdd extends Component {
                 scope.setState({accountName: response.data.payload.name });
                 scope.setState({updatedAt: response.data.payload.updated_at});
                 scope.setState({createdAt: response.data.payload.created_at});
-            })
-            // Get RateTypes
+            });
+
             getServiceRateTypes().then(function(response){
+                let id = response.data.payload[0].id;
                 scope.setState({ rateTypeArr: response.data.payload });
-                scope.setState({ rateTypeValue: response.data.payload[0].id })
-            });
-            // Get Level2
-            getServiceCategories_subCategories_level2_byParentId(this.state.serviceCategoryIdRef)
-            .then(function(response){
-                if(response.data.hasOwnProperty('payload')===false) return;
-                if(response.data.payload.length===0){
-                    scope.setState({ level2ValueId: null });
-                    return;
-                }
+                scope.setState({ rateTypeValue: id });
 
-                scope.setState({ level2Arr: response.data.payload });
-                scope.setState({ level2ValueId: response.data.payload[0].id});
+                getServicePersonnelsByRateTypeId(id).then(function(response){
 
-                if(scope.state.level2Arr.length !== 0){
-                    let level3IndexZeroId = scope.state.level2Arr[0].id;
-
-                    if(level3IndexZeroId !== undefined){
-                        // Get Level3
-                        if(!isNaN(level3IndexZeroId)){
-                            getServiceCategories_subCategories_level3_byParentId(level3IndexZeroId)
-                            .then(function(response){
-                                if(response.data.hasOwnProperty('payload')===false) return;
-                                if(response.data.payload.length===0) return;
-                                scope.setState({ level3Arr: response.data.payload });
-                                scope.setState({ level3ValueId: response.data.payload[0].id});
-                            });
-                        }
+                    if(response.data.payload.length!==0){
+                        scope.setState({personnels_data: response.data.payload});
                     }
-                }
-            });
+                });
+            }); 
+
+            // Get Level 1
+            // ....
+            
+            if(window.sessionStorage.getItem('serviceCategoryIdRef')!=='undefined') {
+                // Get Level2
+                scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdRef);
+                
+            } else {
+                // initiate level 1
+                getServiceCategoriesRoot().then(function(response){
+                    if(response.data.hasOwnProperty('payload')===false) return;
+
+                    if(response.data.payload.length!==0){
+                        let res = response.data.payload[0];
+
+                        scope.setState({level1Arr: response.data.payload});
+
+                        scope.setState({ serviceCategoryIdRef: res.id }, function(){
+
+                            scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdRef);
+                            
+                            scope.setState({ level1ValueId: res.id });
+
+                        });
+                    }
+                });
+            }
         
+
+
         } else if(this.props.params.editmode==='2'){
             console.log('nothing to happen getting from session');
         }  
+    }
 
+    getLevel2AndLevel3ById(id){
+        let scope = this;
+
+        getServiceCategories_subCategories_level2_byParentId(id)
+        .then(function(response){
+            if(response.data.hasOwnProperty('payload')===false) return;
+            if(response.data.payload.length===0){
+                scope.setState({ level2ValueId: null });
+                return;
+            }
+
+            scope.setState({ level2Arr: response.data.payload });
+            scope.setState({ level2ValueId: response.data.payload[0].id});
+
+            if(scope.state.level2Arr.length !== 0){
+                let level3IndexZeroId = scope.state.level2Arr[0].id;
+
+                if(level3IndexZeroId !== undefined){
+                    // Get Level3
+                    if(!isNaN(level3IndexZeroId)){
+                        getServiceCategories_subCategories_level3_byParentId(level3IndexZeroId)
+                        .then(function(response){
+                            if(response.data.hasOwnProperty('payload')===false) return;
+                            if(response.data.payload.length===0) return;
+                            scope.setState({ level3Arr: response.data.payload });
+                            scope.setState({ level3ValueId: response.data.payload[0].id});
+                        });
+                    }
+                }
+            }
+        });
     }
 
     callbackDisabledInput(newValue){
@@ -496,10 +563,37 @@ export class ServiceAdd extends Component {
     }
 
     onRateTypeChange(evt){
-        if(this.props.params.editmode==='1') this.setState({is_rate_type_changed: true});
+        if(evt.target.value === null || evt.target.value === undefined ) return;
+        let id = evt.target.value;
+        let scope = this;
 
-        console.log('is_rate_type_changed:', this.state.is_rate_type_changed );
-        this.setState({ rateTypeValue: evt.target.value });
+        if(this.props.params.editmode==='1') {
+            this.setState({is_rate_type_changed: true},
+            function(){
+                console.log('is_rate_type_changed:', this.state.is_rate_type_changed );
+            });
+        }
+        
+        this.setState({ rateTypeValue: id });
+
+        getServicePersonnelsByRateTypeId(id).then(function(response){
+            scope.setState({ personnels_data: response.data.payload });
+        });
+        
+        let empty = [];
+        this.setState({servicePersonnelArr: empty}, function(){
+            console.log('------------------- stub');
+            scope.calculateSubtotal();
+        });
+    }
+
+    onLevel1Change(evt){
+        let scope = this;
+        this.setState({level1ValueId: evt.target.value});
+        this.setState({serviceCategoryIdRef: evt.target.value});
+        
+        let id = evt.target.value;
+        scope.getLevel2AndLevel3ById(id);
     }
 
     onLevel2Change(evt){
@@ -525,10 +619,15 @@ export class ServiceAdd extends Component {
         if(this._child.getIsReady() === false) return;
 
         // Get data from ServicePersonnel Component        
-        this.setState( { personnelComp_previous_myId : this._child.getValue().id || 0 });
+        this.setState( { personnelComp_previous_myId         : this._child.getValue().id || 0 });
         this.setState( { personnelComp_previous_personnel_id : this._child.getValue().personnel_id || "" });
-        this.setState( { personnelComp_previous_position : this._child.getValue().position || "" });
-        this.setState( { personnelComp_previous_manhour : this._child.getValue().manhours || 0 });
+        this.setState( { personnelComp_previous_position     : this._child.getValue().position.name || "" });
+        this.setState( { personnelComp_previous_manhour      : this._child.getValue().manhours || 0 });
+
+        console.log( this._child.getValue().id );
+        console.log( this._child.getValue().personnel_id );
+        console.log( this._child.getValue().position.name );
+        console.log( this._child.getValue().manhours );
 
         let tempObj = this._child.getValue();
         let subtotal = 0;
@@ -571,13 +670,16 @@ export class ServiceAdd extends Component {
     calculateSubtotal(){
         let subtotal = 0;
         this.state.servicePersonnelArr.map(function(data){
-            subtotal += data.subtotal || (data.manhours * +data.manhour_rate);
+            subtotal += data.subtotal || 0;
         });
+
+        console.log('hest', subtotal);
+
         this.setState({ subtotal: subtotal });
         console.log('Personnel_', this.state.servicePersonnelArr);
     }
 
-    callbackDeleteSelf(id){
+    calbackDelete(id){
         let scope = this;
         for(var i=0; i < this.state.servicePersonnelArr.length; i++){
             if(scope.state.servicePersonnelArr[i].personnel_id.toString() === id.toString()){
@@ -648,10 +750,10 @@ export class ServiceAdd extends Component {
                 console.log('onCreate', response);
                 scope.context.router.push('/services');
 
-            }).catch(function(error){
-                if( error.status === 409){
-                    alert('RateType already in use.');
-                }
+            })
+            .catch(function(response){
+                if(response.data.error)
+                alert(JSON.stringify(response.data.message))
             })
         }
 
@@ -677,7 +779,11 @@ export class ServiceAdd extends Component {
                 // scope.context.router.push('/services');
                 console.log('onUpdate', response);
                 alert('Save successfully!');
-            });
+            })
+            .catch(function(response){
+                if(response.data.error)
+                alert(JSON.stringify(response.data.message))
+            })
         }
     }
 
@@ -702,6 +808,8 @@ export class ServiceAdd extends Component {
         }
         return markup;
     }
+
+    
 
     render(){
         let scope = this;
@@ -740,16 +848,22 @@ export class ServiceAdd extends Component {
             </div>
         }
 
+        // READING PERSONNELS
         if(this.state.servicePersonnelArr.length!==0){
             defaultStatus = <span></span>
-            personnelsArrNotice = <span className="btn-warning">({ this.state.servicePersonnelArr.length })</span>
+            
+            personnelsArrNotice = 
+            <span 
+                className="btn-warning">({ this.state.servicePersonnelArr.length })
+            </span>
             
             personnelList = 
             this.state.servicePersonnelArr.map(function(data, index){
                 return ( <ServicePersonnel 
-                            personnel_id={data.personnel_id} 
-                            onDeleteSelf={scope.callbackDeleteSelf.bind(scope)} 
+                            onDeleteSelf={scope.calbackDelete.bind(scope)} 
                             isEnable={false} 
+                            
+                            personnel_id={data.personnel_id} 
                             id={data.id}
                             position={data.position} 
                             manhours={data.manhours} 
@@ -758,6 +872,27 @@ export class ServiceAdd extends Component {
 
         } else {
             defaultStatus = <strong className="btn-danger">No added personnels.</strong>
+        }
+
+        let level1Selection = <select><option>Loading..</option></select>
+
+        if(this.state.level1Arr.length!==0){
+            level1Selection = 
+            <select 
+                className="form-control"
+                onChange={scope.onLevel1Change.bind(scope)} 
+                value={scope.state.level1ValueId}>
+                
+                {this.state.level1Arr.map(function(data){
+                    return (
+                     <option key={data.id} value={data.id}>{data.name}</option>
+                    )
+                })}
+            </select>
+        
+        } else {
+            level1Selection =
+            <input type="text" className="form-control" value={ this.state.titleRef } disabled />
         }
 
         return ( 
@@ -793,7 +928,7 @@ export class ServiceAdd extends Component {
 
                     <div className="form-group">
                         <label>Service Category</label>
-                        <input type="text" className="form-control" value={ this.state.titleRef } disabled />
+                        {level1Selection}
                     </div>
 
                     {level2SelectOptions}
@@ -803,22 +938,30 @@ export class ServiceAdd extends Component {
                     <div className="form-group">
                         {sameRateType}
                         <label>Rate Type</label>
-                        <select className="form-control" value={this.state.rateTypeValue} onChange={this.onRateTypeChange.bind(this)}>
-                        { this.state.rateTypeArr.map(function(data){
-                            return (
-                                <option key={data.id} value={data.id}>{data.name}</option>
-                            )
-                        } ) }
+                        <select className="form-control" 
+                            value={this.state.rateTypeValue} 
+                            onChange={this.onRateTypeChange.bind(this)}>
+                            { this.state.rateTypeArr.map(function(data){
+                                return (
+                                    <option key={data.id} value={data.id}>{data.name}</option>
+                                )
+                            } ) }
                         </select>
                     </div>
 
-                    {/* SERVICE__PERSONNEL__EDITOR*/}
+                    {/* PERSONNELS INPUT SOURCES */}
                     <ServicePersonnel 
-                        personnel_id={ this.state.personnelComp_previous_personnel_id} 
                         isEnable={true} 
+                        personnelsOption={this.state.personnels_data}
+
+                        personnel_id={ this.state.personnelComp_previous_personnel_id} 
+
                         id={this.state.personnelComp_previous_myId}
+                        
                         position={ this.state.personnelComp_previous_position} 
+
                         manhours={ this.state.personnelComp_previous_manhour} 
+
                         ref={(child) => { this._child = child; }} />
 
                     <p className="personnel-btn-wrapper">
@@ -1119,7 +1262,7 @@ export class ServiceAll extends Component {
     }
 
     addSevice(){
-        this.context.router.push('/services/add');
+        this.context.router.push('/services/new/0');
     }
 
     extractAll(){

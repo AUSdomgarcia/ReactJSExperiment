@@ -87,6 +87,7 @@ ReactDOM.render(
                 <Route path="/services/manage/:serviceCategoryId/:title" component={ManageServices} />
                 <Route path="/services/add/:serviceCategoryId/:title/:editmode" component={ServiceAdd} />
                 <Route path="/services/edit/:serviceCategoryId/:title/:editmode(/:serviceid)" component={ServiceAdd} />{/*ServiceEdit*/}
+                <Route path="/services/new/:editmode" component={ServiceAdd} />{/*ServiceEdit*/}
                 <Route path="/services/all" component={ServiceAll} />
             </Route>
 

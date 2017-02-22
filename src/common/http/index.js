@@ -102,6 +102,9 @@ let postServiceRateTypesDelete = function(obj){
 let getServicePersonnels = function(){
   return axios.get( baseURL + '/rate-cards/personnels');
 }
+let getServicePersonnelsByRateTypeId = function(id){
+  return axios.get( baseURL + '/rate-cards/personnels?rate_type_id=' + id);
+}
 let getPersonnelsDepartment = function(){
   return axios.get( baseURL + '/rate-cards/personnels/departments');
 }
@@ -230,6 +233,7 @@ export {
   getServiceByServiceIdWithServiceCategoryId,
 
   getServicePersonnels,
+  getServicePersonnelsByRateTypeId,
   getPersonnelsDepartment,
   getPersonnelsPositions,
   postPersonnelsCreate,
