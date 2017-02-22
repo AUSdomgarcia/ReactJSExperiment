@@ -21,7 +21,7 @@ export class PermissionEditor extends Component {
     }
     
     componentWillReceiveProps(nextProps){
-        
+        //
     }
 
     componentWillMount(){

@@ -1107,7 +1107,7 @@ export class ServiceAll extends Component {
         getRateCardServicesAll().then(function(response){
             if(response.data.hasOwnProperty('payload')){
                 if(response.data.payload.length!==0){
-                    console.log('service all', response);
+                    console.log('service all', JSON.stringify(response));
                     scope.setState({services: response.data.payload})
                 }
             }
@@ -1177,6 +1177,8 @@ export class ServiceAll extends Component {
     onDelete(evt){
         let id = xhr(evt.target)[0].dataset.storeid;
         let scope = this;
+
+        console.log('delete', id );
 
         if(id===undefined || id===null ) return;
 

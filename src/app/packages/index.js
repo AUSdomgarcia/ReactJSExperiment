@@ -831,6 +831,9 @@ export class PackageSave extends Component {
             packageId: 0,
 
             packageAction: 'none',
+            enableSave: true,
+
+            isChanged: '0'
         }
     }
 
@@ -914,7 +917,7 @@ export class PackageSave extends Component {
         console.log('RATECARDID', window.sessionStorage.getItem('rateCardId') );
 
         let WSratecardId = window.sessionStorage.getItem('rateCardId') || 0;
-        this.setState({ratecard_id: +WSratecardId});
+        this.setState({ratecard_id: WSratecardId});
 
         // Action
         let WSpackageAction = window.sessionStorage.getItem('packageAction') || null;
@@ -925,6 +928,43 @@ export class PackageSave extends Component {
 
     onUpdate(){
         this.onSave();        
+    }
+
+    getChanges(){ //FFFFFFFF
+        let changed = '0';
+        
+        if(window.sessionStorage.getItem('bck_packagename')!==this.state.name){
+            changed = '1';
+            console.log('#1', window.sessionStorage.getItem('bck_packagename'), this.state.name);
+            console.log('------------------------------');
+        }
+        if(window.sessionStorage.getItem('bck_packagedesc')!==this.state.description){
+            changed = '1';
+            console.log('#2', window.sessionStorage.getItem('bck_packagedesc'), this.state.description);
+            console.log('------------------------------');
+        }
+        if(window.sessionStorage.getItem('bck_rateCardId')!==this.state.ratecard_id){
+            changed = '1';
+            console.log('#3', window.sessionStorage.getItem('bck_rateCardId'), this.state.ratecard_id);
+            console.log('------------------------------');
+        }
+        if(window.sessionStorage.getItem('bck_added_services')!==window.sessionStorage.getItem('addedServices')){
+            changed = '1';
+            console.log('#4', window.sessionStorage.getItem('bck_added_services'));
+            console.log('#4', JSON.stringify(this.state.service_ids));
+            console.log('------------------------------');
+        }
+        if(window.sessionStorage.getItem('bck_permittedPackageUser')!==this.state.permitted_user_ids){
+            changed = '1';
+            console.log('#5', window.sessionStorage.getItem('bck_permittedPackageUser'), this.state.permitted_user_ids);
+            console.log('------------------------------');
+        }
+        if(this.state.isChanged==='1'){
+            changed = '1';
+        }
+        console.log('package is changed =', changed);
+
+        return changed;
     }
 
     onSave(){
@@ -940,30 +980,50 @@ export class PackageSave extends Component {
         console.log('total_package_rate:', this.state.total);
         console.log('discount:', this.state.discount);
         console.log('rate_card_id:', this.state.ratecard_id);
-        console.log('service_ids:', this.state.service_ids);
+        
         console.log('permitted_user_ids:', this.state.permitted_user_ids);
+
+        console.log('my_new_action', packageAction);
 
         if(packageAction==='update' ){ //packageAction==='edit'
             console.log('update');
+
+            let service_ids = [];
+            this.state.categories.map(function(data){
+                service_ids = service_ids.concat(data.services);
+            }); 
+
+            console.log('service_ids:', JSON.stringify(service_ids));
+
             postPackageUpdate({
                 id: this.state.packageId,
                 name: this.state.name,
-                has_changed: '1',
+                has_changed: scope.getChanges(),
                 description: this.state.description,
                 package_rate: this.state.rate,
                 total_package_rate: this.state.total,
                 discount: this.state.discount,
                 rate_card_id: this.state.ratecard_id,
-                service_ids: this.state.service_ids,
+                service_ids: JSON.stringify(service_ids),
                 permitted_user_ids: this.state.permitted_user_ids
             }).then(function(response){
+
                 console.log('jeffreyWay update', response);
-                this.context.router.push('/packages');
+
+                scope.context.router.push('/packages');
             });
 
         } else if(packageAction==='create'){
             console.log('create');
+
+            let service_ids = [];
+
+            this.state.categories.map(function(data){
+                service_ids = service_ids.concat(data.services);
+            });
             
+            console.log(JSON.stringify(service_ids));
+
             postPackageCreate({
                 name: this.state.name,
                 description: this.state.description,
@@ -971,7 +1031,7 @@ export class PackageSave extends Component {
                 total_package_rate: this.state.total,
                 discount: this.state.discount,
                 rate_card_id: this.state.ratecard_id,
-                service_ids: this.state.service_ids,
+                service_ids: JSON.stringify(service_ids),
                 permitted_user_ids: this.state.permitted_user_ids
             }).then(function(response){
                 console.log('jeffreyWay create', response);
@@ -1035,12 +1095,35 @@ export class PackageSave extends Component {
         });
     }
 
-    callbackUpdateServiceCategory(serviceCategory){
-        this.setState({serviceCategory});
+    callbackUpdateServiceCategory(categories){
+        this.setState({categories});
     }
 
-    callbackOndrop(){
-        this.setState({enableSave:true});
+    callbackOndrop(changeService){
+        console.log('services/output/packages/save', changeService.json);
+
+        if(this.state.categories.length===0) return;
+
+        this.state.categories.map(function(data){
+            let services = data.services;
+                (function(array){
+                    array.map(function(servicesData){
+                        changeService.json.map(function(changeData){   
+                            if(+servicesData.id === +changeData.id){
+                                servicesData.order = changeData.order;
+                            }
+                        })
+                    });
+                })(services);
+        });
+
+        console.log('before send', JSON.stringify(this.state.categories));
+
+        this.setState({categories: this.state.categories}, function(){
+            this.setState({enableSave: true});
+        });
+
+        this.setState({isChanged:changeService.changed});
     }
     
     callbackOndrag(){
@@ -1055,18 +1138,24 @@ export class PackageSave extends Component {
             actionBtn =
             <div>
                 <Link className='btn btn-default pull-left' to='/packages/permission'>Back</Link>
-                <button type="button" className="btn btn-primary pull-right" onClick={this.onSave.bind(this)}>Save</button>
+                <button type="button" 
+                    className={"btn btn-primary pull-right "+ (this.state.enableSave ? '' : 'disabled')}
+                    onClick={this.onSave.bind(this)}>Save</button>
             </div>
         
         } else if(this.state.packageAction==='edit'){
             actionBtn =
-            <button type="button" className="btn btn-primary pull-right" onClick={this.onEdit.bind(this)}>Edit</button>
+            <button type="button" 
+                className={"btn btn-primary pull-right "+ (this.state.enableSave ? '' : 'disabled')}
+                onClick={this.onEdit.bind(this)}>Edit</button>
         
         } else if(this.state.packageAction==='update'){
             actionBtn =
             <div>
                 <Link className='btn btn-default pull-left' to='/packages/permission'>Back</Link>
-                <button type="button" className="btn btn-success pull-right" onClick={this.onUpdate.bind(this)}>Update</button>
+                <button type="button" 
+                    className={"btn btn-success pull-right "+ (this.state.enableSave ? '' : 'disabled')} 
+                    onClick={this.onUpdate.bind(this)}>Update</button>
             </div>
         }
 
