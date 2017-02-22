@@ -39,7 +39,7 @@ export class Services extends Component {
         };
     }
 
-    componentDidMount(){
+    componentWillMount(){
         let scope = this;
         getServices().then(function(response){
             if(response.data.hasOwnProperty('payload')===false) return;
@@ -47,6 +47,10 @@ export class Services extends Component {
                 scope.setState({ categoriesArr: response.data.payload })    
             }
         });
+    }
+    
+    componentDidMount(){ 
+        //
     }
 
     onDelete(evt){
@@ -177,16 +181,19 @@ export class ManageServices extends Component {
     componentWillMount(){
         this.setState({ titleRef: this.props.params.title });
         this.setState({ serviceCategoryIdRef: this.props.params.serviceCategoryId }); 
-    }
 
-    componentDidMount(){
         // not yet in use
         let scope = this;
 
         getServiceByCategoryId(this.props.params.serviceCategoryId).then(function(response){
-            console.log('manage_service', response);
+            console.log('manage_service', JSON.stringify(response));
             scope.setState({ serviceArr: response.data.payload })
         });
+
+    }
+
+    componentDidMount(){
+        //        
     }
 
     onEdit(){
@@ -488,7 +495,7 @@ export class ServiceAdd extends Component {
             if(window.sessionStorage.getItem('serviceCategoryIdRef')!=='undefined') {
                 // Get Level2
                 scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdRef);
-                
+
             } else {
                 // initiate level 1
                 getServiceCategoriesRoot().then(function(response){
@@ -739,8 +746,8 @@ export class ServiceAdd extends Component {
                 name: this.state.serviceName,
                 description: this.state.description,
                 service_category_id: this.state.serviceCategoryIdRef,
-                service_sub_category_id: this.state.level2ValueId || null,
-                sub_service_sub_category_id: this.state.level3ValueId || null,
+                service_sub_category_id: (this.state.level2ValueId==="default" ? null : this.state.level2ValueId) ,
+                sub_service_sub_category_id: (this.state.level3ValueId==="default" ? null : this.state.level3ValueId ),
                 rate_type_id: this.state.rateTypeValue,
                 is_active: this.state.activeStatus,
                 personnels: PersonnelJSON, // JSON.stringify( [{ "id": 1, "personnel_id": 1, "manhours": 100 }] ),  // <----- Mock Personnels
@@ -768,8 +775,8 @@ export class ServiceAdd extends Component {
                 name: this.state.serviceName,
                 description: this.state.description,
                 service_category_id: this.state.serviceCategoryIdRef,
-                service_sub_category_id: this.state.level2ValueId || null,
-                sub_service_sub_category_id: this.state.level3ValueId || null,
+                service_sub_category_id: (this.state.level2ValueId==="default" ? null : this.state.level2ValueId) ,
+                sub_service_sub_category_id: (this.state.level3ValueId==="default" ? null : this.state.level3ValueId ),
                 rate_type_id: this.state.rateTypeValue,
                 is_active: this.state.activeStatus,
                 personnels: PersonnelJSON,
