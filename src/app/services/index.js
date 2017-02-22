@@ -48,7 +48,7 @@ export class Services extends Component {
             }
         });
     }
-    
+
     componentDidMount(){ 
         //
     }
@@ -414,6 +414,7 @@ export class ServiceAdd extends Component {
         /////////////////////////////////
         if(this.props.params.editmode==='1'){
             // If edit mode load data when edit
+
             console.log( serviceCategoryId, paramsServiceId );
 
             getServiceByServiceIdWithServiceCategoryId(serviceCategoryId, paramsServiceId ).then(function(response){
@@ -457,7 +458,41 @@ export class ServiceAdd extends Component {
 
                 // Active state
                 let status = res.is_active;
-                scope.setState({activeStatus: +status});      
+                scope.setState({activeStatus: +status});    
+
+
+                // Level 1
+                if(res.service_category_id!==null){
+                    scope.setState({serviceCategoryIdRef: res.service_category_id});
+                    scope.setState({level1ValueId: res.service_category_id});
+                }
+                // Level 2
+                if(res.service_sub_category_id!==null){
+                    scope.setState({level1ValueId: res.level2ValueId});
+                }
+                // Level 3
+                if(res.sub_service_sub_category_id!==null){
+                    scope.setState({sub_service_sub_category_id: res.level3ValueId});
+                }
+
+                // getServiceCategoriesRoot().then(function(response){
+                //     if(response.data.hasOwnProperty('payload')===false) return;
+
+                //     if(response.data.payload.length!==0){
+                //         let res = response.data.payload[0];
+
+                //         scope.setState({level1Arr: response.data.payload});
+
+                //         scope.setState({ serviceCategoryIdRef: res.id }, function(){
+
+                //             scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdRef);
+                            
+                //             scope.setState({ level1ValueId: res.id });
+
+                //         });
+                //     }
+                // });
+
             });
 
 

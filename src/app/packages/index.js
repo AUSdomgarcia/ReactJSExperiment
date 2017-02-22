@@ -809,7 +809,7 @@ PackagePermission.contextTypes = {
 
 
 
-import {postRateCardPreview, postPackageCreate, postPackageUpdate} from '../../common/http';
+import {postPackagePreview, postPackageCreate, postPackageUpdate} from '../../common/http';
 // Step4 - Save Service
 export class PackageSave extends Component {
 
@@ -866,11 +866,13 @@ export class PackageSave extends Component {
 
             this.setState({ packageId: WSpackageId });
 
+            console.log('WSpackageId', WSpackageId);
+
             this.setState({service_ids: json}, function(){
                 switch(WSpackageAction){
                     ///
                     case 'create':
-                        postRateCardPreview({service_ids: json})
+                        postPackagePreview({service_ids: json}) // xxxx
                         .then(function(response){
                             console.log('/package/save/:0', response);
                             scope.setState({categories: response.data.payload});
@@ -878,7 +880,21 @@ export class PackageSave extends Component {
                     break;
                     ///
                     case 'edit': case 'update':
-                        postRateCardPreview({package_id: WSpackageId, service_ids: json})
+                        let temp = {};
+                        console.log('org',window.sessionStorage.getItem('addedServices'))
+                        console.log('old',window.sessionStorage.getItem('bck_added_services'))
+
+                        if(window.sessionStorage.getItem('addedServices') !==  window.sessionStorage.getItem('bck_added_services')){
+                            temp = {service_ids: json}
+                            console.log('goes here/:0');
+                        } else {
+                            temp = {package_id: WSpackageId}
+                            console.log('goes here/:1');
+                        }
+
+                        console.log('given', json, 'id', WSpackageId);
+
+                        postPackagePreview(temp)
                         .then(function(response){
                             console.log('/package/save/:1', response);
                             scope.setState({categories: response.data.payload});

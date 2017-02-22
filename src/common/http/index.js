@@ -192,6 +192,9 @@ let postPackageUpdate = function(obj){
 let postPackageDelete = function(obj){
   return axios.post( baseURL + '/rate-cards/packages/delete', obj);
 }
+let postPackagePreview = function(obj){
+  return axios.post( baseURL + '/rate-cards/packages/preview', obj);
+}
 
 
 
@@ -262,6 +265,7 @@ export {
   postPackageUpdate,
   postPackageDelete,
   getRateCardPackageById,
+  postPackagePreview,
 
   postRatecardServiceCategoriesSortServiceCategories,
   postRatecardServiceCategoriesSortServiceSubCategories
