@@ -33,7 +33,11 @@ export class LevelTwo extends Component {
             showPopup: false,
 
             inputCategoryName: "",
-            showInputName: false
+            showInputName: false,
+
+            isReArrange: false,
+            enableSave: false,
+            sortedResults:[]
         }
         this.hackSortableInstance = null;
     }
@@ -63,11 +67,16 @@ export class LevelTwo extends Component {
 
                 console.log('level2-done', JSON.stringify(result) );
 
-                postRatecardServiceCategoriesSortServiceSubCategories({ 
-                    categories_sort: JSON.stringify(result) 
-                })
-                .then(function(response){
-                    console.log(response);
+                // postRatecardServiceCategoriesSortServiceSubCategories({ 
+                //     categories_sort: JSON.stringify(result) 
+                // })
+                // .then(function(response){
+                //     console.log(response);
+                // });
+
+                let sorted = JSON.stringify(result);
+                scope.setState({sortedResults: sorted}, function(){
+                    scope.setState({ enableSave: true });
                 });
             }
         });
@@ -114,8 +123,14 @@ export class LevelTwo extends Component {
     }
 
     onManageBtn(){
+        let scope = this;
         this.setState({isManageBtn:false});
         this.setState({isMenuBtn:true});
+
+        let delay = setTimeout(function(){
+            clearTimeout(delay);
+            xhr('.myHandle.-layer2-'+scope.props.layer).hide();
+        }, 1 );
     }
 
     onDelete(evt){
@@ -127,7 +142,7 @@ export class LevelTwo extends Component {
         } else {
             return;
         }
-
+        
         postServiceCategoriesDelete({id: this.state.myCurrentId}).then(function(response){
             scope.hackSortableInstance.destroy();
             scope.props.onDelete(scope.state.myCurrentId);
@@ -217,8 +232,38 @@ export class LevelTwo extends Component {
         postServiceCategories_subCategories_update({name: value, id: id})
         .then(function(response){
             console.log('[Edit] Level two success', response.data);
-        });
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
+        })
     }
+
+    onReArrange(){
+        this.setState({isReArrange:true});
+        xhr('.myHandle.-layer2-'+this.props.layer).show();
+    }
+
+    onCancelSave(){
+        this.setState({isReArrange:false});
+        xhr('.myHandle.-layer2-'+this.props.layer).hide();
+    }
+
+    onSaveReArrange(){
+        let scope = this;
+
+        if(this.state.enableSave){
+            postRatecardServiceCategoriesSortServiceSubCategories({ 
+                categories_sort: this.state.sortedResults 
+            })
+            .then(function(response){
+                console.log('category saved!', response);
+                scope.setState({enableSave:false});
+            });
+        }
+    }
+    
 
     render(){
         let menuBtn = null;
@@ -230,6 +275,16 @@ export class LevelTwo extends Component {
         let style = {};
 
         let hasLevel2 = false;
+
+        let reArrangeBtn = <button type="button" className="btn btn-default" onClick={this.onReArrange.bind(this)}>Rearrange</button>
+
+        if(this.state.isReArrange){
+            reArrangeBtn = 
+            <span>
+                <button className={"btn btn-success " + (this.state.enableSave ? '' : 'disabled')} type="button" onClick={this.onSaveReArrange.bind(this)}>Save</button>&nbsp;
+                <button className="btn btn-default" type="button" onClick={this.onCancelSave.bind(this)}>Cancel</button>
+            </span>
+        }
 
         menuBtn = 
             <div>
@@ -257,7 +312,7 @@ export class LevelTwo extends Component {
                             if(scope.state.isMenuBtn){
                                 elem = 
                                     <div>
-                                        <button type="button" className="btn btn-default">Rearrange</button>&nbsp; 
+                                        {reArrangeBtn} &nbsp; 
                                         <button type="button" className="btn btn-primary" onClick={scope.onAdd.bind(scope)}>Add Level</button>&nbsp; 
                                         <button type="button" className="btn btn-default" onClick={scope.onDone.bind(scope)}>Done</button> 
                                     </div>
@@ -280,13 +335,19 @@ export class LevelTwo extends Component {
         if(this.state.isMenuBtn && this.state.categoryLevelTwo.length !==0){
             level2 = 
                 this.state.categoryLevelTwo
-                    .map(function(data){
+                    .map(function(data, index){
                         // if( data.level ==="2" ){
                             // hasLevel2 = true;
                             return (
                                 <li key={data.id} data-id={data.id}>
-                                    <span className="myHandle">::</span>
+                                    
+                                    <span className={"myHandle -layer2-"+scope.props.layer}>
+                                        <i className="fa fa-ellipsis-v"></i>
+                                        <i className="fa fa-ellipsis-v"></i>
+                                    </span>
+                                    
                                     <LevelThree 
+                                        layer={index}
                                         nextLevel={2}
                                         sortableId={data.id} 
                                         parentData={data} 

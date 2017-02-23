@@ -7,7 +7,8 @@ import xhr from 'jquery';
 import {
     getServiceRateTypes, 
     postServiceRateTypesCreate,
-    postServiceRateTypesDelete } from '../http';
+    postServiceRateTypesDelete,
+    postRateCardRateTypesUpdate } from '../http';
 
 export class RateType extends Component {
 
@@ -17,7 +18,12 @@ export class RateType extends Component {
         this.state = {
             showAddRateType : false,
             rateTypeName: "",
-            rateTypeArr: []
+            rateTypeArr: [],
+
+            ishowInput: false,
+            inputCategoryName: "",
+
+            targetInput: 0,
         }
     }
 
@@ -54,30 +60,93 @@ export class RateType extends Component {
         this.setState({ showAddRateType: false });
     }
 
+    onEdit(evt){
+        let id = xhr(evt.target)[0].dataset.storedid;
+        let text = xhr(evt.target)[0].dataset.text;
+        
+        let scope = this;
+
+        if(id===undefined || id===null) return;
+
+        this.setState({targetInput: id});
+
+        let toggle = this.state.ishowInput;
+            toggle = !toggle;
+        
+        if(toggle===true) this.setState({ishowInput: toggle});
+        
+        this.setState({inputCategoryName: text });
+    
+        if(toggle===false && scope.state.inputCategoryName.length !== 0){
+        
+        let newInput = this.state.inputCategoryName;
+
+            postRateCardRateTypesUpdate({
+                id: id,
+                name: newInput
+            })
+            .then(function(response){
+                scope.state.rateTypeArr.map(function(data){
+                    if(+data.id===+id){
+                        data.name = newInput;
+                    }
+                });
+                scope.setState({rateTypeArr: scope.state.rateTypeArr }, function(){
+                    scope.setState({ishowInput: false});
+                });
+            })
+            .catch(function(response){
+                if(response.data.error){
+                    alert(response.data.message);
+                }
+            });
+        }
+    }
+
     onDelete(evt){
         let id = xhr(evt.target)[0].dataset.storedid;
         let scope = this;
+
+        console.log(id);
     
+        if(id===undefined || id===null) return;
+
         if (confirm('Are you sure you want to delete this?')) {
             // continue
         } else {
             return;
         }
 
-        postServiceRateTypesDelete({ id: id }).then(function(response){
+        postServiceRateTypesDelete({ id: id })
+        .then(function(response){
             scope.state.rateTypeArr.map(function(el, index){
                 if(el.id === +id){
                     scope.state.rateTypeArr.splice(index, 1);
                 }
             });
             scope.setState({ rateTypeArr: scope.state.rateTypeArr });
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
         });
+    }
+
+    onCategoryNameChanged(evt){
+        this.setState({inputCategoryName: evt.target.value });
+    }
+
+    onHandleKeyChange(){
+        
     }
 
     render(){
         let scope = this;
 
         let rateTypes = null;
+
+        let rateTypeInput = <span></span>;
 
         if(this.state.rateTypeArr.length!==0){
             rateTypes = 
@@ -86,10 +155,24 @@ export class RateType extends Component {
                     return (
                             <tr key={data.id}>
                                 <td>
-                                    {data.name}
+                                    {(function(data){
+                                        if(scope.state.ishowInput===true && +scope.state.targetInput===+data.id){
+                                            rateTypeInput = 
+                                            <input type="text" 
+                                                className="form-control" 
+                                                value={scope.state.inputCategoryName} 
+                                                onChange={scope.onCategoryNameChanged.bind(scope)} 
+                                                onKeyPress={scope.onHandleKeyChange.bind(scope)}/>
+                                        } else {
+                                            rateTypeInput = 
+                                            <span className="name"> {data.name}</span>
+                                        }
+                                        return rateTypeInput;
+                                    })(data)}
                                 </td>
                                 <td className="text-right">
-                                    <button type="button" className="btn btn-danger" data-storedid={data.id} onClick={scope.onDelete.bind(scope)}><i className="fa fa-times"></i></button>
+                                    <button type="button" className="btn btn-primary" data-storedid={data.id} data-text={data.name} onClick={scope.onEdit.bind(scope)}>Edit</button>&nbsp;
+                                    <button type="button" className="btn btn-danger" data-storedid={data.id} onClick={scope.onDelete.bind(scope)}>&times;</button>
                                 </td>
                             </tr>
                         )

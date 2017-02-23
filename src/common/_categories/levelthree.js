@@ -33,12 +33,29 @@ export class LevelThree extends Component {
 
             showInputName: false,
             inputCategoryName: "",
+
+            isReArrange: false,
+            enableSave: false,
+            sortedResults:[]
         }
         this.hackSortableInstance = null;
     }
 
     componentDidMount(){
         // console.log('parent', this.props.parentData);
+        let scope = this;
+        let delay = setTimeout(function(){
+            clearTimeout(delay);
+            xhr('.myHandle.-layer3-'+scope.props.layer).hide();
+        }, 1 );
+    }
+    
+    componentWillMount(){
+        let scope = this;
+        let delay = setTimeout(function(){
+            clearTimeout(delay);
+            xhr('.myHandle.-layer3-'+scope.props.layer).hide();
+        }, 1 );
     }
 
     componentWillReceiveProps(nextProps){
@@ -50,6 +67,11 @@ export class LevelThree extends Component {
         let el = document.getElementById('SortableLevelThree_' + this.props.sortableId);
 
         if(this.props.nextLevel===2){
+
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                xhr('.myHandle.-layer3-'+scope.props.layer).hide();
+            }, 1 );
 
             if(scope.hackSortableInstance!==null){
                 scope.hackSortableInstance.destroy();
@@ -71,11 +93,16 @@ export class LevelThree extends Component {
 
                     console.log('level3-done', result);
                     
-                    postRatecardServiceCategoriesSortServiceSubCategories({ 
-                        categories_sort: JSON.stringify(result) 
-                    })
-                    .then(function(response){
-                    console.log(response);
+                    // postRatecardServiceCategoriesSortServiceSubCategories({ 
+                    //     categories_sort: JSON.stringify(result) 
+                    // })
+                    // .then(function(response){
+                    // console.log(response);
+                    // });
+                    
+                    let sorted = JSON.stringify(result);
+                    scope.setState({sortedResults: sorted}, function(){
+                        scope.setState({ enableSave: true });
                     });
                 }
             });
@@ -211,7 +238,37 @@ export class LevelThree extends Component {
         .then(function(response){
             console.log('[Edit] Level three success', response.data);
         })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
+        });
     }
+
+    onReArrange(){
+        this.setState({isReArrange:true});
+        xhr('.myHandle.-layer3-'+this.props.layer).show();
+    }
+    
+    onCancelSave(){
+        this.setState({isReArrange:false});
+        xhr('.myHandle.-layer3-'+this.props.layer).hide();
+    }
+
+    onSaveReArrange(){
+        let scope = this;
+
+        if(this.state.enableSave){
+            postRatecardServiceCategoriesSortServiceSubCategories({ 
+                categories_sort: this.state.sortedResults 
+            })
+            .then(function(response){
+                console.log('category saved!', response);
+                scope.setState({enableSave:false});
+            });
+        }
+    }
+
 
     render(){
         let menuBtn = null;
@@ -225,6 +282,16 @@ export class LevelThree extends Component {
         let style = {};
 
         let hasLevel3 = false;
+
+        let reArrangeBtn = <button type="button" className="btn btn-default" onClick={this.onReArrange.bind(this)}>Rearrange</button>
+
+        if(this.state.isReArrange){
+            reArrangeBtn = 
+            <span>
+                <button className={"btn btn-success " + (this.state.enableSave ? '' : 'disabled')} type="button" onClick={this.onSaveReArrange.bind(this)}>Save</button>&nbsp;
+                <button className="btn btn-default" type="button" onClick={this.onCancelSave.bind(this)}>Cancel</button>
+            </span>
+        }
 
 
         if(parentData.level === this.props.nextLevel.toString()){
@@ -241,7 +308,7 @@ export class LevelThree extends Component {
                                 <input type="text" className="form-control" value={scope.state.inputCategoryName} onChange={scope.onCategoryNameChanged.bind(scope)} onKeyPress={scope.onHandleKeyChange.bind(scope)}/>
                             } else {
                                 visibleElement = 
-                                <span className="name">{parentData.name} {parentData.version}</span>
+                                <span className="name">{parentData.name} {/*parentData.version*/}</span>
                             }
                             return visibleElement;
                         })()
@@ -257,7 +324,7 @@ export class LevelThree extends Component {
                                 if(scope.state.isMenuBtn){
                                     elem = 
                                         <div>
-                                            <button type="button" className="btn btn-default">Rearrange</button>&nbsp; 
+                                            {reArrangeBtn} &nbsp; 
                                             <button type="button" className="btn btn-primary" onClick={scope.onAdd.bind(scope)}>Add Level</button>&nbsp; 
                                             <button type="button" className="btn btn-default" onClick={scope.onDone.bind(scope)}>Done</button> 
                                         </div>
@@ -290,15 +357,21 @@ export class LevelThree extends Component {
         if(this.state.isMenuBtn && this.state.dataTree.length!==0){
             level3 = 
                 this.state.dataTree
-                    .map(function(data){
+                    .map(function(data, index){
                         if(data.level==="3" && data.service_sub_category_id === scope.state.curLevelId ){
                             hasLevel3 = true;
 
                             return (
                                 <li key={data.id} data-id={data.id}>
-                                    <span className="myHandle">::</span>
+                                    
+                                    <span className={"myHandle -layer3-"+scope.props.layer}>
+                                        <i className="fa fa-ellipsis-v"></i>
+                                        <i className="fa fa-ellipsis-v"></i>
+                                    </span>
+
                                     <LevelThree 
                                         nextLevel={3} 
+                                        layer={index}
                                         parentData={data}  
                                         sortableId={data.id}
                                         

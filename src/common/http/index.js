@@ -91,6 +91,10 @@ let postServiceRateTypesCreate = function(obj){
 let postServiceRateTypesDelete = function(obj){
   return axios.post( baseURL + '/rate-cards/rate-types/delete', obj );
 }
+let postRateCardRateTypesUpdate = function(obj){
+  return axios.post( baseURL + '/rate-cards/rate-types/update', obj );
+}
+
 
 
 
@@ -268,5 +272,7 @@ export {
   postPackagePreview,
 
   postRatecardServiceCategoriesSortServiceCategories,
-  postRatecardServiceCategoriesSortServiceSubCategories
+  postRatecardServiceCategoriesSortServiceSubCategories,
+
+  postRateCardRateTypesUpdate
 }

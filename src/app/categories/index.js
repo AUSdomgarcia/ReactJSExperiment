@@ -26,50 +26,54 @@ export class Categories extends Component {
       response_last_id: null,
       isRearrage: false,
       enableSave: false,
+      isSaveSent:false,
+      sortedResults:[]
     };
 
     this.parentMe = this;
   }
 
-  componentDidMount(){
+  componentWillMount(){
     let scope = this;
 
     getServiceCategoriesRoot().then(function(response){
-      console.log('categories', response.data);
-      
       scope.setState({ categoryLevelOne: response.data.payload });
-
-      if(response.data.hasOwnProperty('payload')===false) return;
       if(response.data.payload.length!==0){
         scope.setState({response_last_id: response.data.payload[response.data.payload.length-1].id});
       }
     });
+  }
 
-    sortable.create(SortableLevelOne ,
-    {
+  componentDidMount(){
+    let scope = this;
+
+    sortable.create(SortableLevelOne, {
       animation: 100,
       handle: '.myHandle',
       ghostClass: 'ghost',
       onSort: function(e){
-        let items = e.to.children;
-        let result = [];
-        
-        for (var i = 0; i < items.length; i++) {
-            let id = xhr(items[i])[0].dataset.id;
-            let order = i;
-            result.push({id, order});
+          let items = e.to.children;
+          let result = [];
+          
+          for (var i = 0; i < items.length; i++) {
+              let id = xhr(items[i])[0].dataset.id;
+              let order = i;
+              result.push({id, order});
+          }
+
+          // console.log('level1-done', JSON.stringify(result) );
+
+          let sorted = JSON.stringify(result);
+          scope.setState({ sortedResults: sorted }, function(){
+            scope.setState({ enableSave: true });
+          });
+
+          // let sorted = JSON.stringify(result);
+          // postRatecardServiceCategoriesSortServiceCategories({categories_sort: sorted})
+          // .then(function(response){
+          //   console.log('resonse_00', response);
+          // });
         }
-
-        console.log('level1-done', JSON.stringify(result));
-
-        postRatecardServiceCategoriesSortServiceCategories(
-          { categories_sort: JSON.stringify(result) }
-        )
-        .then(function(response){
-          console.log(response);
-        });
-
-      }
     });
   }
   
@@ -131,6 +135,11 @@ export class Categories extends Component {
 
     postServiceCategoriesUpdate({name: value, id: id}).then(function(response){
       console.log('[Edit] Level one success', response.data);
+    })
+    .catch(function(response){
+      if(response.data.error){
+        alert(response.data.message);
+      }
     });
   }
 
@@ -145,12 +154,24 @@ export class Categories extends Component {
   }
 
   onSaveReArrange(){
-
+    let scope = this;
+    
+    if(this.state.enableSave){
+      postRatecardServiceCategoriesSortServiceCategories({
+      categories_sort: this.state.sortedResults
+      })
+      .then(function(response){
+        console.log('category saved!', response);
+        scope.setState({enableSave:false});
+      });
+    }
   }
 
   render() {
     let scope = this;
     let rearrage = <span></span>
+    let layer = '002';
+    let categoryList = <div>&nbsp; No data.</div>
 
     if(this.state.isRearrage){
       rearrage = <span>
@@ -169,6 +190,24 @@ export class Categories extends Component {
       <button type="button" className="btn btn-default" onClick={this.onReArrange.bind(this)}>Rearrange</button>
     }
 
+    if(this.state.categoryLevelOne.length!==0){
+      categoryList = 
+        this.state.categoryLevelOne.map(function(data, index){
+            return ( 
+              <li key={data.id} data-id={data.id}>
+                <span className="myHandle -layer1">
+                  <i className="fa fa-ellipsis-v"></i>
+                  <i className="fa fa-ellipsis-v"></i>
+                </span>
+                <LevelTwo parentData={data} 
+                          sortableId={data.id}
+                          layer={index}
+                          onDelete={scope.callbackDelete.bind(scope)} 
+                          onUpdate={scope.callbackUpdate.bind(scope)} />
+              </li>
+            ) } ) 
+    }
+    
     return (
       <div>
         
@@ -204,23 +243,9 @@ export class Categories extends Component {
         {/* Category Listing */}
         <div className="category-list">
           <ul style={{margin:"0"}} id="SortableLevelOne">
-            { scope.state.categoryLevelOne.map(function(data, index){
-                return ( 
-                  <li key={data.id} data-id={data.id}>
-                    <span className="myHandle -layer1">
-                      <i className="fa fa-ellipsis-v"></i>
-                      <i className="fa fa-ellipsis-v"></i>
-                    </span>
-                    <LevelTwo parentData={data} 
-                              sortableId={data.id} 
-                              onDelete={scope.callbackDelete.bind(scope)} 
-                              onUpdate={scope.callbackUpdate.bind(scope)} />
-                  </li>
-                  )
-              } ) }
-            </ul>
+            {categoryList}
+          </ul>
         </div>
-
 
 
 
