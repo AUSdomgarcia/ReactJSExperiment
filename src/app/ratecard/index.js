@@ -124,16 +124,38 @@ export class RateCard extends Component {
 
         console.log('before send archived', id, action);
 
+        if(action==='activate'){
+            if(confirm('Are you sure you want to Activate this RateCard?')){
+                //
+            } else {
+                return;
+            }
+        }
+
+        if(action==='archive'){
+            if(confirm('Are you sure you want to Archived this RateCard?')){
+                //
+            } else {
+                return;
+            }
+        }
+
         postRateCardAction({
             id: id,
             action: action
         }).then(function(response){
             console.log('return', response);
             scope.segregateRateCard(response.data.payload);
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
         });
     }
 
     onCreate(){
+        window.sessionStorage.clear();
         window.sessionStorage.setItem('ratecardAction', 'create');
         this.context.router.push('/ratecard/add');
     }
@@ -191,7 +213,7 @@ export class RateCard extends Component {
                         <table className='table table-hover table-bordered table-striped'>
                             <thead>
                                 <tr>
-                                    <th>Pakages</th>
+                                    <th>Title</th>
                                     <th>Description</th>
                                     <th>Version</th>
                                     <th>Action</th>
@@ -215,7 +237,7 @@ export class RateCard extends Component {
                         <table className='table table-hover table-bordered table-striped'>
                             <thead>
                                 <tr>
-                                    <th>Pakages</th>
+                                    <th>Title</th>
                                     <th>Description</th>
                                     <th>Version</th>
                                     <th>Action</th>
@@ -1013,9 +1035,18 @@ export class RateCardSave extends Component {
                 rate_type_id: scope.state.rate_type_id,
                 service_ids: JSON.stringify(service_ids),
                 permitted_user_ids: scope.state.permitted_user_ids,
+
                 }).then(function(response){
                     console.log(response);
+
+                    alert('Rate Card Updated.');
+
                     scope.context.router.push('/ratecard');
+                })
+                .catch(function(response){
+                    if(response.data.error){
+                        alert(response.data.message);
+                    }
                 });
             });
             
@@ -1039,7 +1070,15 @@ export class RateCardSave extends Component {
 
             }).then(function(response){
                 console.log(response);
+                
+                alert('Created new RateCard Successfully.');
+
                 scope.context.router.push('/ratecard');
+            })
+            .catch(function(response){
+                if(response.data.error){
+                    alert(response.data.message);
+                }
             });
         }
     }

@@ -68,11 +68,6 @@ export class LevelThree extends Component {
 
         if(this.props.nextLevel===2){
 
-            let delay = setTimeout(function(){
-                clearTimeout(delay);
-                xhr('.myHandle.-layer3-'+scope.props.layer).hide();
-            }, 1 );
-
             if(scope.hackSortableInstance!==null){
                 scope.hackSortableInstance.destroy();
                 console.log('destroying instance of ', scope.props.sortableId);
@@ -120,7 +115,18 @@ export class LevelThree extends Component {
                 this.props.parentData.id + 
                 '&version=' + scope.props.parentData.version).then(function(response){
                 scope.setState({ dataTree: response.data.payload });
-            });
+
+                let delay = setTimeout(function(){
+                    clearTimeout(delay);
+                    xhr('.myHandle.-layer3-'+scope.props.layer).hide();
+                }, 1 );
+
+            })
+            .catch(function(response){
+                if(response.data.error){
+                    alert(response.data.message);
+                }
+            })
         }
 
         this.setState({isManageBtn:false});
@@ -157,7 +163,19 @@ export class LevelThree extends Component {
             scope.setState({subCategoryName: ""});
             scope.setState({showAddLevel: false});
             scope.setState({dataTree: response.data.payload});
-        });
+
+            alert('New Category was added.');
+
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                xhr('.myHandle.-layer3-'+scope.props.layer).hide();
+            }, 1 );
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
+        })
     }
 
     onCancel(){
@@ -225,6 +243,11 @@ export class LevelThree extends Component {
 
     callbackUpdate(value, id){
        let scope = this;
+
+       if(value.length===0){
+            alert('No name specified.');
+            return;
+        }
 
        // Local Update
         this.state.dataTree.map(function(data){

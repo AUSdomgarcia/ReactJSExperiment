@@ -119,6 +119,12 @@ export class LevelTwo extends Component {
                     scope.setState({ currentVersion: response.data.payload[response.data.payload.length-1].version });
                 }
             }
+
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                xhr('.myHandle.-layer2-'+scope.props.layer).hide();
+            }, 1 );
+            
         });
     }
 
@@ -137,12 +143,12 @@ export class LevelTwo extends Component {
         let scope = this;
         let target = evt.target;
 
-        if (confirm('Are you sure you want to save this thing into the database?')) {
+        if (confirm('Are you sure you want to delete this category?')) {
             // continue
         } else {
             return;
         }
-        
+
         postServiceCategoriesDelete({id: this.state.myCurrentId}).then(function(response){
             scope.hackSortableInstance.destroy();
             scope.props.onDelete(scope.state.myCurrentId);
@@ -179,7 +185,19 @@ export class LevelTwo extends Component {
             scope.setState({subCategoryName: ""});
             scope.setState({showAddLevel: false});
             scope.setState({categoryLevelTwo: response.data.payload});
-        });
+            
+            alert('New Category was added.');
+
+            let delay = setTimeout(function(){
+                clearTimeout(delay);
+                xhr('.myHandle.-layer2-'+scope.props.layer).hide();
+            }, 1 );
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
+        })
     }
 
     onClickEdit(){
@@ -220,6 +238,12 @@ export class LevelTwo extends Component {
 
     callbackUpdate(value, id){
        let scope = this;
+
+        if(value.length===0){
+            alert('No name specified.');
+            return;
+        }
+
 
        // Local Update
         this.state.categoryLevelTwo.map(function(data){

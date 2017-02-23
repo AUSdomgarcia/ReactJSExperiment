@@ -35,9 +35,15 @@ export class PersonnelList extends Component {
         //     function(data){
         //         scope.props.onDelete(id);
         //     });
-
-        postPersonnelsDelete({ id: id }).then(function(response){
-            scope.props.onDelete(id)
+        
+        postPersonnelsDelete({ id: id })
+        .then(function(response){
+            scope.props.onDelete(id);
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
         })
     }
 

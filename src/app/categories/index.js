@@ -98,10 +98,17 @@ export class Categories extends Component {
         level1Arr.push(category);
 
     // Co-op investigate .. tells setting state during unmount component
-    postServiceCategoriesCreate({name: this.state.categoryName }).then(function(response){
+    postServiceCategoriesCreate({name: this.state.categoryName })
+    .then(function(response){
       if(response.data.hasOwnProperty('payload')===false) return;
       scope.setState({ categoryLevelOne: response.data.payload });
       scope.setState({ response_last_id: response.data.payload[response.data.payload.length-1].id });
+      xhr('.category-input').addClass('hide');
+    })
+    .catch(function(response){
+      if(response.data.error){
+        alert(response.data.message)
+      }
     });
 
     this.setState({ categoryName: ""});
@@ -127,6 +134,11 @@ export class Categories extends Component {
   callbackUpdate(value, id){
     let scope = this;
 
+    if(value.length===0){
+      alert('No name specified.');
+      return;
+    }
+
     scope.state.categoryLevelOne.map(function(data){
       if(data.id === id){
         data.name = value;
@@ -135,6 +147,7 @@ export class Categories extends Component {
 
     postServiceCategoriesUpdate({name: value, id: id}).then(function(response){
       console.log('[Edit] Level one success', response.data);
+      alert('Updated Category.');
     })
     .catch(function(response){
       if(response.data.error){
@@ -161,9 +174,17 @@ export class Categories extends Component {
       categories_sort: this.state.sortedResults
       })
       .then(function(response){
+        
         console.log('category saved!', response);
+        
         scope.setState({enableSave:false});
-      });
+
+      })
+      .catch(function(response){
+        if(response.data.error){
+          alert(response.data.message);
+        }
+      })
     }
   }
 

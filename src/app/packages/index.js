@@ -95,6 +95,7 @@ export class Packages extends Component {
         this.setState({packages:this.state.packages});
         postPackageDelete({id:id}).then(function(response){
             console.log(response);
+            alert('Selected Package were deleted.')
         });
     }
 
@@ -1052,6 +1053,8 @@ export class PackageSave extends Component {
     }
 
     previewById(id){
+        alert('New package were saved.');
+
         let scope = this;
         window.sessionStorage.clear();
 

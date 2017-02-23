@@ -47,13 +47,19 @@ export class RateType extends Component {
             alert('No type were set.');
             return;
         }
-
         postServiceRateTypesCreate({ name: newValue }).then(function(response){
             scope.setState({ rateTypeArr: response.data.payload });
             // reset
             scope.setState({ rateTypeName: "" });
             scope.setState({ showAddRateType: false });
-        });
+
+            alert('Added Rate Type Successfully');
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
+        })
     }
 
     onCancel(){
@@ -125,6 +131,7 @@ export class RateType extends Component {
                 }
             });
             scope.setState({ rateTypeArr: scope.state.rateTypeArr });
+            alert('Deleted Rate Type');
         })
         .catch(function(response){
             if(response.data.error){

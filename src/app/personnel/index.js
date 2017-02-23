@@ -56,7 +56,7 @@ export class Personnel extends Component {
     this.setState({isUpdated:false});
     // copy
     this.setState({ personnelscopy: addValue }, function(){
-      alert('Successfully addded new personnel');
+      alert('Addded personnel successfully');
     });
   }
 
@@ -80,6 +80,8 @@ export class Personnel extends Component {
           scope.setState({ personnelscopy: scope.state.personnels });
         }
     });
+
+    alert('Deleted Personnel');
 
     this.redirectPersonnel();
   }

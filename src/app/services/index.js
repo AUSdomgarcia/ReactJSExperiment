@@ -57,26 +57,44 @@ export class Services extends Component {
         let id = xhr(evt.target)[0].dataset.storeid;
         let scope = this;
 
-        if(id===undefined) return;
+        if(id===undefined || id===null) return;
 
-        if(confirm('Do you want to delete?')){
+        if(confirm('Are you sure you want to delete this service?')){
             //
         } else {
             return;
         }
+        
+        console.log(this.state.categoriesArr);
 
-        this.state.categoriesArr.map(function(data, idx){
-            if(data.id.toString() === id.toString() ){
-                scope.state.categoriesArr.splice(idx, 1);
-            }
-        });
-        this.setState({categoriesArr: this.state.categoriesArr });
-
-        postServiceCategoriesDelete({id: id}).then(function(response){
+        postServiceCategoriesDelete({id: id})
+        .then(function(response){
+            
             console.log('deleted', response);
+
+            alert('Service deleted.');
+            
             if(response.data.hasOwnProperty('payload')===false) return;
+
             if(response.data.payload.length!==0){
+            
                 scope.setState({ categoriesArr: response.data.payload });    
+            
+            }
+
+            scope.state.categoriesArr.map(function(data, idx){
+                if(data.id.toString() === id.toString() ){
+                    scope.state.categoriesArr.splice(idx, 1);
+                }
+            });
+
+            scope.setState({categoriesArr: scope.state.categoriesArr });
+            
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+                return;
             }
         });
     }
@@ -793,8 +811,10 @@ export class ServiceAdd extends Component {
                 created_at: this.state.createdAt, // '2017-02-09 11:14:00' // <------ Mock time ,     this.state.createdAt,
             }).then(function(response){
                 console.log('onCreate', response);
-                scope.context.router.push('/services');
 
+                alert('Created service successfully.');
+
+                scope.context.router.push('/services');
             })
             .catch(function(response){
                 if(response.data.error)
@@ -905,9 +925,7 @@ export class ServiceAdd extends Component {
             defaultStatus = <span></span>
             
             personnelsWarining = 
-            <span 
-                className="btn-warning">({ this.state.servicePersonnelArr.length })
-            </span>
+            <span>({ this.state.servicePersonnelArr.length })</span>
             
             personnelList = 
             this.state.servicePersonnelArr.map(function(data, index){
@@ -923,7 +941,7 @@ export class ServiceAdd extends Component {
             } );
 
         } else {
-            defaultStatus = <strong className="btn-danger">No added personnels.</strong>
+            defaultStatus = <strong>No added personnels.</strong>
         }
 
         let level1SelectOptions = <select><option>Loading..</option></select>
@@ -1449,7 +1467,9 @@ export class ServiceAll extends Component {
             if(response.data.hasOwnProperty('payload')){
                 if(response.data.payload.length!==0){
                     console.log('service all', JSON.stringify(response));
-                    scope.setState({services: response.data.payload})
+                    scope.setState({services: response.data.payload});
+
+                    // console.log(JSON.stringify(response.data.payload));
                 }
             }
         })
@@ -1564,12 +1584,12 @@ export class ServiceAll extends Component {
                 return (
                     <tr key={data.id}>
                         <td>{data.service_id}</td>
-                        <td>{'inconsistent_category'}</td>
+                        <td>{'data.category.name'}</td>
                         <td>{data.name}</td>
                         <td>{data.description}</td>
-                        <td>{'inconsistent_name'}</td>
+                        <td>{data.rate_type.name}</td>
                         <td>{data.subtotal}</td>
-                        <td>{data.is_active}</td>
+                        <td>{(data.is_active==='0' ? 'Inactive' : 'Active')}</td>
                         <td>
                             <button type="button" className="btn btn-default" data-storeid={data.id} onClick={scope.onEdit.bind(scope)}>Edit</button>&nbsp;
                             <button type="button" className="btn btn-danger"  data-storeid={data.id} onClick={scope.onDelete.bind(scope)}>
