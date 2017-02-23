@@ -173,14 +173,14 @@ export class ManageServices extends Component {
         super(props);
         this.state = {
             serviceArr: [],
-            serviceCategoryIdRef: "",
-            titleRef: ""
+            serviceCategoryIdReference: "",
+            titleReference: ""
         };
     }
 
     componentWillMount(){
-        this.setState({ titleRef: this.props.params.title });
-        this.setState({ serviceCategoryIdRef: this.props.params.serviceCategoryId }); 
+        this.setState({ titleReference: this.props.params.title });
+        this.setState({ serviceCategoryIdReference: this.props.params.serviceCategoryId }); 
 
         // not yet in use
         let scope = this;
@@ -241,8 +241,8 @@ export class ManageServices extends Component {
                             <Link 
                                 className="btn btn-primary" 
                                 to={'/services/edit/' 
-                                + scope.state.serviceCategoryIdRef + '/' 
-                                + scope.state.titleRef + '/'
+                                + scope.state.serviceCategoryIdReference + '/' 
+                                + scope.state.titleReference + '/'
                                 + 1 + '/'
                                 + data.id }>Edit
                             </Link>
@@ -258,7 +258,7 @@ export class ManageServices extends Component {
 
         return (
             <div>
-                <h3 className="sky">Manage Services: <span>{this.state.titleRef}</span></h3>
+                <h3 className="sky">Manage Services: <span>{this.state.titleReference}</span></h3>
                 
                 <div className="header">
                     <div className="col-xs-6 text-left">
@@ -270,8 +270,8 @@ export class ManageServices extends Component {
                         {/*<Link 
                             className="btn btn-primary" 
                             to={'/services/edit/' 
-                            + this.state.serviceCategoryIdRef + '/' 
-                            + this.state.titleRef + '/'
+                            + this.state.serviceCategoryIdReference + '/' 
+                            + this.state.titleReference + '/'
                             + 1 + '/'
                             + 'service_id' }>EditSimulate</Link>
                         &nbsp;*/}
@@ -279,8 +279,8 @@ export class ManageServices extends Component {
                         <Link 
                             className="btn btn-primary" 
                             to={'/services/add/' 
-                            + this.state.serviceCategoryIdRef + '/' 
-                            + this.state.titleRef + '/'
+                            + this.state.serviceCategoryIdReference + '/' 
+                            + this.state.titleReference + '/'
                             + 0 }>Add Service</Link>
                     </div>
                     <br className="clearfix" />
@@ -352,8 +352,9 @@ export class ServiceAdd extends Component {
         super(props);
 
         this.state = {
-            titleRef: "",
-            serviceCategoryIdRef: "",
+            titleReference: "",
+            serviceCategoryIdReference: "",
+            isEditmode: '0',
 
             level1Arr: "",
             level1ValueId: "default",
@@ -390,204 +391,206 @@ export class ServiceAdd extends Component {
         }
     }
 
-    // componentWillMount(){
-    //     this.setState({ titleRef: this.props.params.title });
-    //     this.setState({ serviceCategoryIdRef: this.props.params.serviceCategoryId }); 
-    // }
-
     componentWillMount(){
-        this.setState({ titleRef: this.props.params.title });
-        this.setState({ serviceCategoryIdRef: this.props.params.serviceCategoryId }); 
-        
-        window.sessionStorage.setItem('serviceCategoryIdRef', this.props.params.serviceCategoryId)
-
-
-        console.log('EDIT_MODE', this.props.params.editmode, '1=true, 0=false');
         let scope = this;
+        this.setState({isEditmode: this.props.params.editmode }, function(){
+            scope.swithMode();
+        });
+    }
 
+    swithMode(){
+        let scope = this;
+        let serviceId = this.props.params.serviceid;
         let serviceCategoryId = this.props.params.serviceCategoryId;
-        // serviceId
-        let paramsServiceId = this.props.params.serviceid;
+        this.setState({ titleReference: this.props.params.title });
+        this.setState({ serviceCategoryIdReference: serviceCategoryId },
+            function(){
+                window.sessionStorage.setItem('serviceCategoryIdReference', serviceCategoryId )
+            });
 
         /////////////////////////////////
         // EDIT MODE
         /////////////////////////////////
         if(this.props.params.editmode==='1'){
-            // If edit mode load data when edit
 
-            console.log( serviceCategoryId, paramsServiceId );
+            getServiceByServiceIdWithServiceCategoryId(
+                serviceCategoryId,                  // service_category_id
+                serviceId                           // service_id itself
+                ).then(function(response){
+                    if(response.data.payload.length===0) return; 
 
-            getServiceByServiceIdWithServiceCategoryId(serviceCategoryId, paramsServiceId ).then(function(response){
-                
-                console.log('EditModeResponse', response);
+                    console.log('EditModeResponse', response);
 
-                let res = response.data.payload[0];
+                    let resZero = response.data.payload[0];
 
-                if(response.data.hasOwnProperty('payload')===false) return;
-                if(response.data.payload.ength===0) return;
+                    // #1 Default Details
+                    scope.setState({serviceId: resZero.service_id});
+                    scope.setState({serviceName: resZero.name});
+                    scope.setState({description: resZero.description});
+                    scope.setState({createdAt: resZero.created_at});
+                    scope.setState({updatedAt: resZero.updated_at});
+                    scope.setState({accountName: resZero.user.name});
 
-                // INPUT FIELDS 
-                scope.setState({serviceName: res.name});
-                scope.setState({description: res.description});
-                scope.setState({updatedAt: res.updated_at});
-                scope.setState({createdAt: res.created_at});
-                scope.setState({accountName: res.user.name});
-                scope.setState({serviceId: res.service_id});
+                    // #2 Rate Types
+                    getServiceRateTypes().then(function(response){
+                        let id = response.data.payload[0].id;
+                        scope.setState({ rateTypeArr: response.data.payload });
+                        scope.setState({ rateTypeValue: id });
 
-                // SET RATETYPE OPTION
-                let id = res.rate_type.id;
-                getServiceRateTypes().then(function(response){
-                    scope.setState({ rateTypeArr: response.data.payload });
-                    scope.setState({ rateTypeValue: id });
-                }); 
+                        getServicePersonnelsByRateTypeId(id).then(function(response){
+                            if(response.data.payload.length!==0){
+                                scope.setState({personnels_data: response.data.payload});
+                            }
+                        });
+                    });
 
-                // SET PERSONNEL OPTION INSIDE COMPONENT
-                getServicePersonnelsByRateTypeId(id).then(function(response){
-                    if(response.data.payload.length!==0){
-                        scope.setState({personnels_data: response.data.payload});
-                    }
-                });
+                    // #3 Service Category (Just to call all possible Layer)
+                    let outer_resZero = resZero;
 
-                // SET Subtotal
-                let subtotal = res.subtotal;
-                scope.setState({subtotal: +subtotal});
+                    getServiceCategoriesRoot().then(function(response){
+                        if(response.data.payload.length!==0){
+                            let resZero = response.data.payload[0];
 
-                // SET PERSONNELS
-                let personnel_users = res.personnel_users;
-                scope.setState({servicePersonnelArr: personnel_users});
+                            scope.setState({ level1Arr: response.data.payload}, function(){
+                                scope.setState({level1ValueId: outer_resZero.service_category_id});
+                            });
 
-                // Active state
-                let status = res.is_active;
-                scope.setState({activeStatus: +status});    
-
-
-                // Level 1
-                if(res.service_category_id!==null){
-                    scope.setState({serviceCategoryIdRef: res.service_category_id});
-                    scope.setState({level1ValueId: res.service_category_id});
-                }
-                // Level 2
-                if(res.service_sub_category_id!==null){
-                    scope.setState({level1ValueId: res.level2ValueId});
-                }
-                // Level 3
-                if(res.sub_service_sub_category_id!==null){
-                    scope.setState({sub_service_sub_category_id: res.level3ValueId});
-                }
-
-                // getServiceCategoriesRoot().then(function(response){
-                //     if(response.data.hasOwnProperty('payload')===false) return;
-
-                //     if(response.data.payload.length!==0){
-                //         let res = response.data.payload[0];
-
-                //         scope.setState({level1Arr: response.data.payload});
-
-                //         scope.setState({ serviceCategoryIdRef: res.id }, function(){
-
-                //             scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdRef);
+                            scope.setState({serviceCategoryIdReference: outer_resZero.service_category_id },function(){
+                                console.log('Category:', outer_resZero.service_category_id, scope.state.serviceCategoryIdReference, response.data.payload);
+                            });
                             
-                //             scope.setState({ level1ValueId: res.id });
+                        } else {
+                            scope.setState({level1Arr: []});
+                            scope.setState({level1ValueId:"default"});
+                        }
+                    });
 
-                //         });
-                //     }
-                // });
+                    // #4 Subtotal
+                    let subtotal = resZero.subtotal;
+                    scope.setState({subtotal: +subtotal});
 
+                    // #5 Status
+                    let status = resZero.is_active;
+                    scope.setState({activeStatus: +status});    
+                    
+                    // #6 Personnel User
+                    let personnel_users = resZero.personnel_users;
+                    scope.setState({servicePersonnelArr: personnel_users});
+
+                    console.log('service_category_id',resZero.service_category_id);
+                    console.log('service_sub_category_id',resZero.service_sub_category_id);
+                    console.log('sub_service_sub_category_id',resZero.sub_service_sub_category_id);
+
+                    // #7 Selected Category
+                    if(resZero.service_category_id!==null){
+                        getServiceCategories_subCategories_level2_byParentId( resZero.service_category_id ).then(function(response){
+                            if(response.data.payload.length!==0){
+                                scope.setState({level2Arr: response.data.payload },
+                                function(){
+                                    scope.setState({level2ValueId: resZero.service_sub_category_id });
+                                });
+                            }
+                        });
+                    }
+
+                    if(resZero.service_sub_category_id!==null){
+                        getServiceCategories_subCategories_level3_byParentId( resZero.service_sub_category_id ).then(function(response){
+                            if(response.data.payload.length!==0){
+                                scope.setState({level3Arr: response.data.payload },
+                                function(){
+                                    scope.setState({level3ValueId: resZero.sub_service_sub_category_id });
+                                });
+                            }
+                        });
+                    }
+                    
+                    if(resZero.sub_service_sub_category_id!==null){
+                        // :D nothing to adjust
+                    }
             });
-
-
-            
 
         /////////////////////////////////
         // NORMAL MODE
         /////////////////////////////////
+
         } else if(this.props.params.editmode==='0'){
-            // Get Details when Created From Server
+
+            // #1 Default Details
             getServiceCreateDetails().then(function(response){
-                console.log('getCreateDetails', response);
                 scope.setState({serviceId: response.data.payload.service_id });
                 scope.setState({accountName: response.data.payload.name });
                 scope.setState({updatedAt: response.data.payload.updated_at});
                 scope.setState({createdAt: response.data.payload.created_at});
             });
 
+            // #2 Rate Types
             getServiceRateTypes().then(function(response){
                 let id = response.data.payload[0].id;
                 scope.setState({ rateTypeArr: response.data.payload });
                 scope.setState({ rateTypeValue: id });
 
                 getServicePersonnelsByRateTypeId(id).then(function(response){
-
                     if(response.data.payload.length!==0){
                         scope.setState({personnels_data: response.data.payload});
                     }
                 });
-            }); 
+            });
 
-            // Get Level 1
-            // ....
-            
-            if(window.sessionStorage.getItem('serviceCategoryIdRef')!=='undefined') {
-                // Get Level2
-                scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdRef);
-
-            } else {
-                // initiate level 1
-                getServiceCategoriesRoot().then(function(response){
-                    if(response.data.hasOwnProperty('payload')===false) return;
-
-                    if(response.data.payload.length!==0){
-                        let res = response.data.payload[0];
-
-                        scope.setState({level1Arr: response.data.payload});
-
-                        scope.setState({ serviceCategoryIdRef: res.id }, function(){
-
-                            scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdRef);
-                            
-                            scope.setState({ level1ValueId: res.id });
-
-                        });
-                    }
-                });
-            }
-        
-
+            // #3 Service Category
+            getServiceCategoriesRoot().then(function(response){
+                if(response.data.payload.length!==0){
+                    let resZero = response.data.payload[0];
+                    scope.setState({level1Arr: response.data.payload},
+                    function(){
+                        scope.setState({ level1ValueId: resZero.id });
+                        scope.setState({serviceCategoryIdReference: resZero.id});
+                        scope.checkSubCategoyById( resZero.id );
+                    });
+                    
+                } else {
+                    scope.setState({level1Arr: []});
+                    scope.setState({level1ValueId:"default"});
+                }
+            });
 
         } else if(this.props.params.editmode==='2'){
-            console.log('nothing to happen getting from session');
+            console.log('nothing to happened getting from session');
         }  
     }
 
-    getLevel2AndLevel3ById(id){
+    checkSubCategoyById(layerOneId){
         let scope = this;
-
-        getServiceCategories_subCategories_level2_byParentId(id)
+        
+        getServiceCategories_subCategories_level2_byParentId(layerOneId)
         .then(function(response){
-            if(response.data.hasOwnProperty('payload')===false) return;
-            if(response.data.payload.length===0){
-                scope.setState({ level2ValueId: null });
-                return;
+            if(response.data.payload.length!==0){
+                let resZero = response.data.payload[0];
+                scope.setState({level2Arr: response.data.payload}, function(){
+                    scope.setState({level2ValueId: resZero.id});
+                    scope.setState({service_sub_category_id: resZero.id});
+                    scope.checkSubInnerCategoryById(resZero.id);
+                });
+            } else {
+                scope.setState({level2Arr: []});
+                scope.setState({level2ValueId:"default"});
             }
+        });
+    }
 
-            scope.setState({ level2Arr: response.data.payload });
-            scope.setState({ level2ValueId: response.data.payload[0].id});
-
-            if(scope.state.level2Arr.length !== 0){
-                let level3IndexZeroId = scope.state.level2Arr[0].id;
-
-                if(level3IndexZeroId !== undefined){
-                    // Get Level3
-                    if(!isNaN(level3IndexZeroId)){
-                        getServiceCategories_subCategories_level3_byParentId(level3IndexZeroId)
-                        .then(function(response){
-                            if(response.data.hasOwnProperty('payload')===false) return;
-                            if(response.data.payload.length===0) return;
-                            scope.setState({ level3Arr: response.data.payload });
-                            scope.setState({ level3ValueId: response.data.payload[0].id});
-                        });
-                    }
-                }
+    checkSubInnerCategoryById(layerTwoId){
+        let scope = this;
+        getServiceCategories_subCategories_level3_byParentId(layerTwoId)
+        .then(function(response){
+            if(response.data.payload.length!==0){
+                let resZero = response.data.payload[0];
+                scope.setState({level3Arr: response.data.payload},function(){
+                    scope.setState({level3ValueId: resZero.id});
+                    scope.setState({sub_service_sub_category_id: resZero.id});
+                });
+                // nothing more..
+            } else {
+                scope.setState({level3Arr: []});
+                scope.setState({level3ValueId:"default"});
             }
         });
     }
@@ -631,30 +634,29 @@ export class ServiceAdd extends Component {
 
     onLevel1Change(evt){
         let scope = this;
-        this.setState({level1ValueId: evt.target.value});
-        this.setState({serviceCategoryIdRef: evt.target.value});
-        
-        let id = evt.target.value;
-        scope.getLevel2AndLevel3ById(id);
+        let target = evt.target.value;
+        // populate level 2
+        this.setState({level1ValueId: target}, function(){
+            scope.checkSubCategoyById(target);
+            scope.setState({serviceCategoryIdReference: target});
+        });
     }
 
     onLevel2Change(evt){
         let scope = this;
-        this.setState({level2ValueId: evt.target.value});
-
-        getServiceCategories_subCategories_level3_byParentId(evt.target.value)
-        .then(function(response){
-            if(response.data.hasOwnProperty('payload')===false) return;
-            if(response.data.payload.length!==0){
-                scope.setState({ level3Arr: response.data.payload });
-            } else {
-                scope.setState({ level3ValueId: null })
-            }
+        let target = evt.target.value;
+        // populate level 3
+        this.setState({level2ValueId: target}, function(){
+            scope.checkSubInnerCategoryById(target);    
+            scope.setState({service_sub_category_id: target});
         });
     }
 
     onLevel3Change(evt){
-        this.setState({ level3ValueId: evt.target.value });
+        let target = evt.target.value;
+        this.setState({ level3ValueId: target }, function(){
+            this.setState({sub_service_sub_category_id: target});
+        });
     }
 
     onAddPersonnel(evt){
@@ -766,7 +768,7 @@ export class ServiceAdd extends Component {
         console.log('========== POST START====================')
         console.log('Service Name:', this.state.serviceName );
         console.log('Description:', this.state.description );
-        console.log('Category_ID:', this.state.serviceCategoryIdRef );
+        console.log('Category_ID:', this.state.serviceCategoryIdReference );
         console.log('Level_2:', this.state.level2ValueId );
         console.log('Level_3:', this.state.level3ValueId );
         console.log('RateType_ID:', this.state.rateTypeValue );
@@ -777,10 +779,11 @@ export class ServiceAdd extends Component {
 
         // Edit False
         if(this.props.params.editmode==='0'){
+            console.log('create', 'service_category_id', this.state.serviceCategoryIdReference);
             postServiceCreate({
                 name: this.state.serviceName,
                 description: this.state.description,
-                service_category_id: this.state.serviceCategoryIdRef,
+                service_category_id: this.state.serviceCategoryIdReference,
                 service_sub_category_id: (this.state.level2ValueId==="default" ? null : this.state.level2ValueId) ,
                 sub_service_sub_category_id: (this.state.level3ValueId==="default" ? null : this.state.level3ValueId ),
                 rate_type_id: this.state.rateTypeValue,
@@ -809,7 +812,7 @@ export class ServiceAdd extends Component {
                 id: +this.state.serviceId,
                 name: this.state.serviceName,
                 description: this.state.description,
-                service_category_id: this.state.serviceCategoryIdRef,
+                service_category_id: this.state.serviceCategoryIdReference,
                 service_sub_category_id: (this.state.level2ValueId==="default" ? null : this.state.level2ValueId) ,
                 sub_service_sub_category_id: (this.state.level3ValueId==="default" ? null : this.state.level3ValueId ),
                 rate_type_id: this.state.rateTypeValue,
@@ -850,42 +853,49 @@ export class ServiceAdd extends Component {
         }
         return markup;
     }
-
     
-
     render(){
         let scope = this;
         let level2SelectOptions = null;
         let level3SelectOptions = null;
         let personnelList = null;
         let defaultStatus = null;
-        let personnelsArrNotice = null;
+        let personnelsWarining = null;
         let sameRateType = <span></span>
 
-        if(this.state.level2Arr.length!==0 && this.state.level2ValueId !== null){
+        if(this.state.level2Arr.length!==0 && this.state.level2ValueId !== 'default'){
             level2SelectOptions = 
             <div className="form-group">
                 <label>Service Sub Category </label>
-                <select className="form-control" value={this.state.level2ValueId} onChange={this.onLevel2Change.bind(this)}>
-                { this.state.level2Arr.map(function(data){
-                    return (
-                        <option key={data.id} value={data.id}>{data.name}</option>
-                    )
-                } ) }
+                <select 
+                    className="form-control" 
+                    value={this.state.level2ValueId} 
+                    onChange={this.onLevel2Change.bind(this)}>
+
+                {this.state.level2Arr
+                    .map(function(data){
+                        return (
+                            <option key={data.id} value={data.id}>{data.name}</option>
+                        )
+                    })}
                 </select>
             </div>
         }
 
-        if(this.state.level3Arr.length!==0 && this.state.level3ValueId !== null){
+        if(this.state.level3Arr.length!==0 && this.state.level3ValueId !== 'default'){
             level3SelectOptions = 
             <div className="form-group">
                 <label>Inner Service Sub Category </label>
-                <select className="form-control" value={this.state.level3ValueId} onChange={this.onLevel3Change.bind(this)}>
-                { this.state.level3Arr.map(function(data){
-                    return (
-                        <option key={data.id} value={data.id}>{data.name}</option>
-                    )
-                } ) }
+                <select className="form-control" 
+                    value={this.state.level3ValueId} 
+                    onChange={this.onLevel3Change.bind(this)}>
+ 
+                {this.state.level3Arr
+                    .map(function(data){
+                        return (
+                            <option key={data.id} value={data.id}>{data.name}</option>
+                        )
+                } )}
                 </select>
             </div>
         }
@@ -894,7 +904,7 @@ export class ServiceAdd extends Component {
         if(this.state.servicePersonnelArr.length!==0){
             defaultStatus = <span></span>
             
-            personnelsArrNotice = 
+            personnelsWarining = 
             <span 
                 className="btn-warning">({ this.state.servicePersonnelArr.length })
             </span>
@@ -916,10 +926,10 @@ export class ServiceAdd extends Component {
             defaultStatus = <strong className="btn-danger">No added personnels.</strong>
         }
 
-        let level1Selection = <select><option>Loading..</option></select>
+        let level1SelectOptions = <select><option>Loading..</option></select>
 
-        if(this.state.level1Arr.length!==0){
-            level1Selection = 
+        if(this.state.level1Arr.length!==0 && this.state.level1ValueId !== 'default' && this.state.isEditmode==='0'){
+            level1SelectOptions = 
             <select 
                 className="form-control"
                 onChange={scope.onLevel1Change.bind(scope)} 
@@ -933,13 +943,24 @@ export class ServiceAdd extends Component {
             </select>
         
         } else {
-            level1Selection =
-            <input type="text" className="form-control" value={ this.state.titleRef } disabled />
+            if(this.state.level1Arr.length!==0){
+                level1SelectOptions =
+                <select 
+                    className="form-control"
+                    onChange={scope.onLevel1Change.bind(scope)} 
+                    value={scope.state.level1ValueId} disabled>
+                    {scope.state.level1Arr.map(function(data){
+                        return (
+                        <option key={data.id} value={data.id}>{data.name}</option>
+                        )
+                    })}
+                </select>
+            }
         }
 
         return ( 
             <div>
-                <h3 className="sky">Manage Services: <small>{this.state.titleRef}</small></h3>
+                <h3 className="sky">Manage Services: <small>{this.state.titleReference}</small></h3>
                 
                 <br />
 
@@ -960,7 +981,10 @@ export class ServiceAdd extends Component {
 
                     <div className="form-group">
                         <label>Service Name</label>
-                        <input type="text" className="form-control" value={this.state.serviceName} onChange={this.onServiceNameChange.bind(this)} />
+                        <input type="text" 
+                            className="form-control" 
+                            value={this.state.serviceName} 
+                            onChange={this.onServiceNameChange.bind(this)} />
                     </div>
 
                     <div className="form-group">
@@ -970,12 +994,10 @@ export class ServiceAdd extends Component {
 
                     <div className="form-group">
                         <label>Service Category</label>
-                        {level1Selection}
+                        {level1SelectOptions}
+                        {level2SelectOptions}
+                        {level3SelectOptions}
                     </div>
-
-                    {level2SelectOptions}
-
-                    {level3SelectOptions}
 
                     <div className="form-group">
                         {sameRateType}
@@ -1060,7 +1082,7 @@ export class ServiceAdd extends Component {
 
                     <br className="clearfix"/>
 
-                    <h3>Added Personnel(s) {personnelsArrNotice}</h3>
+                    <h3>Added Personnel(s) {personnelsWarining}</h3>
                     {defaultStatus}
                     {personnelList}
                     
@@ -1082,6 +1104,140 @@ ServiceAdd.contextTypes = {
 
 
 
+
+
+                    // // SET RATETYPE OPTION
+                    // let id = res.rate_type.id;
+                    // getServiceRateTypes().then(function(response){
+                    //     scope.setState({ rateTypeArr: response.data.payload });
+                    //     scope.setState({ rateTypeValue: id });
+                    // }); 
+
+                    // // SET PERSONNEL OPTION INSIDE COMPONENT
+                    // getServicePersonnelsByRateTypeId(id).then(function(response){
+                    //     if(response.data.payload.length!==0){
+                    //         scope.setState({personnels_data: response.data.payload});
+                    //     }
+                    // });
+
+                    
+
+                    // SET PERSONNELS
+                    // let personnel_users = res.personnel_users;
+                    // scope.setState({servicePersonnelArr: personnel_users});
+
+                    // Active state
+                    // let status = res.is_active;
+                    // scope.setState({activeStatus: +status});    
+
+                    // Level 1
+                    // if(res.service_category_id!==null){
+                        // scope.setState({serviceCategoryIdReference: res.service_category_id});
+                        // scope.setState({level1ValueId: res.service_category_id});
+                    // }
+                    
+                    // Level 2
+                    // if(res.service_sub_category_id!==null){
+                        // scope.setState({level1ValueId: res.level2ValueId});
+                    // }
+
+                    // Level 3
+                    // if(res.sub_service_sub_category_id!==null){
+                        // scope.setState({sub_service_sub_category_id: res.level3ValueId});
+                    // }
+
+
+                // getServiceCategoriesRoot().then(function(response){
+                //     if(response.data.hasOwnProperty('payload')===false) return;
+
+                //     if(response.data.payload.length!==0){
+                //         let res = response.data.payload[0];
+
+                //         scope.setState({level1Arr: response.data.payload});
+
+                //         scope.setState({ serviceCategoryIdReference: res.id }, function(){
+
+                //             scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdReference);
+                            
+                //             scope.setState({ level1ValueId: res.id });
+
+                //         });
+                //     }
+                // });
+
+          
+
+
+            
+
+
+ // scope.setState({ serviceCategoryIdReference: res.id }, function(){
+                    //     scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdReference);
+                    //     scope.setState({ level1ValueId: res.id });
+                    // });
+
+
+
+
+            /*
+            if(window.sessionStorage.getItem('serviceCategoryIdReference')!=='undefined') {
+                // Get Level2
+                scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdReference);
+
+            } else {
+                // initiate level 1
+                getServiceCategoriesRoot().then(function(response){
+                    if(response.data.hasOwnProperty('payload')===false) return;
+
+                    if(response.data.payload.length!==0){
+                        let res = response.data.payload[0];
+
+                        scope.setState({level1Arr: response.data.payload});
+
+                        scope.setState({ serviceCategoryIdReference: res.id }, function(){
+
+                            scope.getLevel2AndLevel3ById(scope.state.serviceCategoryIdReference);
+                            
+                            scope.setState({ level1ValueId: res.id });
+
+                        });
+                    }
+                });
+            }
+            */
+
+    // getLevel2AndLevel3ById(id){
+    //     let scope = this;
+
+    //     getServiceCategories_subCategories_level2_byParentId(id)
+    //     .then(function(response){
+    //         if(response.data.hasOwnProperty('payload')===false) return;
+    //         if(response.data.payload.length===0){
+    //             scope.setState({ level2ValueId: null });
+    //             return;
+    //         }
+
+    //         scope.setState({ level2Arr: response.data.payload });
+    //         scope.setState({ level2ValueId: response.data.payload[0].id});
+
+    //         if(scope.state.level2Arr.length !== 0){
+    //             let level3IndexZeroId = scope.state.level2Arr[0].id;
+
+    //             if(level3IndexZeroId !== undefined){
+    //                 // Get Level3
+    //                 if(!isNaN(level3IndexZeroId)){
+    //                     getServiceCategories_subCategories_level3_byParentId(level3IndexZeroId)
+    //                     .then(function(response){
+    //                         if(response.data.hasOwnProperty('payload')===false) return;
+    //                         if(response.data.payload.length===0) return;
+    //                         scope.setState({ level3Arr: response.data.payload });
+    //                         scope.setState({ level3ValueId: response.data.payload[0].id});
+    //                     });
+    //                 }
+    //             }
+    //         }
+    //     });
+    // }
 
 
 

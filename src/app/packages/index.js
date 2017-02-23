@@ -375,33 +375,26 @@ export class PackageChoose extends Component {
     componentDidMount(){}
 
     componentWillMount(){
-        let WSaddedServices = window.sessionStorage.getItem('addedServices');
-        console.log('choose services', WSaddedServices);
-
-        let temp = (WSaddedServices)? JSON.parse(WSaddedServices) : [];
-        
+        let temp = JSON.parse(window.sessionStorage.getItem('addedServices')) || [];
         if(temp.length!==0){
             this.setState({ added_services: temp });
             this.setState({ count: temp.length });
         }
     }
 
-    callbackUpdate(addedServices){
-        // Output updated services
-        this.setState({ added_services: addedServices });
-        window.sessionStorage.setItem('addedServices', JSON.stringify(addedServices));
-        // Set default package Discount to '1'
+    callbackOnUpdate(addedServices){
+        let scope = this;
+        this.setState({ added_services: addedServices }, function(){
+            window.sessionStorage.setItem('addedServices', JSON.stringify(scope.state.added_services));
+        });
+        // Reset package_discount
         window.sessionStorage.setItem('package_discount', 1);
     }
 
     onNext(){
-        let WSaddedServices = window.sessionStorage.getItem('addedServices');
-        let temp = (WSaddedServices)? JSON.parse(WSaddedServices) : [];
-        
+        let temp = JSON.parse(window.sessionStorage.getItem('addedServices')) || [];
         if(temp.length===0){
-            if(confirm('No added Services.')){
-                return;
-            } else { return; }
+            if(!confirm('No added services')) return false;
         } else {
             this.context.router.push('/packages/rate');
         }
@@ -415,8 +408,8 @@ export class PackageChoose extends Component {
                     <div className='col-md-12'>
                         <ConnectedTable 
                             addedServices={this.state.added_services} 
-                            onUpdate={this.callbackUpdate.bind(this)}/>  
-                      
+                            onUpdate={this.callbackOnUpdate.bind(this)}/>  
+                            
                         <Link className='btn btn-default pull-left' to='/packages/add'>Back</Link>
                         <button type="button" className="btn btn-primary pull-right" onClick={this.onNext.bind(this)}>Next</button>
                     </div>
