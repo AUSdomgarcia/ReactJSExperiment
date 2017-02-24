@@ -148,11 +148,19 @@ export class LevelTwo extends Component {
         } else {
             return;
         }
-
+        
         postServiceCategoriesDelete({id: this.state.myCurrentId}).then(function(response){
+            alert('Category deleted.');
+
             scope.hackSortableInstance.destroy();
+
             scope.props.onDelete(scope.state.myCurrentId);
-        });
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
+        })
     }
 
     onDone(){

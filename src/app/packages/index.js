@@ -83,7 +83,7 @@ export class Packages extends Component {
         let scope = this;
 
         if(id===null||id===undefined) return;
-        if(confirm('Do you want to delete')){//
+        if(confirm('Are you sure you want to delete this package?')){//
         } else {return;}
         
         this.state.packages.map(function(data, index){
@@ -1017,10 +1017,14 @@ export class PackageSave extends Component {
                 service_ids: JSON.stringify(service_ids),
                 permitted_user_ids: this.state.permitted_user_ids
             }).then(function(response){
-
+                alert('Updated Package Successfully');
                 console.log('jeffreyWay update', response);
-
                 scope.context.router.push('/packages');
+            })
+            .catch(function(response){
+                if(response.data.error){
+                    alert(response.data.message);
+                }
             });
 
         } else if(packageAction==='create'){
@@ -1048,12 +1052,17 @@ export class PackageSave extends Component {
                 let id = response.data.payload;
                 window.sessionStorage.setItem('packageId', id);
                 scope.previewById(id);
+            })
+            .catch(function(response){
+                if(response.data.error){
+                    alert(response.data.message);
+                }
             });
         }
     }
 
     previewById(id){
-        alert('New package were saved.');
+        alert('Added Package Successfully');
 
         let scope = this;
         window.sessionStorage.clear();

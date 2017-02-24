@@ -23,7 +23,7 @@ export class Logs extends Component {
     render(){
         let tableContent = 
                 (<tr>
-                    <td colSpan={5}>Loading data..</td>
+                    <td colSpan={7}>Loading data..</td>
                 </tr>)
 
         if(this.state.logsArr.length !==0 ){
@@ -34,7 +34,9 @@ export class Logs extends Component {
                         <td>{ data.id }</td>
                         <td>{ data.user.name }</td>
                         <td>{ data.activity }</td>
-                        <td>{ data.value }</td>
+                        <td>{ data.field }</td>
+                        <td>{ data.from }</td>
+                        <td>{ data.to }</td>
                         <td>{ data.updated_at }</td>
                     </tr>
                 )
@@ -53,7 +55,9 @@ export class Logs extends Component {
                     <th>ID</th>
                     <th>User</th>
                     <th>Activity</th>
-                    <th>Value</th>
+                    <th>Field</th>
+                    <th>From</th>
+                    <th>to</th>
                     <th>Updated at</th>
                 </tr>
                 </thead>

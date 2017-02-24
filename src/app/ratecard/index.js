@@ -107,11 +107,11 @@ export class RateCard extends Component {
         window.sessionStorage.clear();
 
         this.setupEditModeById(id, function(){
-            let delay = setTimeout(function(){
-                clearTimeout(delay);
+            // let delay = setTimeout(function(){
+                // clearTimeout(delay);
                 window.sessionStorage.setItem('ratecardAction', 'view');
                 scope.context.router.push('/ratecard/save');
-            }, 16);
+            // }, 16);
         });
     }
 
@@ -927,10 +927,11 @@ export class RateCardSave extends Component {
                 case 'view': 
                 postRateCardPreview({rate_card_id: parseInt(id) })
                 .then(function(response){
-                    console.log('ratecard/save/editmode/:2', response, parseInt(id));
+                    console.log('ratecard/save/view_only', response, parseInt(id));
                     scope.setState({ serviceCategory: response.data.payload });
                 });
                 scope.setState({isViewMode:true});
+                
                 break;
                 ///
                 case 'edit':
@@ -940,13 +941,13 @@ export class RateCardSave extends Component {
                     if(isRetain){
                         postRateCardPreview({rate_card_id: parseInt(id)})
                         .then(function(response){
-                            console.log('ratecard/save/editmode/:2', response, parseInt(id));
+                            console.log('ratecard/save/edit_only', response, parseInt(id));
                             scope.setState({ serviceCategory: response.data.payload });
                         });
                     } else {
                         postRateCardPreview({service_ids: json, rate_card_id: parseInt(id)})
                         .then(function(response){
-                            console.log('ratecard/save/editmode/:1', response, parseInt(id));
+                            console.log('ratecard/save/edit_only', response, parseInt(id));
                             scope.setState({ serviceCategory: response.data.payload });
                         });
                     }
@@ -955,7 +956,7 @@ export class RateCardSave extends Component {
                 case 'create':
                 postRateCardPreview({ service_ids: json })
                 .then(function(response){
-                    console.log('ratecard/save/editmode/:0', response);
+                    console.log('ratecard/save/create_only', response);
                     scope.setState({ serviceCategory: response.data.payload });
                 });
                 break;

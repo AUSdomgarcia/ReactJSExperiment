@@ -217,18 +217,25 @@ export class LevelThree extends Component {
 
         // console.log(this.props.parentData);
 
-        if (confirm('Are you sure you want to save this thing into the database?')) {
+        if (confirm('Are you sure you want to delete this category?')) {
             // continue
         } else {
             return;
         }
+        
+        console.log('deleting layer:', this.props.nextLevel);
 
-        postServiceCategories_subCategories_delete({id: this.props.parentData.id })
+        postServiceCategories_subCategories_delete({id: this.props.parentData.id, level: this.props.nextLevel })
         .then(function(response){
+            alert('Category deleted.');
             if(scope.hackSortableInstance!==null) scope.hackSortableInstance.destroy();
             scope.props.onDelete(scope.props.parentData.id);
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
         });
-
     }
 
     callbackDelete(id){
