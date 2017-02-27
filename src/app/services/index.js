@@ -225,7 +225,7 @@ export class ManageServices extends Component {
 
         if(id === undefined || id===null) return;
 
-        if(confirm('Are you sure you want to delete?')){
+        if(confirm('Are you sure you want to delete this service?')){
             //
         } else {
             return;
@@ -240,7 +240,12 @@ export class ManageServices extends Component {
         this.setState({ serviceArr: this.state.serviceArr });
 
         postServiceDelete({id: id}).then(function(response){
-            console.log('onDelete Service', response);
+            alert('Service deleted.');
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
         });
     }
 
@@ -1449,7 +1454,7 @@ export class ServiceAll extends Component {
 
         if(id===undefined || id===null ) return;
 
-        if(confirm('Do you want to delete?')){
+        if(confirm('Are you sure you want to delete this service?')){
             //
         } else {
             return;
@@ -1464,7 +1469,12 @@ export class ServiceAll extends Component {
 
         // delete
         postServiceDelete({id:id}).then(function(response){
-            console.log('after delete', response);
+            alert('Service deleted.');
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
         });
     }
 

@@ -125,7 +125,7 @@ export class RateCard extends Component {
         console.log('before send archived', id, action);
 
         if(action==='activate'){
-            if(confirm('Are you sure you want to Activate this RateCard?')){
+            if(confirm('Are you sure you want to activate this Rate Card?')){
                 //
             } else {
                 return;
@@ -133,7 +133,7 @@ export class RateCard extends Component {
         }
 
         if(action==='archive'){
-            if(confirm('Are you sure you want to Archived this RateCard?')){
+            if(confirm('Are you sure you want to archived this Rate Card?')){
                 //
             } else {
                 return;
