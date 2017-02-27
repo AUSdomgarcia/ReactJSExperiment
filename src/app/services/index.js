@@ -286,7 +286,7 @@ export class ManageServices extends Component {
                 <div className="header">
                     <div className="col-xs-6 text-left">
                         <div className="row">
-                            <Link to="/services">Return to Full List</Link>
+                            <Link to="/services">Return to Full List 1</Link>
                         </div>
                     </div>
 
@@ -582,13 +582,13 @@ export class ServiceAdd extends Component {
                     scope.setState({level1Arr: response.data.payload},
 
                     function(){
-
-                        let service_category_id = window.sessionStorage.getItem('service_category_id') || resZero.id;
+                        let service_category_id = window.sessionStorage.getItem('service_category_id'); // || resZero.id;
                         
                         if(service_category_id!==null){
                             scope.setState({ level1ValueId: service_category_id });
-                            scope.setState({isAddedServiceInsideCategory: true});
+                            scope.setState({ isAddedServiceInsideCategory: true});
                         } else {
+                            scope.setState({ isAddedServiceInsideCategory: false});
                             scope.setState({ level1ValueId: resZero.id });
                         }
 
@@ -899,7 +899,6 @@ export class ServiceAdd extends Component {
 
     displayAlert(isShow){   
         let markup = <div></div>;
-
         if(isShow){
             markup = 
             <div className="alert alert-danger" role="alert">
@@ -907,7 +906,6 @@ export class ServiceAdd extends Component {
                 <span className="sr-only">Error:</span> Enter a valid email address 
             </div>
         }
-
         return markup;
     }
 
@@ -921,7 +919,7 @@ export class ServiceAdd extends Component {
     
     render(){
         let scope = this;
-        let level1SelectOptions = <select><option>Loading..</option></select>
+        let level1SelectOptions = <select className="form-control"><option>Loading..</option></select>
         let level2SelectOptions = undefined; //<select><option>Loading..</option></select>;
         let level3SelectOptions = undefined; //<select><option>Loading..</option></select>;
         let personnelList = undefined;
@@ -929,7 +927,7 @@ export class ServiceAdd extends Component {
         let personnelsWarining = undefined;
         let sameRateType = <span></span>
 
-        if(this.state.level1Arr.length!==0 && this.state.level1ValueId !== 'default' && this.state.isEditmode==='0'){
+        if(this.state.level1Arr.length!==0 && this.state.isEditmode==='0'){ //&& this.state.level1ValueId !== 'default' 
             level1SelectOptions = 
             <div className="form-group">
                 <select 
@@ -1028,11 +1026,7 @@ export class ServiceAdd extends Component {
             <div>
                 <h3 className="sky">Manage Service: <small>{this.state.titleReference}</small></h3>
                 
-                <br />
-
-                {this.displayAlert()}
-
-                <br />
+                {/*this.displayAlert()*/}
 
                 <Link to="/services">Return to full list</Link>
 
@@ -1059,7 +1053,7 @@ export class ServiceAdd extends Component {
                     </div>
 
                     <div className="form-group">
-                        <label>Service Category</label>
+                        <label>Service Category XX</label>
                         {level1SelectOptions}
                         {level2SelectOptions}
                         {level3SelectOptions}

@@ -60,35 +60,27 @@ export class Categories extends Component {
               let order = i;
               result.push({id, order});
           }
-
-          // console.log('level1-done', JSON.stringify(result) );
-
           let sorted = JSON.stringify(result);
           scope.setState({ sortedResults: sorted }, function(){
             scope.setState({ enableSave: true });
           });
-
-          // let sorted = JSON.stringify(result);
-          // postRatecardServiceCategoriesSortServiceCategories({categories_sort: sorted})
-          // .then(function(response){
-          //   console.log('resonse_00', response);
-          // });
         }
     });
   }
   
-  onAddLevel(evt){
+  onAddLevel1(evt){
     xhr('.category-input').removeClass('hide');
+    this.onCancelArrangementLevel1();
   }
 
-  onCancelHandler(evt){
+  onCancelAddLevel1(evt){
     xhr('.category-input').addClass('hide');
     this.setState({categoryName: ''});
   }
-
-  onSaveHandler(evt){
+  
+  onSaveAddLevel1(evt){
     if(this.state.categoryName.length===0){
-      alert('No category name');
+      alert('No category name specified.');
       return;
     }
 
@@ -97,13 +89,14 @@ export class Categories extends Component {
     let level1Arr = this.state.categoryLevelOne;
         level1Arr.push(category);
 
-    // Co-op investigate .. tells setting state during unmount component
     postServiceCategoriesCreate({name: this.state.categoryName })
     .then(function(response){
-      if(response.data.hasOwnProperty('payload')===false) return;
-      scope.setState({ categoryLevelOne: response.data.payload });
-      scope.setState({ response_last_id: response.data.payload[response.data.payload.length-1].id });
-      xhr('.category-input').addClass('hide');
+      if(response.data.payload.length!==0){
+        scope.setState({ categoryLevelOne: response.data.payload });
+        scope.setState({ response_last_id: response.data.payload[response.data.payload.length-1].id });
+        scope.onCancelAddLevel1();
+        alert('Category added successfully');
+      }
     })
     .catch(function(response){
       if(response.data.error){
@@ -135,7 +128,7 @@ export class Categories extends Component {
     let scope = this;
 
     if(value.length===0){
-      alert('No name specified.');
+      alert('No category name specified.');
       return;
     }
 
@@ -147,7 +140,7 @@ export class Categories extends Component {
 
     postServiceCategoriesUpdate({name: value, id: id}).then(function(response){
       console.log('[Edit] Level one success', response.data);
-      alert('Updated Category.');
+      alert('Category name updated.');
     })
     .catch(function(response){
       if(response.data.error){
@@ -155,36 +148,43 @@ export class Categories extends Component {
       }
     });
   }
-
-  onReArrange(){
-    this.setState({isRearrage: true});
+  
+  onReArrangeLevel1(){
     xhr('.myHandle.-layer1').show();
+    this.setState({isRearrage: true});
+    this.onCancelAddLevel1();
   }
 
-  onCancelReArrange(){
+  onCancelArrangementLevel1(){
     this.setState({isRearrage: false});
+    this.setState({enableSave:false});
     xhr('.myHandle.-layer1').hide();
   }
 
-  onSaveReArrange(){
+  onSaveArrangementLevel1(){
     let scope = this;
-    
+
     if(this.state.enableSave){
+
+      if(confirm('Are you sure you want to save these changes?')){
+        //
+      } else {
+        return;
+      }
+
       postRatecardServiceCategoriesSortServiceCategories({
       categories_sort: this.state.sortedResults
       })
       .then(function(response){
-        
-        console.log('category saved!', response);
-        
-        scope.setState({enableSave:false});
-
+        alert('Category arrangement updated.');
+        //  reset
+        scope.onCancelArrangementLevel1();
       })
       .catch(function(response){
         if(response.data.error){
           alert(response.data.message);
         }
-      })
+      });
     }
   }
 
@@ -198,17 +198,20 @@ export class Categories extends Component {
       rearrage = <span>
                   <button type="button" 
                     className={"btn btn-success " + (this.state.enableSave ? '' : 'disabled')} 
-                    onClick={this.onSaveReArrange.bind(this)}>Save
+                    onClick={this.onSaveArrangementLevel1.bind(this)}>Save
                   </button>&nbsp;
                     
                   <button type="button" 
                     className="btn btn-default" 
-                    onClick={this.onCancelReArrange.bind(this)}>Cancel
+                    onClick={this.onCancelArrangementLevel1.bind(this)}>Cancel
                   </button>
                 </span>
     } else {
       rearrage = 
-      <button type="button" className="btn btn-default" onClick={this.onReArrange.bind(this)}>Rearrange</button>
+      <button 
+        type="button" 
+        className="btn btn-default" 
+        onClick={this.onReArrangeLevel1.bind(this)}>Rearrange</button>
     }
 
     if(this.state.categoryLevelOne.length!==0){
@@ -231,16 +234,8 @@ export class Categories extends Component {
     
     return (
       <div>
-        
-
         {/* Title */}
         <h3 className="sky">Manage Categories and Rate Type</h3>
-        
-
-
-
-
-
         {/* Menu */}
         <div className="col-md-12">
           <div className="col-xs-6">
@@ -249,29 +244,20 @@ export class Categories extends Component {
           <div className="col-xs-6">
             <div className="pull-right">
               {rearrage}&nbsp;
-              <button type="button" className="btn btn-primary" onClick={this.onAddLevel.bind(this)}>Add Level</button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={this.onAddLevel1.bind(this)}>Add Level</button>
             </div>
           </div>
         </div>
-
         <br className="clearfix"/>
-
-
-
-
-
-
         {/* Category Listing */}
         <div className="category-list">
           <ul style={{margin:"0"}} id="SortableLevelOne">
             {categoryList}
           </ul>
         </div>
-
-
-
-
-
       {/* Hidden Input for new Category */}
         <div className="category-input hide">
           <div className="col-xs-6">
@@ -279,21 +265,18 @@ export class Categories extends Component {
           </div>
           <div className="col-xs-6">
             <div className="text-right">
-              <button type="button" className="btn btn-danger" onClick={this.onCancelHandler.bind(this)}>Cancel</button>
+              <button type="button" className="btn btn-danger" onClick={this.onCancelAddLevel1.bind(this)}>Cancel</button>
               &nbsp;
-              <button type="button" className="btn btn-success" onClick={this.onSaveHandler.bind(this)}>Save</button>
+              <button type="button" className="btn btn-success" onClick={this.onSaveAddLevel1.bind(this)}>Save</button>
             </div>
           </div>
           <br className="clearfix"/>
         </div>
-      
         <br />
         <br />
         <br />
-
         {/* Rate Type */}
         <RateType />
-
       </div>
     );
   }

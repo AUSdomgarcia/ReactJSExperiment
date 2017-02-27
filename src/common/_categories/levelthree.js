@@ -62,7 +62,7 @@ export class LevelThree extends Component {
         // console.log(JSON.stringify(nextProps));
     }
 
-    onManageBtn(){
+    onManageSubCategories(){
         let scope = this;
         let el = document.getElementById('SortableLevelThree_' + this.props.sortableId);
 
@@ -86,26 +86,12 @@ export class LevelThree extends Component {
                         result.push({id, order});
                     }
 
-                    console.log('level3-done', result);
-                    
-                    // postRatecardServiceCategoriesSortServiceSubCategories({ 
-                    //     categories_sort: JSON.stringify(result) 
-                    // })
-                    // .then(function(response){
-                    // console.log(response);
-                    // });
-                    
                     let sorted = JSON.stringify(result);
                     scope.setState({sortedResults: sorted}, function(){
                         scope.setState({ enableSave: true });
                     });
                 }
             });
-
-            // console.log(this.props.sortableId);
-            // console.log('Array of level one (combine level 2 and 3)', this.props.arrayOfCurrentLevel);
-            // console.log('parent Data', this.props.parentData);
-            // this.setState({ dataTree: this.props.arrayOfCurrentLevel });
 
             this.setState({ curLevelId: this.props.parentData.id });
             this.setState({ currentVersion: this.props.parentData.version });
@@ -120,37 +106,35 @@ export class LevelThree extends Component {
                     clearTimeout(delay);
                     xhr('.myHandle.-layer3-'+scope.props.layer).hide();
                 }, 1 );
-
             })
             .catch(function(response){
                 if(response.data.error){
                     alert(response.data.message);
                 }
-            })
+            });
         }
 
         this.setState({isManageBtn:false});
         this.setState({isMenuBtn:true});
     }
 
-    onAdd(){
+    onAddLevel3(){
         this.setState({showAddLevel:true});
+        this.onCancelArrangementLevel3();
     }
     
-    onDone(){
+    onCancelManageButton(){
         this.setState({isManageBtn:true});
         this.setState({isMenuBtn:false});
     }
 
-    onSave(newValue){
+    onSaveAddLevel3(newValue){
         let scope = this;
 
         if(newValue.length===0){
-            alert('No category were set.');
+            alert('No category name specified.');
             return;
         }
-
-        console.log('before set',newValue, scope.state.currentVersion)
 
         postServiceCategories_subCategories_create({
             service_sub_category_id: scope.state.curLevelId,
@@ -164,7 +148,7 @@ export class LevelThree extends Component {
             scope.setState({showAddLevel: false});
             scope.setState({dataTree: response.data.payload});
 
-            alert('New Category was added.');
+            alert('Category added successfully');
 
             let delay = setTimeout(function(){
                 clearTimeout(delay);
@@ -178,7 +162,7 @@ export class LevelThree extends Component {
         })
     }
 
-    onCancel(){
+    onCancelAddLevel(){
         this.setState({showAddLevel:false});
     }
 
@@ -194,36 +178,27 @@ export class LevelThree extends Component {
         }
     }
 
-    onClickEdit(){
+    onEditCategory(){
         let scope = this;
         let toggle = this.state.showInputName;
             toggle = !toggle;
 
         this.setState({showInputName: toggle});
-
         this.setState({inputCategoryName: this.props.parentData.name });
-
-        // console.log( this.props.parentData );
-        // return;
-
         if(toggle===false && this.state.inputCategoryName.length !== 0){
             this.props.onUpdate( this.state.inputCategoryName, this.props.parentData.id ); 
         }
     }
 
-    onDelete(evt){
+    onDeleteCategory(evt){
         let scope = this;
         let target = evt.target;
-
-        // console.log(this.props.parentData);
 
         if (confirm('Are you sure you want to delete this category?')) {
             // continue
         } else {
             return;
         }
-        
-        console.log('deleting layer:', this.props.nextLevel);
 
         postServiceCategories_subCategories_delete({id: this.props.parentData.id, level: this.props.nextLevel })
         .then(function(response){
@@ -252,7 +227,7 @@ export class LevelThree extends Component {
        let scope = this;
 
        if(value.length===0){
-            alert('No name specified.');
+            alert('No category name specified.');
             return;
         }
 
@@ -266,7 +241,7 @@ export class LevelThree extends Component {
         // Server Update
         postServiceCategories_subCategories_update({name: value, id: id})
         .then(function(response){
-            console.log('[Edit] Level three success', response.data);
+            alert('Category name updated.');
         })
         .catch(function(response){
             if(response.data.error){
@@ -277,24 +252,39 @@ export class LevelThree extends Component {
 
     onReArrange(){
         this.setState({isReArrange:true});
+        this.onCancelAddLevel();
         xhr('.myHandle.-layer3-'+this.props.layer).show();
     }
     
-    onCancelSave(){
+    onCancelArrangementLevel3(){
         this.setState({isReArrange:false});
+        this.setState({enableSave:false});
         xhr('.myHandle.-layer3-'+this.props.layer).hide();
     }
 
-    onSaveReArrange(){
+    onSaveArrangementLevel3(){
         let scope = this;
 
         if(this.state.enableSave){
+
+            if(confirm('Are you sure you want to save these changes?')){
+                //
+            } else {
+                return;
+            }
+
             postRatecardServiceCategoriesSortServiceSubCategories({ 
                 categories_sort: this.state.sortedResults 
             })
             .then(function(response){
-                console.log('category saved!', response);
-                scope.setState({enableSave:false});
+                alert('Category arrangement updated.');
+                // reset
+                scope.onCancelArrangementLevel3();
+            })
+            .catch(function(response){
+                if(response.data.error){
+                    alert(response.data.message);
+                }
             });
         }
     }
@@ -313,13 +303,19 @@ export class LevelThree extends Component {
 
         let hasLevel3 = false;
 
-        let reArrangeBtn = <button type="button" className="btn btn-default" onClick={this.onReArrange.bind(this)}>Rearrange</button>
-
+        let reArrangeBtn = <button 
+                            type="button" 
+                            className="btn btn-default" 
+                            onClick={this.onReArrange.bind(this)}>Rearrange</button>
+                            
         if(this.state.isReArrange){
             reArrangeBtn = 
             <span>
-                <button className={"btn btn-success " + (this.state.enableSave ? '' : 'disabled')} type="button" onClick={this.onSaveReArrange.bind(this)}>Save</button>&nbsp;
-                <button className="btn btn-default" type="button" onClick={this.onCancelSave.bind(this)}>Cancel</button>
+                <button 
+                    className={"btn btn-success " + (this.state.enableSave ? '' : 'disabled')} 
+                    type="button" 
+                    onClick={this.onSaveArrangementLevel3.bind(this)}>Save</button>&nbsp;
+                <button className="btn btn-default" type="button" onClick={this.onCancelArrangementLevel3.bind(this)}>Cancel</button>
             </span>
         }
 
@@ -355,23 +351,38 @@ export class LevelThree extends Component {
                                     elem = 
                                         <div>
                                             {reArrangeBtn} &nbsp; 
-                                            <button type="button" className="btn btn-primary" onClick={scope.onAdd.bind(scope)}>Add Level</button>&nbsp; 
-                                            <button type="button" className="btn btn-default" onClick={scope.onDone.bind(scope)}>Done</button> 
+                                            <button type="button" className="btn btn-primary" onClick={scope.onAddLevel3.bind(scope)}>Add Level</button>&nbsp; 
+                                            <button type="button" className="btn btn-default" onClick={scope.onCancelManageButton.bind(scope)}>Cancel</button> 
                                         </div>
                                 } else {
                                     elem = 
                                     <div>
-                                        <button type="button" className="btn btn-default" onClick={scope.onManageBtn.bind(scope)}>Manage SubCategories</button>&nbsp;
-                                        <button type="button" className="btn btn-success" onClick={scope.onClickEdit.bind(scope)}><i className="fa fa-pencil-square-o"></i></button>&nbsp;
-                                        <button type="button" className="btn btn-danger" onClick={scope.onDelete.bind(scope)}><i className="fa fa-times"></i></button>
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-default" 
+                                            onClick={scope.onManageSubCategories.bind(scope)}>Manage SubCategories</button>&nbsp;
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-success" 
+                                            onClick={scope.onEditCategory.bind(scope)}><i className="fa fa-pencil-square-o"></i></button>&nbsp;
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-danger" 
+                                            onClick={scope.onDeleteCategory.bind(scope)}><i className="fa fa-times"></i></button>
                                     </div>
                                 }
 
                             } else {
                                 elem = 
                                 <div>
-                                    <button type="button" className="btn btn-success" onClick={scope.onClickEdit.bind(scope)}><i className="fa fa-pencil-square-o"></i></button>&nbsp;
-                                    <button type="button" className="btn btn-danger" onClick={scope.onDelete.bind(scope)}><i className="fa fa-times"></i></button> 
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-success" 
+                                        onClick={scope.onEditCategory.bind(scope)}><i className="fa fa-pencil-square-o"></i></button>&nbsp;
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-danger" 
+                                        onClick={scope.onDeleteCategory.bind(scope)}><i className="fa fa-times"></i></button> 
                                 </div>
                             }
 
@@ -431,9 +442,8 @@ export class LevelThree extends Component {
                 <AddLevel
                     hasAddLevel={this.state.showAddLevel}
                     name={this.state.subCategoryName}
-                    onSave={this.onSave.bind(this)} 
-                    onCancel={this.onCancel.bind(this)} />
-
+                    onSave={this.onSaveAddLevel3.bind(this)} 
+                    onCancel={this.onCancelAddLevel.bind(this)} />
             </div>
         )
     }

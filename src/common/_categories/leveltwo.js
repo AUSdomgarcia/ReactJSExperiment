@@ -65,15 +65,6 @@ export class LevelTwo extends Component {
                     result.push({id, order});
                 }
 
-                console.log('level2-done', JSON.stringify(result) );
-
-                // postRatecardServiceCategoriesSortServiceSubCategories({ 
-                //     categories_sort: JSON.stringify(result) 
-                // })
-                // .then(function(response){
-                //     console.log(response);
-                // });
-
                 let sorted = JSON.stringify(result);
                 scope.setState({sortedResults: sorted}, function(){
                     scope.setState({ enableSave: true });
@@ -87,22 +78,7 @@ export class LevelTwo extends Component {
     }
 
     componentWillReceiveProps(nextProps){
-        /*
-        if(nextProps.parentData['sub_categories']===undefined) return;
-
-        let tempArr = nextProps.parentData['sub_categories'];
-
-        if(tempArr !== this.state.categoryLevelTwo){
-            // categories Array
-            this.setState({ categoryLevelTwo: tempArr });
-            // id Integer
-            this.setState({ myCurrentId: nextProps.parentData.id });
-            // version String
-            if(tempArr.length!==0) {
-                this.setState({ currentVersion: tempArr[tempArr.length-1].version });
-            }
-        }
-        */
+        
     }
 
     componentWillMount(){
@@ -124,11 +100,10 @@ export class LevelTwo extends Component {
                 clearTimeout(delay);
                 xhr('.myHandle.-layer2-'+scope.props.layer).hide();
             }, 1 );
-            
         });
     }
 
-    onManageBtn(){
+    onManageSubCategories(){
         let scope = this;
         this.setState({isManageBtn:false});
         this.setState({isMenuBtn:true});
@@ -139,7 +114,7 @@ export class LevelTwo extends Component {
         }, 1 );
     }
 
-    onDelete(evt){
+    onDeleteCategory(evt){
         let scope = this;
         let target = evt.target;
 
@@ -151,9 +126,7 @@ export class LevelTwo extends Component {
         
         postServiceCategoriesDelete({id: this.state.myCurrentId}).then(function(response){
             alert('Category deleted.');
-
             scope.hackSortableInstance.destroy();
-
             scope.props.onDelete(scope.state.myCurrentId);
         })
         .catch(function(response){
@@ -163,24 +136,26 @@ export class LevelTwo extends Component {
         })
     }
 
-    onDone(){
+    onCancelManageButton(){
         this.setState({isManageBtn:true});
         this.setState({isMenuBtn:false});
         this.setState({showAddLevel:false});
     }
 
-    onAdd(){
+    onAddLevel2(){
         this.setState({showAddLevel:true});
+        this.onCancelArrangementLevel2();
     }
-    onCancel(){
+
+    onCancelAddLevel2(){
         this.setState({showAddLevel:false});
     }
 
-    onSave(newValue){
+    onSaveAddLevel2(newValue){
         let scope = this;
 
         if(newValue.length===0){
-            alert('No category were set.');
+            alert('No category name specified.');
             return;
         }
 
@@ -194,7 +169,7 @@ export class LevelTwo extends Component {
             scope.setState({showAddLevel: false});
             scope.setState({categoryLevelTwo: response.data.payload});
             
-            alert('New Category was added.');
+            alert('Category added successfully');
 
             let delay = setTimeout(function(){
                 clearTimeout(delay);
@@ -208,7 +183,7 @@ export class LevelTwo extends Component {
         })
     }
 
-    onClickEdit(){
+    onEditCategory(){
         let scope = this;
         let toggle = this.state.showInputName;
             toggle = !toggle;
@@ -248,22 +223,20 @@ export class LevelTwo extends Component {
        let scope = this;
 
         if(value.length===0){
-            alert('No name specified.');
+            alert('No category name specified.');
             return;
         }
 
-
-       // Local Update
         this.state.categoryLevelTwo.map(function(data){
                 if(data.id === id){
                     data.name = value;
                 }
             });
-        
-        // Server Update
+
         postServiceCategories_subCategories_update({name: value, id: id})
         .then(function(response){
             console.log('[Edit] Level two success', response.data);
+            alert('Category name updated.');
         })
         .catch(function(response){
             if(response.data.error){
@@ -272,30 +245,44 @@ export class LevelTwo extends Component {
         })
     }
 
-    onReArrange(){
+    onReArrangeLevel2(){
         this.setState({isReArrange:true});
+        this.onCancelAddLevel2();
         xhr('.myHandle.-layer2-'+this.props.layer).show();
     }
 
-    onCancelSave(){
+    onCancelArrangementLevel2(){
+        this.setState({enableSave:false});
         this.setState({isReArrange:false});
         xhr('.myHandle.-layer2-'+this.props.layer).hide();
     }
 
-    onSaveReArrange(){
+    onSaveArrangementLevel2(){
         let scope = this;
 
         if(this.state.enableSave){
+        
+            if(confirm('Are you sure you want to save these changes?')){
+                //
+            } else {
+                return;
+            }
+
             postRatecardServiceCategoriesSortServiceSubCategories({ 
                 categories_sort: this.state.sortedResults 
             })
             .then(function(response){
-                console.log('category saved!', response);
-                scope.setState({enableSave:false});
-            });
+                // reset
+                alert('Category arrangement updated.');
+                scope.onCancelArrangementLevel2();
+            })
+            .catch(function(response){
+                if(response.data.error){
+                    alert(response.data.message);
+                }
+            })
         }
     }
-    
 
     render(){
         let menuBtn = null;
@@ -308,13 +295,22 @@ export class LevelTwo extends Component {
 
         let hasLevel2 = false;
 
-        let reArrangeBtn = <button type="button" className="btn btn-default" onClick={this.onReArrange.bind(this)}>Rearrange</button>
+        let reArrangeBtn = 
+            <button type="button" 
+                className="btn btn-default" 
+                onClick={this.onReArrangeLevel2.bind(this)}>Rearrange</button>
 
         if(this.state.isReArrange){
             reArrangeBtn = 
             <span>
-                <button className={"btn btn-success " + (this.state.enableSave ? '' : 'disabled')} type="button" onClick={this.onSaveReArrange.bind(this)}>Save</button>&nbsp;
-                <button className="btn btn-default" type="button" onClick={this.onCancelSave.bind(this)}>Cancel</button>
+                <button 
+                    className={"btn btn-success " + (this.state.enableSave ? '' : 'disabled')} 
+                    type="button" 
+                    onClick={this.onSaveArrangementLevel2.bind(this)}>Save</button>&nbsp;
+                <button 
+                    className="btn btn-default" 
+                    type="button" 
+                    onClick={this.onCancelArrangementLevel2.bind(this)}>Cancel</button>
             </span>
         }
 
@@ -345,15 +341,30 @@ export class LevelTwo extends Component {
                                 elem = 
                                     <div>
                                         {reArrangeBtn} &nbsp; 
-                                        <button type="button" className="btn btn-primary" onClick={scope.onAdd.bind(scope)}>Add Level</button>&nbsp; 
-                                        <button type="button" className="btn btn-default" onClick={scope.onDone.bind(scope)}>Done</button> 
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-primary" 
+                                            onClick={scope.onAddLevel2.bind(scope)}>Add Level</button>&nbsp; 
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-default" 
+                                            onClick={scope.onCancelManageButton.bind(scope)}>Cancel</button> 
                                     </div>
                             } else {
                                 elem = 
                                 <div>
-                                    <button type="button" className="btn btn-default" onClick={scope.onManageBtn.bind(scope)}>Manage SubCategories</button>&nbsp;
-                                    <button type="button" className="btn btn-success" onClick={scope.onClickEdit.bind(scope)}><i className="fa fa-pencil-square-o"></i></button>&nbsp;
-                                    <button type="button" className="btn btn-danger" onClick={scope.onDelete.bind(scope)}><i className="fa fa-times"></i></button>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-default" 
+                                        onClick={scope.onManageSubCategories.bind(scope)}>Manage SubCategories</button>&nbsp;
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-success" 
+                                        onClick={scope.onEditCategory.bind(scope)}><i className="fa fa-pencil-square-o"></i></button>&nbsp;
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-danger" 
+                                        onClick={scope.onDeleteCategory.bind(scope)}><i className="fa fa-times"></i></button>
                                 </div>
                             }
                             return (elem)
@@ -368,8 +379,6 @@ export class LevelTwo extends Component {
             level2 = 
                 this.state.categoryLevelTwo
                     .map(function(data, index){
-                        // if( data.level ==="2" ){
-                            // hasLevel2 = true;
                             return (
                                 <li key={data.id} data-id={data.id}>
                                     
@@ -389,7 +398,6 @@ export class LevelTwo extends Component {
                                         onUpdate={scope.callbackUpdate.bind(scope)} 
                                     />
                                 </li> )
-                        // }
                     })
             
             if(hasLevel2 === false){
@@ -409,8 +417,8 @@ export class LevelTwo extends Component {
                 <AddLevel 
                     hasAddLevel={this.state.showAddLevel}
                     name={this.state.subCategoryName}
-                    onSave={this.onSave.bind(this)} 
-                    onCancel={this.onCancel.bind(this)} />
+                    onSave={this.onSaveAddLevel2.bind(this)} 
+                    onCancel={this.onCancelAddLevel2.bind(this)} />
             </div>
         )
     }
