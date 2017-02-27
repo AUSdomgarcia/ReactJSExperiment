@@ -44,7 +44,7 @@ export class RateType extends Component {
         let scope = this;
 
         if(newValue.length===0){
-            alert('No type were set.');
+            alert('No rate type name specified.');
             return;
         }
         postServiceRateTypesCreate({ name: newValue }).then(function(response){
@@ -74,6 +74,11 @@ export class RateType extends Component {
 
         if(id===undefined || id===null) return;
 
+        if(text.length===0){
+            alert('No rate type name specified.');
+            return;
+        }
+
         this.setState({targetInput: id});
 
         let toggle = this.state.ishowInput;
@@ -100,6 +105,7 @@ export class RateType extends Component {
                 scope.setState({rateTypeArr: scope.state.rateTypeArr }, function(){
                     scope.setState({ishowInput: false});
                 });
+                alert('Rate type name updated.');
             })
             .catch(function(response){
                 if(response.data.error){
@@ -117,7 +123,7 @@ export class RateType extends Component {
     
         if(id===undefined || id===null) return;
 
-        if (confirm('Are you sure you want to delete this?')) {
+        if (confirm('Are you sure you want to delete this rate type?')) {
             // continue
         } else {
             return;
@@ -131,7 +137,7 @@ export class RateType extends Component {
                 }
             });
             scope.setState({ rateTypeArr: scope.state.rateTypeArr });
-            alert('Deleted Rate Type');
+            alert('Rate Type Deleted.');
         })
         .catch(function(response){
             if(response.data.error){
