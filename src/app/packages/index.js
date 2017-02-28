@@ -718,7 +718,7 @@ export class PackagePermission extends Component {
                     <div className='col-md-12'>
                         
                         <PermissionEditor 
-                            defaultArr={this.state.permittedUsers} 
+                            users={this.state.permittedUsers} 
                             onUpdateArray={this.callbackUpdate.bind(this)} 
                         />
 

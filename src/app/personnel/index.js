@@ -32,13 +32,6 @@ export class Personnel extends Component {
     let scope = this;
     let ta = null;
 
-    // xhr.get(this.BASE_URL+'/rate-cards/personnels', function(data){
-    //     console.log('current personnels', data.payload);
-    //     scope.setState({ personnels: data.payload });
-    //     // copy
-    //     scope.setState({ personnelscopy: data.payload });
-    // });
-
     getServicePersonnels().then(function(response){
       console.log('personnels', response.data.payload);
         scope.setState({ personnels: response.data.payload });
@@ -51,21 +44,25 @@ export class Personnel extends Component {
     // console.log(this.props.params);
   }
 
-  callbackAdded(addValue){
-    this.setState({personnels: addValue});
+  callbackAdded(newValue){
+    console.log(newValue);
+    
+    this.setState({personnels: newValue});
     this.setState({isUpdated:false});
     // copy
-    this.setState({ personnelscopy: addValue }, function(){
+    this.setState({ personnelscopy: newValue }, function(){
       alert('Addded personnel successfully');
     });
   }
 
-  callbackUpdate(addValue){
-    this.setState({personnels: addValue});
+  callbackUpdate(newValue){
+    console.log(newValue);
+
+    this.setState({personnels: newValue});
     this.context.router.push('/personnel');
     this.setState({isUpdated:true});
     // copy
-    this.setState({ personnelscopy: addValue }, function(){
+    this.setState({ personnelscopy: newValue }, function(){
       alert('Updated personnel');
     });
   }
@@ -138,7 +135,6 @@ export class Personnel extends Component {
           
           <div className='col-xs-4'>
             <div className="input-group">
-              {/*<input id="personnel-searchbox" type="text" className="form-control" placeholder="Search for..." onChange={this.onFilter.bind(this)} />*/}
 
               <FilteredList 
                 data={this.state.personnels}

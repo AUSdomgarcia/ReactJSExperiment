@@ -747,7 +747,7 @@ export class RateCardPermission extends Component {
                     <div className='col-md-12'>
                         
                         <PermissionEditor 
-                        defaultArr={this.state.permittedUserArr} 
+                        users={this.state.permittedUserArr} 
                         onUpdateArray={this.callbackonUpdateArray.bind(this)} />
 
                         <br />

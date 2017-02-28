@@ -3,44 +3,70 @@ import './permissionEditor.scss';
 
 import xhr from 'jquery';
 
+import SearchInput, {createFilter} from 'react-search-input';
+
 import {getRateCardsPersonnelEmployees} from '../../common/http';
 
-export class PermissionEditor extends Component {
+const KEYS_TO_FILTERS = [
+            'company_email',
+            'first_name',
+            'middle_name',
+            'nick_name',
+            'family_name'
+        ];
 
+export class PermissionEditor extends Component {
+    
     constructor(props){
         super(props);
         this.state = {
             employees: [],
             employees_filtered:[],
-            permittedUsers: []
+            permittedUsers: [],
+            currentWord: "",
         };
     }
 
-    componentDidMount(){
-        //   
-    }
-    
     componentWillReceiveProps(nextProps){
         //
     }
 
     componentWillMount(){
         let scope = this;
-        let includedServiceArr = window.sessionStorage.getItem('includedServiceArr') || [];
 
         getRateCardsPersonnelEmployees().then(function(response){
             console.log('permission_editor', response);
 
             if(response.data.payload.length!==0){
-                scope.setState({employees: response.data.payload});
                 // copy
-                scope.setState({employees_filtered: response.data.payload});
+                scope.setState({employees: response.data.payload},
+                
+                function(){
+                    if(scope.props.users!==scope.state.permittedUsers){
+                        scope.setState({permittedUsers: scope.props.users},
+
+                        function(){
+                            scope.processFilter("");
+                        });
+                    }  
+                });
             }
         });
+    }
 
-        if(this.props.defaultArr!==this.state.permittedUsers){
-            this.setState({permittedUsers: this.props.defaultArr});
-        }
+    componentDidMount(){
+        //
+    }
+
+    checkForDuplicate(exclude, overall){
+        exclude.map(function(data1, index, arr1){
+            overall.map(function(data2, parentIndex){
+                if(+data1.employee_number === +data2.employee_number){
+                    overall.splice(parentIndex, 1);
+                }
+            });
+        });
+        return overall;
     }
 
     onAddEmployee(evt){
@@ -48,6 +74,7 @@ export class PermissionEditor extends Component {
         let index = xhr(evt.target)[0].dataset.index;
         let exists = false;
         let currIndex = 0;
+        // let employee = this.state.employees;
         let employee = this.state.employees;
         let scope = this;
 
@@ -58,21 +85,18 @@ export class PermissionEditor extends Component {
 
         // initial when 0
         if(this.state.permittedUsers.length===0){
-            console.log('once');
-            // this.state.permittedUsers.push(employee[index]);
-             this.state.employees.map(function(data){
-                //  console.log('what?', +data.employee_number, +id);
+             this.state.employees_filtered.map(function(data, index){
                 if(+data.employee_number === +id){
-                    scope.state.permittedUsers.push(data);
+                    let _data = scope.state.employees_filtered.splice(index, 1)[0];
+                    scope.setState({employees_filtered: scope.state.employees_filtered}, function(){
+                        scope.state.permittedUsers.push(_data);
+                    });
                 }
             });
 
-            this.setState({ permittedUsers: this.state.permittedUsers });
-
-            // window.sessionStorage.setItem('permittedUsers', JSON.stringify(this.state.permittedUsers) );
-            // console.log('permittedUsers', window.sessionStorage.getItem('permittedUsers') );
-            
-            this.props.onUpdateArray(this.state.permittedUsers);
+            this.setState({ permittedUsers: this.state.permittedUsers }, function(){
+                scope.props.onUpdateArray(scope.state.permittedUsers);
+            });
             return;
         }
 
@@ -93,91 +117,65 @@ export class PermissionEditor extends Component {
         }
         
         if(exists===false){
-            this.state.employees.map(function(data){
+            this.state.employees_filtered.map(function(data, index){
                 if(+data.employee_number === +id){
-                    scope.state.permittedUsers.push(data);
+                    let _data = scope.state.employees_filtered.splice(index, 1)[0];
+                    scope.setState({employees_filtered: scope.state.employees_filtered}, function(){
+                        scope.state.permittedUsers.push(_data);
+                    });
                 }
             });
-            // this.state.permittedUsers.push(employee[index]);
         }
-        this.setState({ permittedUsers: this.state.permittedUsers });
+
+        this.setState({ permittedUsers: this.state.permittedUsers }, function(){
+            scope.props.onUpdateArray(scope.state.permittedUsers);
+        });
+
         // window.sessionStorage.setItem('permittedUsers', JSON.stringify(this.state.permittedUsers) );
         // console.log('permittedUsers', window.sessionStorage.getItem('permittedUsers') );
-        this.props.onUpdateArray(this.state.permittedUsers);
     }
 
     onRemoveEmployee(evt){
         let index = xhr(evt.target)[0].dataset.index;
         if(index===undefined || index===null) return;
 
-        this.state.permittedUsers.splice(index, 1);
+        let scope = this;
+        let employee = this.state.permittedUsers.splice(index, 1)[0];
 
-        this.setState({ permittedUsers: this.state.permittedUsers });
+            console.log('whot?',employee);
 
-        this.props.onUpdateArray(this.state.permittedUsers);
+        this.setState({ permittedUsers: this.state.permittedUsers }, function(){
+            scope.processFilter(scope.state.currentWord);
+            scope.props.onUpdateArray(this.state.permittedUsers);
+        });
 
         // window.sessionStorage.setItem('permittedUsers', JSON.stringify(this.state.permittedUsers) );
-
         // console.log('permittedUsers', window.sessionStorage.getItem('permittedUsers') );
     }
 
     onKeyPress(event){
-        let word = event.target.value;
-        let scope = this;
+        this.processFilter(event.target.value);
+    }
 
-        if(event.key==='Enter'){
-            this.setState({employees_filtered: this.state.employees });
-            
-            let delay = setTimeout(function(){
-                clearTimeout(delay);
-                scope.processFilter(word);
-            }, 100);
-        }
+    processFilter(word){
+        
+        this.setState({currentWord: word});
+
+        let filteredUser = this.state.employees;
+            filteredUser = filteredUser.filter(createFilter(word, KEYS_TO_FILTERS));
+
+        let users = this.checkForDuplicate(this.state.permittedUsers, filteredUser)
+
+        this.setState({employees_filtered: users});
     }
 
     onFilterUsers(event){
         this.processFilter(event.target.value);
     }
-
-    processFilter(word){
-        let updatedList = this.state.employees_filtered || [];
-        if(updatedList.length===0) return;
-        
-        let scope = this;
-        let filtered = [];
-        let typed = word.trim();
-
-        updatedList.map(function(data, index, arr){
-            // by email
-            if( data.company_email.toLowerCase().includes(typed)){
-                filtered.push(data);
-                scope.setState({employees_filtered:filtered});
-            // by first name
-            } else if( data.first_name.toLowerCase().includes(typed)){
-                filtered.push(data);
-                scope.setState({employees_filtered:filtered});
-            // by family name
-            } else if( data.family_name.toLowerCase().includes(typed)){
-                filtered.push(data);
-                scope.setState({employees_filtered:filtered});
-            // by middle name
-            } else if( data.middle_name.toLowerCase().includes(typed)){
-                filtered.push(data);
-                scope.setState({employees_filtered:filtered});
-            // by nick name
-            } else if(data.nick_name!==null){
-                data.nick_name.toLowerCase().includes(typed);
-                filtered.push(data);
-                scope.setState({employees_filtered:filtered});
-            }
-        });
-
-        if(word.length===0) this.setState({employees_filtered: this.state.employees });
-    }
     
     render(){
         let employeesTable = <tr><td colSpan={3}>Loading..</td></tr>;
-        let permittedUser = <tr><td colSpan={3}>No data.</td></tr>;
+        let permittedUsers = <tr><td colSpan={3}>No data.</td></tr>;
         let scope = this;
 
         if(this.state.employees_filtered.length!==0){
@@ -197,10 +195,13 @@ export class PermissionEditor extends Component {
                     </tr>
                 )
             });
+        } else {
+            employeesTable =
+            <tr><td colSpan={3}>No data found.</td></tr>;
         }
 
         if(this.state.permittedUsers.length!==0){
-            permittedUser = 
+            permittedUsers = 
             this.state.permittedUsers.map(function(data, index){
                 return (
                     <tr key={data.employee_number}>
@@ -273,11 +274,10 @@ export class PermissionEditor extends Component {
                         </thead>
 
                         <tbody>
-                            {permittedUser}
+                            {permittedUsers}
                         </tbody>
                     </table>
                 </div>
-        
         </div>
         )
     }

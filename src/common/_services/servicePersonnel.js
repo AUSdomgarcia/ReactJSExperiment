@@ -83,15 +83,21 @@ export class ServicePersonnel extends Component {
                 }
             });
         }
-
-
-        // });
-        
-        // console.log('receivce personnels options', nextProps.personnelsOption);
     }
 
     onChangeManHour(evt){
-        let manhour = +evt.target.value
+        let value = +evt.target.value;
+
+        if(value < 0){
+            alert('The number you specified is less than 0.');
+            this.setState({manHour: 1});
+            return;
+        } else if(value === 0){
+            alert('Kindly specify a number greater than 0.');
+            this.setState({manHour: 1});
+            return;
+        }
+        let manhour = value;
         this.setState({manhours: manhour});
         let total = +this.state.manhour_rate * +this.state.manhours;
     }

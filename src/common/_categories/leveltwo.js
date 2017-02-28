@@ -364,7 +364,9 @@ export class LevelTwo extends Component {
                                     <button 
                                         type="button" 
                                         className="btn btn-danger" 
-                                        onClick={scope.onDeleteCategory.bind(scope)}><i className="fa fa-times"></i></button>
+                                        onClick={scope.onDeleteCategory.bind(scope)}>
+                                            &times;
+                                        </button>
                                 </div>
                             }
                             return (elem)

@@ -82,6 +82,17 @@ export class PersonnelInputField extends Component {
 
 
     onSetManHourHandler(evt){
+        let value = +evt.target.value;
+        
+        if(value < 0){
+            alert('The number you specified is less than 0.');
+            this.setState({manHour: 1});
+            return;
+        } else if(value === 0){
+            alert('Kindly specify a number greater than 0.');
+            this.setState({manHour: 1});
+            return;
+        }
         this.setState({manHour: evt.target.value});
     }
 
@@ -102,17 +113,6 @@ export class PersonnelInputField extends Component {
 
         switch(this.props.btnName.toLowerCase()){
             case 'add':
-                // xhr.post(this.BASE_URL+'/rate-cards/personnels/create', 
-                //     {
-                //         rate_type_id : scope.state.rateTypeValue,
-                //         department_id : scope.state.departmentValue,
-                //         position_id : scope.state.positionValue,
-                //         manhour_rate : scope.state.manHour
-                //     },
-                //     function(data){
-                //         scope.props.onAdded(data.payload);
-                //     });
-
                 postPersonnelsCreate({
                     rate_type_id : scope.state.rateTypeValue,
                     department_id : scope.state.departmentValue,
@@ -120,29 +120,21 @@ export class PersonnelInputField extends Component {
                     manhour_rate : scope.state.manHour
                 }).then(function(response){
                     scope.props.onAdded(response.data.payload);
+                })
+                .catch(function(response){
+                    if(response.data.error){
+                        alert(response.data.message);
+                    }
                 });
-
             break;
             
             case 'update':
-                console.log( +scope.state.storeId, 
+                console.log('update', +scope.state.storeId, 
                     scope.state.rateTypeValue,
                     scope.state.departmentValue,
                     scope.state.positionValue,
                     +scope.state.manHour
                 );
-
-                // xhr.post(this.BASE_URL+'/rate-cards/personnels/update', 
-                //     {
-                //         id: +scope.state.storeId,
-                //         rate_type_id : +scope.state.rateTypeValue,
-                //         department_id : scope.state.departmentValue,
-                //         position_id : scope.state.positionValue,
-                //         manhour_rate : +scope.state.manHour
-                //     },
-                //     function(data){
-                //         scope.props.onAdded(data.payload);
-                //     });
 
                 postPersonnelsUpdate({
                     id: +scope.state.storeId,
@@ -152,6 +144,11 @@ export class PersonnelInputField extends Component {
                     manhour_rate : +scope.state.manHour
                 }).then(function(response){
                     scope.props.onAdded(response.data.payload);
+                })
+                .catch(function(response){
+                    if(response.data.error){
+                        alert(response.data.message);
+                    }
                 });
 
             break;

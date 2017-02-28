@@ -189,7 +189,7 @@ export class ManageServices extends Component {
     constructor(props){
         super(props);
         this.state = {
-            serviceArr: [],
+            services: [],
             serviceCategoryIdReference: "",
             titleReference: ""
         };
@@ -203,8 +203,8 @@ export class ManageServices extends Component {
         let scope = this;
 
         getServiceByCategoryId(this.props.params.serviceCategoryId).then(function(response){
-            console.log('manage_service', JSON.stringify(response));
-            scope.setState({ serviceArr: response.data.payload })
+            // console.log('manage_service', JSON.stringify(response));
+            scope.setState({ services: response.data.payload })
         });
 
         // Hold service_category_id to return here after Add or Edit.
@@ -231,17 +231,15 @@ export class ManageServices extends Component {
             return;
         }
 
-        this.state.serviceArr.map(function(data, idx){
-            if(data.id.toString() === id.toString()){
-                scope.state.serviceArr.splice(idx, 1);
-            }
-        });
-
-        this.setState({ serviceArr: this.state.serviceArr });
-
-        postServiceDelete({id: id}).then(function(response){
+         postServiceDelete({id: id}).then(function(response){
             alert('Service deleted.');
-        })
+            scope.state.services.map(function(data, idx){
+                if(data.id.toString() === id.toString()){
+                    scope.state.services.splice(idx, 1);
+                }
+            });
+            scope.setState({ services: scope.state.services });
+       })
         .catch(function(response){
             if(response.data.error){
                 alert(response.data.message);
@@ -251,11 +249,11 @@ export class ManageServices extends Component {
 
     render(){
         let scope = this;
-        let services = <tr><td colSpan={5}>No Data.</td></tr>;
+        let servicesTable = <tr><td colSpan={5}>No Data.</td></tr>;
 
-        if(this.state.serviceArr.length!==0){
-            services = 
-            this.state.serviceArr.map(function(data){
+        if(this.state.services.length!==0){
+            servicesTable = 
+            this.state.services.map(function(data){
                 return (
                     <tr key={data.id}>
                         <td>{ data.name }</td>
@@ -330,7 +328,7 @@ export class ManageServices extends Component {
                     </thead>
 
                     <tbody>
-                        {services}
+                        {servicesTable}
                     </tbody>                           
                 </table>
 
