@@ -1051,7 +1051,9 @@ export class PackageSave extends Component {
                 console.log('jeffreyWay create', response);
                 let id = response.data.payload;
                 window.sessionStorage.setItem('packageId', id);
-                scope.previewById(id);
+                // scope.previewById(id);
+                alert('Package added successfully');
+                scope.context.router.push('/packages');
             })
             .catch(function(response){
                 if(response.data.error){

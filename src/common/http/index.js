@@ -14,8 +14,8 @@ const baseURL = 'http://www.cerebrum-api-staging.dev:8096/api'; // PROD
 let getServices = function() {
   return axios.get( baseURL + '/rate-cards/service-categories/services');
 }
-let getServiceByCategoryId = function(categoryId){
-  return axios.get( baseURL + '/rate-cards/services?service_category_id=' + categoryId);
+let getServiceByCategoryId = function(id){
+  return axios.get( baseURL + '/rate-cards/services?service_category_id=' + id);
 }
 let getServiceCreateDetails = function(){
   return axios.get( baseURL + '/rate-cards/services/create-details');

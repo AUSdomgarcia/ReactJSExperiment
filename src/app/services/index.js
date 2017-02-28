@@ -190,33 +190,31 @@ export class ManageServices extends Component {
         super(props);
         this.state = {
             services: [],
-            serviceCategoryIdReference: "",
-            titleReference: ""
+            service_category_id: "",
+            title: ""
         };
     }
 
     componentWillMount(){
-        this.setState({ titleReference: this.props.params.title });
-        this.setState({ serviceCategoryIdReference: this.props.params.serviceCategoryId }); 
+        let id = this.props.params.serviceCategoryId;
+
+        this.setState({ title: this.props.params.title });
+        this.setState({ service_category_id: id }); 
 
         // not yet in use
         let scope = this;
 
-        getServiceByCategoryId(this.props.params.serviceCategoryId).then(function(response){
-            // console.log('manage_service', JSON.stringify(response));
+        getServiceByCategoryId(id).then(function(response){
+            console.log('manage_service', response);
             scope.setState({ services: response.data.payload })
         });
 
         // Hold service_category_id to return here after Add or Edit.
-        window.sessionStorage.setItem('service_category_id', this.props.params.serviceCategoryId);
+        // window.sessionStorage.setItem('service_category_id', id);
     }
 
     componentDidMount(){
         //        
-    }
-
-    onEdit(){
-        this.context.router.push('/services/edit');
     }
 
     onDelete(evt){
@@ -264,8 +262,8 @@ export class ManageServices extends Component {
                             <Link 
                                 className="btn btn-default" 
                                 to={'/services/edit/' 
-                                + scope.state.serviceCategoryIdReference + '/' 
-                                + scope.state.titleReference + '/'
+                                + scope.state.service_category_id + '/' 
+                                + scope.state.title + '/'
                                 + 1 + '/'
                                 + data.id }>Edit
                             </Link>
@@ -284,7 +282,7 @@ export class ManageServices extends Component {
 
         return (
             <div>
-                <h3 className="sky">Category Services: <small>{this.state.titleReference}</small></h3>
+                <h3 className="sky">Category Services: <small>{this.state.title}</small></h3>
                 
                 <div className="header">
                     <div className="col-xs-6 text-left">
@@ -294,21 +292,11 @@ export class ManageServices extends Component {
                     </div>
 
                     <div className="col-xs-6 text-right">
-
-                        {/*<Link 
-                            className="btn btn-primary" 
-                            to={'/services/edit/' 
-                            + this.state.serviceCategoryIdReference + '/' 
-                            + this.state.titleReference + '/'
-                            + 1 + '/'
-                            + 'service_id' }>EditSimulate</Link>
-                        &nbsp;*/}
-
                         <Link 
                             className="btn btn-primary" 
                             to={'/services/add/' 
-                            + this.state.serviceCategoryIdReference + '/' 
-                            + this.state.titleReference + '/'
+                            + this.state.service_category_id + '/' 
+                            + this.state.title + '/'
                             + 0 }>Add Service</Link>
                     </div>
                     <br className="clearfix" />
@@ -371,8 +359,6 @@ ManageServices.contextTypes = {
 
 
 
-{/*----------------------------------->>> Y O U R  W O R K I N G  H E R E <<<---------------------------------------------*/}
-
 import {getServicePersonnelsByRateTypeId, getServiceCategoriesRoot} from '../../common/http';
 export class ServiceAdd extends Component {
 
@@ -418,6 +404,8 @@ export class ServiceAdd extends Component {
             is_rate_type_changed: false,
             
             isAddedServiceInsideCategory: false,
+
+            service_category_temp_name: "",
         }
     }
 
@@ -426,18 +414,26 @@ export class ServiceAdd extends Component {
         this.setState({isEditmode: this.props.params.editmode }, function(){
             scope.switchMode();
         });
-        console.log('>>>Holding>>>', window.sessionStorage.getItem('service_category_id'));
+
+        window.sessionStorage.setItem('service_category_id', this.props.params.serviceCategoryId);
+
+        console.log('>>>Holding>>>', window.sessionStorage.getItem('service_category_id') );
     }
 
     switchMode(){
         let scope = this;
+        
         let serviceId = this.props.params.serviceid;
+        
         let serviceCategoryId = this.props.params.serviceCategoryId;
+    
         this.setState({ titleReference: this.props.params.title });
+        
         this.setState({ serviceCategoryIdReference: serviceCategoryId },
             function(){
                 window.sessionStorage.setItem('serviceCategoryIdReference', serviceCategoryId )
             });
+
 
         /////////////////////////////////
         // EDIT MODE
@@ -587,16 +583,22 @@ export class ServiceAdd extends Component {
                     function(){
                         let service_category_id = window.sessionStorage.getItem('service_category_id'); // || resZero.id;
                         
-                        if(service_category_id!==null){
-                            scope.setState({ level1ValueId: service_category_id });
-                            scope.setState({ isAddedServiceInsideCategory: true});
+                        if(service_category_id !==null && 
+                            service_category_id !== 'undefined' && 
+                            service_category_id !== undefined){
+                                scope.setState({ level1ValueId: service_category_id });
+                                scope.setState({ isAddedServiceInsideCategory: true});
+                                scope.setState({serviceCategoryIdReference: service_category_id });
+                                scope.checkSubCategoyById(service_category_id); console.log('edit|add-inside', service_category_id);
+                                
                         } else {
-                            scope.setState({ isAddedServiceInsideCategory: false});
                             scope.setState({ level1ValueId: resZero.id });
+                            scope.setState({ isAddedServiceInsideCategory: false});
+                            scope.setState({serviceCategoryIdReference: resZero.id });
+                            scope.setState({service_category_temp_name: resZero.name});
+                            scope.checkSubCategoyById(resZero.id); console.log('add-outside', resZero.id);
                         }
 
-                        scope.setState({serviceCategoryIdReference: service_category_id });
-                        scope.checkSubCategoyById( service_category_id );
                     });
                     
                 } else {
@@ -615,7 +617,7 @@ export class ServiceAdd extends Component {
 
         getServiceCategories_subCategories_level2_byParentId(layerOneId)
         .then(function(response){
-            console.log('layer2', layerOneId, response);
+            // console.log('layer2', layerOneId, response);
 
             if(response.data.payload.length!==0){
                 // Stored id
@@ -640,7 +642,7 @@ export class ServiceAdd extends Component {
         let scope = this;
         getServiceCategories_subCategories_level3_byParentId(layerTwoId)
         .then(function(response){
-            console.log('layer3', layerTwoId, response);
+            // console.log('layer3', layerTwoId, response);
 
             if(response.data.payload.length!==0){
                 // Stored id
@@ -705,6 +707,12 @@ export class ServiceAdd extends Component {
         this.setState({level1ValueId: target}, function(){
             scope.checkSubCategoyById(target);
             scope.setState({serviceCategoryIdReference: target});
+            // temporary tracked category name
+            scope.state.level1Arr.map(function(data){
+                if(+data.id === +target){
+                    scope.setState({service_category_temp_name: data.name });
+                }
+            })
         });
     }
 
@@ -854,15 +862,19 @@ export class ServiceAdd extends Component {
                 sub_service_sub_category_id: this.state.sub_service_sub_category_id,
                 rate_type_id: this.state.rateTypeValue,
                 is_active: this.state.activeStatus,
-                personnels: PersonnelJSON, // JSON.stringify( [{ "id": 1, "personnel_id": 1, "manhours": 100 }] ),  // <----- Mock Personnels
+                personnels: PersonnelJSON,
                 subtotal: this.state.subtotal,
-                created_at: this.state.createdAt, // '2017-02-09 11:14:00' // <------ Mock time ,     this.state.createdAt,
+                created_at: this.state.createdAt,
             }).then(function(response){
                 console.log('onCreate', response);
-
                 alert('Created service successfully.');
 
-                scope.context.router.push('/services');
+                let id = scope.state.serviceCategoryIdReference;
+
+                console.log('sdada>>', scope.state.service_category_temp_name, scope.state.titleReference);
+
+                let name = (scope.state.titleReference===undefined ? scope.state.service_category_temp_name : scope.state.titleReference);
+                scope.context.router.push('/services/manage/' + id + '/' + name);
             })
             .catch(function(response){
                 if(response.data.error)
@@ -890,8 +902,11 @@ export class ServiceAdd extends Component {
                 created_at: this.state.createdAt,
             }).then(function(response){
                 // scope.context.router.push('/services');
-                console.log('onUpdate', response);
                 alert('Save successfully!');
+
+                let id = scope.state.serviceCategoryIdReference;
+                let name = scope.state.titleReference;
+                scope.context.router.push('/services/manage/' + id + '/' + name);
             })
             .catch(function(response){
                 if(response.data.error)
@@ -1056,7 +1071,7 @@ export class ServiceAdd extends Component {
                     </div>
 
                     <div className="form-group">
-                        <label>Service Category XX</label>
+                        <label>Service Category</label>
                         {level1SelectOptions}
                         {level2SelectOptions}
                         {level3SelectOptions}

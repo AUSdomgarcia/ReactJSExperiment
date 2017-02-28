@@ -17,22 +17,36 @@ export class ConnectedTable extends Component {
 
     componentDidMount(){}
 
+    checkForDuplicate(exclude, overall){
+        exclude.map(function(data1, index, arr1){
+            overall.map(function(data2, parentIndex){
+                if(+data1.id === +data2.id){
+                    overall.splice(parentIndex, 1);
+                }
+            });
+        });
+        return overall;
+    }
+
     componentWillMount(){
         let scope = this;
         
         if(this.props.addedServices!==this.state.added_services){
-            this.setState({added_services:this.props.addedServices});
-        }
+            this.setState({added_services:this.props.addedServices},
 
-        getRateCardsActive().then(function(response){
-            console.log('getRateCards active', response);
-            if(response.data.hasOwnProperty('payload')){
-                if(response.data.payload.length!==0){
-                    scope.setState({ratecards:response.data.payload});
-                    scope.manageSelectedRateCard(response);
-                }
-            }
-        });
+            // #1    
+            function(){
+                getRateCardsActive().then(function(response){
+                    console.log('getRateCards active', response);
+
+                        if(response.data.payload.length!==0){
+                            scope.setState({ratecards: response.data.payload});
+                            // #2
+                            scope.manageSelectedRateCard(response);
+                        }
+                });
+            });
+        }
     }
 
     manageSelectedRateCard(res){
@@ -49,6 +63,7 @@ export class ConnectedTable extends Component {
         
         window.sessionStorage.setItem('rateCardId', id);
 
+        // #3
         this.getRateCardServicesById(id);
     }
 
@@ -57,11 +72,15 @@ export class ConnectedTable extends Component {
         getRateCardById(id).then(function(response){
             console.log('/getServices_packages_ratecard_by_id', response);
 
-            if(response.data.hasOwnProperty('payload')){
-                if(response.data.payload.length!==0){
-                    let services = response.data.payload[0].services;
-                    scope.setState({services});
-                }
+            if(response.data.payload.length!==0){
+                let serviceDisplay = scope.checkForDuplicate(scope.state.added_services, 
+                                                            response.data.payload[0].services);
+
+                console.log('1', scope.state.added_services);
+                console.log('2', response.data.payload[0].services);
+
+                // #4                               
+                scope.setState({services: serviceDisplay});
             }
         });
     }
@@ -91,14 +110,28 @@ export class ConnectedTable extends Component {
         let exists = false;
         let currIndex = 0;
         let services = this.state.services;
+        let scope = this;
 
         if(this.state.added_services.length===0){
             this.state.added_services.push(services[index]);
-            this.setState({added_services:this.state.added_services});
-            window.sessionStorage.setItem('added_services', JSON.stringify(this.state.added_services));
-            this.props.onUpdate(this.state.added_services);
 
-            console.log(services[index]);
+            this.setState({added_services:this.state.added_services});
+
+            // window.sessionStorage.setItem('added_services', JSON.stringify(this.state.added_services));
+
+            let selected_id = services[index].id;
+
+            this.state.services.map(function(data, index, arr){
+                if(+data.id === +selected_id){
+                    scope.state.services.splice(index, 1);
+                }
+                if(index===arr.length-1){
+                    scope.setState({services: scope.state.services});
+                }
+            });
+
+            this.props.onUpdate(this.state.added_services);
+            // console.log(services[index]);
             return;
         }
         // Check Availability
@@ -112,26 +145,59 @@ export class ConnectedTable extends Component {
         if(exists===true){
             if(confirm('Already in use.')){return;} else {return;}
         }
+
         if(exists===false){
-            this.state.added_services.push(services[index]);
-            console.log(services[index]);
+            let selected_id = services[index].id;
+
+            console.log('called.', selected_id);
+
+            let spliced_idx = null;
+
+            this.state.services.map(function(data, idx, arr){
+                console.log(data.id, +selected_id)
+                
+                if(+data.id === +selected_id){
+                    spliced_idx = idx;
+                }
+
+                if(idx === arr.length-1){
+
+                    let service = scope.state.services.splice(spliced_idx, 1)[0];
+
+                    scope.state.added_services.push(service);
+
+                    scope.setState({services: scope.state.services});
+
+                    scope.setState({added_services: scope.state.added_services},
+
+                    // update
+                    function(){
+                        scope.props.onUpdate(scope.state.added_services);
+                    });
+                }
+            });
         }
-        this.setState({added_services: this.state.added_services});
-        this.props.onUpdate(this.state.added_services);
     }
 
     onRemoveService(evt){
+        let scope = this;
         let index = xhr(evt.target)[0].dataset.index;
         if(index===undefined || index===null) return;
 
-        this.state.added_services.splice(index, 1);
-        this.setState({added_services: this.state.added_services});
-        this.props.onUpdate(this.state.added_services);
+        let service = this.state.added_services.splice(index, 1)[0];
+        let temp = this.state.services;
+            temp.push(service);
+
+        this.setState({ services: temp });
+
+        this.setState({added_services: this.state.added_services}, function(){
+            scope.props.onUpdate(this.state.added_services);
+        }); 
     }
     
     render(){
         let scope = this;
-        let ratecardOptions = <option>No options.</option>;
+        let ratecardOptions = <option>Loading..</option>;
         let servicesTable = <tr><td colSpan={6}>No data.</td></tr>;
         let addedServicesTable = <tr><td colSpan={6}>No data.</td></tr>;
 

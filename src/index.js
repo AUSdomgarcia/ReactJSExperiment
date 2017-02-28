@@ -84,7 +84,7 @@ ReactDOM.render(
             {/* S E R V I C E S */}
             <Route path='services'>
                 <IndexRoute component={Services} />
-                <Route path="/services/manage/:serviceCategoryId/:title" component={ManageServices} />
+                <Route path="/services/manage/:serviceCategoryId(/:title)" component={ManageServices} />
                 <Route path="/services/add/:serviceCategoryId/:title/:editmode" component={ServiceAdd} />
                 <Route path="/services/edit/:serviceCategoryId/:title/:editmode(/:serviceid)" component={ServiceAdd} />{/*ServiceEdit*/}
                 <Route path="/services/new/:editmode" component={ServiceAdd} />{/*ServiceEdit*/}
