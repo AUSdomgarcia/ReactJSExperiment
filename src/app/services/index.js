@@ -116,7 +116,7 @@ export class Services extends Component {
                                 <Link className='btn btn-default'
                                     to={'services/manage/' + data.id + '/' + data.name } >Manage</Link>&nbsp;
                                 
-                                <button type="button" data-storeid={data.id} className="btn btn-danger"  onClick={scope.onDelete.bind(scope)} ><i className="fa fa-times"></i></button>
+                                <button type="button" data-storeid={data.id} className="btn btn-danger"  onClick={scope.onDelete.bind(scope)} >&times;</button>
                             </td>
                         </tr>
                     )
@@ -263,11 +263,8 @@ export class ManageServices extends Component {
                         <td>{ data.subtotal } </td>
                         <td>{(data.is_active==='1' ? 'Active' : 'Inactive')}</td>
                         <td>
-
-                            {/*<button type="button" className="btn btn-default" onClick={scope.onEdit.bind(scope)}>Edit</button>*/}
-
                             <Link 
-                                className="btn btn-primary" 
+                                className="btn btn-default" 
                                 to={'/services/edit/' 
                                 + scope.state.serviceCategoryIdReference + '/' 
                                 + scope.state.titleReference + '/'
@@ -276,8 +273,11 @@ export class ManageServices extends Component {
                             </Link>
 
                             &nbsp;
-                            <button type="button" className="btn btn-danger" data-serviceid={data.id} onClick={scope.onDelete.bind(scope)}><i className="fa fa-times"></i></button>
-
+                            <button 
+                                type="button"
+                                className="btn btn-danger" 
+                                data-serviceid={data.id} 
+                                onClick={scope.onDelete.bind(scope)}>&times;</button>
                         </td>
                     </tr>
                 )
@@ -1508,9 +1508,7 @@ export class ServiceAll extends Component {
                         <td>{(data.is_active==='0' ? 'Inactive' : 'Active')}</td>
                         <td>
                             <button type="button" className="btn btn-default" data-storeid={data.id} onClick={scope.onEdit.bind(scope)}>Edit</button>&nbsp;
-                            <button type="button" className="btn btn-danger"  data-storeid={data.id} onClick={scope.onDelete.bind(scope)}>
-                                Delete
-                            </button>
+                            <button type="button" className="btn btn-danger"  data-storeid={data.id} onClick={scope.onDelete.bind(scope)}>&times;</button>
                         </td>
                     </tr>
                 )
