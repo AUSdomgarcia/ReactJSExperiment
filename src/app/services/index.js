@@ -308,6 +308,9 @@ export class ManageServices extends Component {
                         <CategoryController key={data.id} data={data}/>
                     )
                 });
+        
+        } else {
+            categoryLevel2List = null;
         }
 
         return (

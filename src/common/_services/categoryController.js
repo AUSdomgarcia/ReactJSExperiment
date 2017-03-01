@@ -18,8 +18,9 @@ export class CategoryController extends Component {
         if(this.state.services !== this.props.data.services){
             this.setState({ services: this.props.data.services });
         }
+
         // Level 3
-        console.log(this.props.data.hasOwnProperty('sub_categories'), this.props.data.sub_categories);
+        console.log('>>_>>', this.props.data.hasOwnProperty('sub_categories'), this.props.data);
 
         if(!this.props.data.hasOwnProperty('sub_categories')) return;
 
@@ -97,8 +98,9 @@ export class CategoryController extends Component {
                     <CategoryController key={data.id} data={data}/>
                 )
             });
+            
         } else {
-            categoryLevel3List = undefined;
+            categoryLevel3List = null;
         }
         
         return (
