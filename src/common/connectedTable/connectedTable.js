@@ -73,11 +73,11 @@ export class ConnectedTable extends Component {
             console.log('/getServices_packages_ratecard_by_id', response);
 
             if(response.data.payload.length!==0){
-                let serviceDisplay = scope.checkForDuplicate(scope.state.added_services, 
-                                                            response.data.payload[0].services);
-
-                console.log('1', scope.state.added_services);
-                console.log('2', response.data.payload[0].services);
+                let serviceDisplay = 
+                scope.checkForDuplicate(scope.state.added_services, response.data.payload[0].services);
+                
+                console.log('1-added_services', scope.state.added_services);
+                console.log('2-services', response.data.payload[0].services);
 
                 // #4                               
                 scope.setState({services: serviceDisplay});

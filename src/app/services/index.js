@@ -305,7 +305,11 @@ export class ManageServices extends Component {
             categoryLevel2List =
                 this.state.category_level2.map(function(data){
                     return (
-                        <CategoryController key={data.id} data={data}/>
+                        <CategoryController 
+                            key={data.id} 
+                            data={data} 
+                            service_category_id={scope.state.service_category_id} 
+                            title={scope.state.title}/>
                     )
                 });
         
@@ -480,6 +484,8 @@ export class ServiceAdd extends Component {
                 serviceCategoryId,                  // service_category_id
                 serviceId                           // service_id itself
                 ).then(function(response){
+                    console.log('EDIT-EDIT', response, serviceCategoryId, serviceId);
+                    
                     if(response.data.payload.length===0) return; 
 
                     console.log('EditModeResponse', response);
