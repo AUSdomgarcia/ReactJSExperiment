@@ -169,6 +169,8 @@ export class LevelTwo extends Component {
             scope.setState({showAddLevel: false});
             scope.setState({categoryLevelTwo: response.data.payload});
             
+            scope.onCancelAddLevel2();
+
             alert('Category added successfully');
 
             let delay = setTimeout(function(){

@@ -87,25 +87,31 @@ export class Categories extends Component {
     let scope = this;
     let category = { "id": this.state.response_last_id+1, "name": this.state.categoryName, "order": this.state.response_last_id+1, "sub_categories": [] };
     let level1Arr = this.state.categoryLevelOne;
-        level1Arr.push(category);
-
+        
     postServiceCategoriesCreate({name: this.state.categoryName })
     .then(function(response){
       if(response.data.payload.length!==0){
+
         scope.setState({ categoryLevelOne: response.data.payload });
+
         scope.setState({ response_last_id: response.data.payload[response.data.payload.length-1].id });
+
         scope.onCancelAddLevel1();
+
         alert('Category added successfully');
+
+        
+      this.setState({ categoryName: ""});
+      xhr('.category-input').addClass('hide');
+
+        // level1Arr.push(category);
       }
     })
     .catch(function(response){
       if(response.data.error){
-        alert(response.data.message)
+        alert(response.data.message);
       }
     });
-
-    this.setState({ categoryName: ""});
-    xhr('.category-input').addClass('hide');
   }
 
   onCategoryNameHandler(evt){

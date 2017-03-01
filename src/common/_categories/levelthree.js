@@ -147,7 +147,7 @@ export class LevelThree extends Component {
             scope.setState({subCategoryName: ""});
             scope.setState({showAddLevel: false});
             scope.setState({dataTree: response.data.payload});
-
+            
             alert('Category added successfully');
 
             let delay = setTimeout(function(){

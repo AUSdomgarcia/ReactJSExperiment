@@ -1473,16 +1473,16 @@ export class ServiceAll extends Component {
             return;
         }
         
-        this.state.services.map(function(data, index){
-            if(+data.id === +id){
-                scope.state.services.splice(index, 1);
-                scope.setState({services: scope.state.services});
-            }
-        });
-
         // delete
         postServiceDelete({id:id}).then(function(response){
             alert('Service deleted.');
+
+            scope.state.services.map(function(data, index){
+                if(+data.id === +id){
+                    scope.state.services.splice(index, 1);
+                    scope.setState({services: scope.state.services});
+                }
+            });
         })
         .catch(function(response){
             if(response.data.error){

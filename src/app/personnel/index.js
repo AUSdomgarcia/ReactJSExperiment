@@ -130,6 +130,8 @@ export class Personnel extends Component {
       let payload = response.data.payload;
       if(payload.length!==0){
         scope.setState({personnels: payload});
+      } else {
+        scope.setState({personnels: []});
       }
     })
     .catch(function(response){
