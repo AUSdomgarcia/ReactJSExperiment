@@ -127,6 +127,9 @@ let postPersonnelsDelete = function(obj){
 let getPersonnelSearch = function(params){
   return axios.get( baseURL + '/rate-cards/personnels/search' + params )
 }
+let getRateCardsServiceByServiceCategoryByServiceCategoryId = function(id){
+  return axios.get( baseURL + '/rate-cards/services/by-service-category?service_category_id=' + id );
+}
 
 
 
@@ -278,5 +281,6 @@ export {
   postRatecardServiceCategoriesSortServiceSubCategories,
 
   postRateCardRateTypesUpdate,
-  getPersonnelSearch
+  getPersonnelSearch,
+  getRateCardsServiceByServiceCategoryByServiceCategoryId
 }

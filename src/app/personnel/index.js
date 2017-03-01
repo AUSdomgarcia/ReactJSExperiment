@@ -4,8 +4,8 @@ import './personnel.scss';
 import xhr from 'jquery';
 
 import {PersonnelInputField} from '../../common/_personnel/personnelInputField';
-import {PersonnelList} from '../../common/_personnel/personnelList';
-import {FilteredList} from '../../common/_personnel/filteredList';
+// import {PersonnelList} from '../../common/_personnel/personnelList';
+// import {Filt eredList} from '../../common/_personnel/filteredList';
 import {getServicePersonnels, postPersonnelsDelete, getPersonnelSearch} from '../../common/http';
 
 import {ActionButton} from '../../common/actionButton/actionButton';

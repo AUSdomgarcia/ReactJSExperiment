@@ -25,7 +25,8 @@ import {
 
     postServiceCategoriesDelete,
 
-    getServiceByServiceIdWithServiceCategoryId
+    getServiceByServiceIdWithServiceCategoryId,
+    getRateCardsServiceByServiceCategoryByServiceCategoryId
 
  } from '../../common/http';
 
@@ -182,7 +183,7 @@ Services.contextTypes = {
 
 
 
-
+import {CategoryController} from '../../common/_services/categoryController';
 
 export class ManageServices extends Component {
 
@@ -191,7 +192,8 @@ export class ManageServices extends Component {
         this.state = {
             services: [],
             service_category_id: "",
-            title: ""
+            title: "",
+            category_level2: []
         };
     }
 
@@ -209,12 +211,27 @@ export class ManageServices extends Component {
             scope.setState({ services: response.data.payload })
         });
 
+        // /rate-cards/services/by-service-category?service_category_id=
+
+        getRateCardsServiceByServiceCategoryByServiceCategoryId(id)
+        .then(function(response){
+            if(response.data.payload.length!==0){
+                scope.setState({ category_level2: response.data.payload });
+                console.log('hello_world', response.data.payload);
+            }
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
+        });
+
         // Hold service_category_id to return here after Add or Edit.
         // window.sessionStorage.setItem('service_category_id', id);
     }
 
     componentDidMount(){
-        //        
+        //
     }
 
     onDelete(evt){
@@ -247,7 +264,8 @@ export class ManageServices extends Component {
 
     render(){
         let scope = this;
-        let servicesTable = <tr><td colSpan={5}>No Data.</td></tr>;
+        let servicesTable = <tr><td colSpan={5}>No Service.</td></tr>;
+        let categoryLevel2List = <li>No category level 2.</li>
 
         if(this.state.services.length!==0){
             servicesTable = 
@@ -267,7 +285,6 @@ export class ManageServices extends Component {
                                 + 1 + '/'
                                 + data.id }>Edit
                             </Link>
-
                             &nbsp;
                             <button 
                                 type="button"
@@ -278,6 +295,19 @@ export class ManageServices extends Component {
                     </tr>
                 )
             });
+
+        } else {
+            servicesTable = 
+            <tr><td colSpan={5}>No Service.</td></tr>;
+        }
+
+        if(this.state.category_level2.length!==0){
+            categoryLevel2List =
+                this.state.category_level2.map(function(data){
+                    return (
+                        <CategoryController key={data.id} data={data}/>
+                    )
+                });
         }
 
         return (
@@ -320,6 +350,9 @@ export class ManageServices extends Component {
                     </tbody>                           
                 </table>
 
+                <ul>
+                   {categoryLevel2List}
+                </ul>
             </div>
         )
     }
@@ -1472,11 +1505,9 @@ export class ServiceAll extends Component {
         } else {
             return;
         }
-        
         // delete
         postServiceDelete({id:id}).then(function(response){
             alert('Service deleted.');
-
             scope.state.services.map(function(data, index){
                 if(+data.id === +id){
                     scope.state.services.splice(index, 1);
