@@ -64,7 +64,7 @@ export class RateCard extends Component {
         window.sessionStorage.clear();
         getRateCardById(id).then(function(response){
             console.log('>>>>', id, response);
-            // origin
+            // original
             window.sessionStorage.setItem('id', id);
             window.sessionStorage.setItem('ratecardname', response.data.payload[0].name);
             window.sessionStorage.setItem('ratecarddesc', response.data.payload[0].description);
@@ -99,7 +99,7 @@ export class RateCard extends Component {
         });
     }
 
-    onView(evt){
+    onViewArchive(evt){
         let id = xhr(evt.target)[0].dataset.storeid;
         let scope = this;
         if(id===undefined || id===null) return;
@@ -107,11 +107,21 @@ export class RateCard extends Component {
         window.sessionStorage.clear();
 
         this.setupEditModeById(id, function(){
-            // let delay = setTimeout(function(){
-                // clearTimeout(delay);
-                window.sessionStorage.setItem('ratecardAction', 'view');
-                scope.context.router.push('/ratecard/save');
-            // }, 16);
+            window.sessionStorage.setItem('ratecardAction', 'view');
+            scope.context.router.push('/ratecard/save');
+        });
+    }
+
+    onViewActivate(evt){
+        let id = xhr(evt.target)[0].dataset.storeid;
+        let scope = this;
+        if(id===undefined || id===null) return;
+        
+        window.sessionStorage.clear();
+
+        this.setupEditModeById(id, function(){
+            window.sessionStorage.setItem('ratecardAction', 'archive_view');
+            scope.context.router.push('/ratecard/save');
         });
     }
 
@@ -145,6 +155,7 @@ export class RateCard extends Component {
             action: action
         }).then(function(response){
             console.log('return', response);
+            alert('Ratecard '+ action +'d successfully');
             scope.segregateRateCard(response.data.payload);
         })
         .catch(function(response){
@@ -175,7 +186,7 @@ export class RateCard extends Component {
                         <td>{data.version}</td>
                         <td>
                             <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onEdit.bind(scope)}>Edit</button>&nbsp;
-                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onView.bind(scope)}>View</button>&nbsp;
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onViewArchive.bind(scope)}>View</button>&nbsp;
                             <button className='btn btn-warning' data-action="archive" data-storeid={data.id} onClick={scope.onArchive.bind(scope)} >Archive</button>
                         </td>
                     </tr>
@@ -192,7 +203,7 @@ export class RateCard extends Component {
                         <td>{data.description}</td>
                         <td>{data.version}</td>
                         <td>
-                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onView.bind(scope)}>View</button>&nbsp;
+                            <button className='btn btn-primary' data-storeid={data.id} onClick={scope.onViewActivate.bind(scope)}>View</button>&nbsp;
                             <button className='btn btn-warning' data-action="activate" data-storeid={data.id} onClick={scope.onArchive.bind(scope)} >Activate</button>
                         </td>
                     </tr>
@@ -924,7 +935,7 @@ export class RateCardSave extends Component {
             console.log('current selected services:', json, id); 
 
             switch(ratecardAction){
-                case 'view': 
+                case 'view': case 'archive_view': 
                 postRateCardPreview({rate_card_id: parseInt(id) })
                 .then(function(response){
                     console.log('ratecard/save/view_only', response, parseInt(id));
@@ -1118,15 +1129,61 @@ export class RateCardSave extends Component {
 
     onBack(){
         let ratecardAction = window.sessionStorage.getItem('ratecardAction');
-        if(ratecardAction==='view'){
+        if(ratecardAction==='view' || ratecardAction==='archive_view'){
             this.context.router.push('/ratecard');
         } else{
             this.context.router.push('/ratecard/permission');
         }
     }
 
+    onActivateRateCard(){
+        let scope = this;
+        let id = window.sessionStorage.getItem('id'); 
+
+        if(confirm('Are you sure you want to activate this Rate Card?')){
+            //
+        } else {
+            return;
+        }
+
+        postRateCardAction({
+            id: id,
+            action: 'activate'
+        }).then(function(response){
+            if(response.data.payload.length!==0){
+                alert('Rate card activated successfully.');
+                scope.context.router.push('/ratecard');
+            }
+        })
+        .catch(function(response){
+            if(response.data.error){
+                alert(response.data.message);
+            }
+        });
+    }
+
     render(){
-        
+        let ratecardAction = window.sessionStorage.getItem('ratecardAction') || null;
+        let rightButton = <button className="btn btn-primary disabled">Back</button>;
+
+        if(ratecardAction!==null){
+            if(ratecardAction ==='archive_view' ){
+                rightButton =
+                 <button 
+                    type="button" 
+                    className="btn btn-warning pull-right" 
+                    onClick={this.onActivateRateCard.bind(this)}>Activate</button>
+            
+            } else {
+                rightButton =
+                <button 
+                    type="button" 
+                    className={"btn btn-primary pull-right " + (this.state.enableSave ? '' : 'disabled')} 
+                    onClick={this.onSave.bind(this)}>{ (this.state.isViewMode ? 'Edit' : 'Save') }
+                </button>
+            }
+        }
+
         return(
             <div>
                 <AsideRateCard path={this.props.location.pathname}/>
@@ -1156,12 +1213,9 @@ export class RateCardSave extends Component {
                             type="button" 
                             className="btn btn-default pull-left" 
                             onClick={this.onBack.bind(this)}>Back
-                            </button>
-                        <button 
-                            type="button" 
-                            className={"btn btn-primary pull-right " + (this.state.enableSave ? '' : 'disabled')} 
-                            onClick={this.onSave.bind(this)}>{ (this.state.isViewMode ? 'Edit' : 'Save') }
                         </button>
+
+                        {rightButton}
                     </div>
                 </div>
 

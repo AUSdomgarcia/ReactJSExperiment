@@ -16,9 +16,6 @@ export class PersonnelInputField extends Component {
     constructor(props){
         super(props);
 
-        // this.BASE_URL = "http://172.16.100.102/api.cerebrum/public";
-        // this.BASE_URL = "http://cerebrum-api.dev:8096/api";
-        
         this.state = {
             rateType: [],
             department: [],
@@ -30,47 +27,49 @@ export class PersonnelInputField extends Component {
             positionValue: 'select',
 
             manHour: 0,
+
+            hasRatetype: true,
+            hasPosition: true,
+            hasDepartment: true,
+            hasManhour: true,
         };
     }
 
-    componentDidMount(){
+    componentWillMount(){
         let scope = this;
 
-        console.log('called me once');
-
-        // xhr.get(this.BASE_URL+'/rate-cards/rate-types', function(data){
-        //     scope.setState({ rateType: data.payload });
-        //     scope.setState({ rateTypeValue: data.payload[0].id });
-        // });
-    
         getServiceRateTypes().then(function(response){
-            scope.setState({ rateType: response.data.payload });
-            scope.setState({ rateTypeValue: response.data.payload[0].id });
-        });
+            if(response.data.payload.length!==0){
+                let ratetypes = response.data.payload;
+                    ratetypes.unshift({id:'12345', _id: '12345', name: 'Select rate type'});
 
-        // xhr.get(this.BASE_URL+'/rate-cards/personnels/departments', function(data){
-        //     scope.setState({ department: data.payload });
-        //     scope.setState({ departmentValue: data.payload[0]._id });
-        // });
+                scope.setState({rateType: ratetypes});
+                scope.setState({rateTypeValue: response.data.payload[0].id});
+            }
+        });
 
         getPersonnelsDepartment().then(function(response){
-            scope.setState({ department: response.data.payload });
-            scope.setState({ departmentValue: response.data.payload[0]._id });
+            if(response.data.payload.length!==0){
+                let departments = response.data.payload;
+                    departments.unshift({id:'12345', _id: '12345', name: 'Select department'});
+
+                scope.setState({ department: departments });
+                scope.setState({ departmentValue: response.data.payload[0]._id });
+            }
         });
 
-        // xhr.get(this.BASE_URL+'/rate-cards/personnels/positions', function(data){
-        //     scope.setState({ position: data.payload });
-        //     scope.setState({ positionValue: data.payload[0]._id });
-        // });
-
         getPersonnelsPositions().then(function(response){
-            scope.setState({ position: response.data.payload });
-            scope.setState({ positionValue: response.data.payload[0]._id });
+            if(response.data.payload.length!==0){
+                let positions = response.data.payload;
+                    positions.unshift({id:'12345', _id: '12345', name: 'Select position'});
+
+                scope.setState({ position: positions });
+                scope.setState({ positionValue: response.data.payload[0]._id });
+            }
         });
     }
 
     componentWillReceiveProps(nextProps){
-        // console.log('called me every props received.', nextProps);
         if(nextProps.isEdit){
             this.setState({ storeId: nextProps.personnelData.id });
             this.setState({ rateTypeValue: nextProps.personnelData.ratetype });
@@ -79,7 +78,6 @@ export class PersonnelInputField extends Component {
             this.setState({ manHour: nextProps.personnelData.manhour });
         }
     }
-
 
     onSetManHourHandler(evt){
         let value = +evt.target.value;
@@ -108,8 +106,38 @@ export class PersonnelInputField extends Component {
         this.setState({ positionValue: evt.target.value });
     }
 
+    resetValues(){
+        this.setState({rateTypeValue: this.state.rateType[0]._id});
+        this.setState({positionValue: this.state.position[0]._id});
+        this.setState({departmentValue: this.state.department[0]._id});
+        this.setState({manHour: 0});
+    }
+
     onActionHandler(evt){
         let scope = this;
+
+        this.setState({hasRatetype: true});
+        this.setState({hasDepartment: true});
+        this.setState({hasPosition: true});
+        this.setState({hasManhour: true});
+        
+        if(this.state.rateTypeValue.includes('12345')){
+            this.setState({hasRatetype: false});
+        } 
+        
+        if(this.state.positionValue.includes('12345')){
+            this.setState({hasPosition: false});
+        }
+        
+        if(this.state.departmentValue.includes('12345')){
+            this.setState({hasDepartment: false});
+        } 
+
+        if(+this.state.manHour <= 0){
+            this.setState({hasManhour: false});
+        }
+
+        console.log('proceed');
 
         switch(this.props.btnName.toLowerCase()){
             case 'add':
@@ -119,7 +147,13 @@ export class PersonnelInputField extends Component {
                     position_id : scope.state.positionValue,
                     manhour_rate : scope.state.manHour
                 }).then(function(response){
-                    scope.props.onAdded(response.data.payload);
+                    if(response.data.error){
+                        alert(response.data.message);
+                    } else {
+                        scope.props.onUpdate(response.data.payload);
+                        alert('Personnel added successfully.');
+                        scope.resetValues();
+                    }
                 })
                 .catch(function(response){
                     if(response.data.error){
@@ -143,7 +177,13 @@ export class PersonnelInputField extends Component {
                     position_id : scope.state.positionValue,
                     manhour_rate : +scope.state.manHour
                 }).then(function(response){
-                    scope.props.onAdded(response.data.payload);
+                    if(response.data.error){
+                        alert(response.data.message);
+                    } else {
+                        alert('Personnel updated.');
+                        scope.props.onUpdate(response.data.payload);
+                        scope.resetValues();
+                    }
                 })
                 .catch(function(response){
                     if(response.data.error){
@@ -159,6 +199,11 @@ export class PersonnelInputField extends Component {
 
     let notification = null;
     let updateOrAddBtn = null;
+
+    let rateTypeAlert = <span></span>;
+    let positionAlert = <span></span>;
+    let departmentAlert = <span></span>;
+    let manHourAlert = <span></span>;
 
     if(this.props.isUpdated){
         notification = 
@@ -179,11 +224,28 @@ export class PersonnelInputField extends Component {
             <button className='btn btn-primary pull-right' onClick={this.onActionHandler.bind(this)}>Update</button>
     }
 
+    if(!this.state.hasRatetype){
+        rateTypeAlert = <small className="text-red">Select a rate type</small>
+    }
+
+    if(!this.state.hasPosition){
+        positionAlert = <small className="text-red">Select a position</small>
+    }
+
+    if(!this.state.hasDepartment){
+        departmentAlert = <small className="text-red">Select a department</small>
+    }
+
+    if(!this.state.hasManhour){
+        manHourAlert = <small className="text-red">Manhour should be greater than 0</small>
+    }
+
     return (
       <div className='row'>
         <div className='col-xs-6'>
                 <div className='form-group'>
                     <label>Rate Type</label>
+                    &nbsp; {rateTypeAlert}
                     <select className="form-control" value={this.state.rateTypeValue} onChange={this.onSelectRateType.bind(this)}>
                         {this.state.rateType.map(function(options){
                             return (<option key={options.id} value={options.id}>{options.name}</option>)
@@ -193,6 +255,7 @@ export class PersonnelInputField extends Component {
                 
                 <div className='form-group'>
                     <label>Position</label>
+                    &nbsp; {positionAlert}
                     <select className="form-control" value={this.state.positionValue} onChange={this.onSelectPosition.bind(this)}>
                         {this.state.position.map(function(options){
                             return (<option key={options._id} value={options._id}>{options.name}</option>)
@@ -202,6 +265,7 @@ export class PersonnelInputField extends Component {
                 
                 <div className='form-group'>
                     <label>Department</label>
+                    &nbsp; {departmentAlert}
                     <select className="form-control" value={this.state.departmentValue} onChange={this.onSelectDepartment.bind(this)}>
                         {this.state.department.map(function(options){
                             return (<option key={options._id} value={options._id}>{options.name}</option>)
@@ -211,6 +275,7 @@ export class PersonnelInputField extends Component {
 
                 <div className='form-group'>
                     <label>Manhour Rate</label>
+                    &nbsp; {manHourAlert}
                     <input type="number" maxLength={"8"} className='form-control' value={this.state.manHour} onChange={this.onSetManHourHandler.bind(this)}/>
                 </div>
                 

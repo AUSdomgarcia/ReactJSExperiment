@@ -75,7 +75,7 @@ ReactDOM.render(
                 <IndexRoute component={Categories} />
             </Route>
 
-            {/* P E R S O N E L */}
+            {/* P E R S O N N E L */}
             <Route path='personnel'>
                 <IndexRoute component={Personnel} />
                 <Route path='/personnel/edit/:id/:ratetype/:department/:position/:manhour' component={Personnel} />
