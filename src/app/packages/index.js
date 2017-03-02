@@ -6,7 +6,10 @@ import {CategoryTreeView} from '../../common/categoryTreeView/categoryTreeView';
 import {PermissionView} from '../../common/permissionView/permissionView';
 
 import {getRateCardPackages, postPackageDelete, getRateCardPackageById} from '../../common/http';
-import xhr from 'jquery';
+
+import jquery from 'jquery';
+
+import toastr from 'toastr';
 
 // Landing Page
 export class Packages extends Component {
@@ -60,7 +63,7 @@ export class Packages extends Component {
     }
 
     onEditAsManage(evt){
-        let id = xhr(evt.target)[0].dataset.id;
+        let id = jquery(evt.target)[0].dataset.id;
         let scope = this;
 
         if(id===null||id===undefined){ return; }
@@ -79,24 +82,41 @@ export class Packages extends Component {
     }
 
     onDeletePackage(evt){
-        let id = xhr(evt.target)[0].dataset.id;
+        let id = jquery(evt.target)[0].dataset.id;
         let scope = this;
 
         if(id===null||id===undefined) return;
-        if(confirm('Are you sure you want to delete this package?')){//
-        } else {return;}
-        
-        this.state.packages.map(function(data, index){
-            if(+data.id === +id){   
-                scope.state.packages.splice(index, 1);
-            }
-        });
 
-        this.setState({packages:this.state.packages});
-        postPackageDelete({id:id}).then(function(response){
-            console.log(response);
-            alert('Selected Package were deleted.')
-        });
+        if(confirm('Are you sure you want to delete this package?')){
+
+            postPackageDelete({id:id}).then(function(response){
+                console.log(response);
+
+                // alert('Selected Package were deleted.')
+
+                scope.state.packages.map(function(data, index){
+                    if(+data.id === +id){   
+                        scope.state.packages.splice(index, 1);
+                    }
+                });
+
+                scope.setState({packages:scope.state.packages},
+                
+                function(){
+                    toastr.success('Package deleted.');
+                });
+
+            })
+            .catch(function(response){  
+                if(response.data.error){
+                    toastr.error(response.data.message);
+                }
+            });
+            
+            //
+        } else {
+            return false;
+        }
     }
 
     onAdd(){
@@ -258,11 +278,25 @@ export class PackageAdd extends Component {
     onNext(){
         let WSname = window.sessionStorage.getItem('packagename') || "";
         let WSdesc = window.sessionStorage.getItem('packagedesc') || "";
-        if(WSname.length===0 || WSdesc.length===0){
-            if(confirm('No description or name.')){return;} else {return;}
-        }else{
-            this.context.router.push('/packages/choose');
+        // if(WSname.length===0 || WSdesc.length===0){
+            // if(confirm('No description or name.')){return;} else {return;}
+            // toastr.error('No description specified.');
+            // return;
+        // }else{
+            
+        // }
+
+        if(WSname.length===0){
+            toastr.error('No name specified.');
+            return;
         }
+
+        if(WSdesc.length===0){
+            toastr.error('No description specified.');
+            return;
+        }
+
+        this.context.router.push('/packages/choose');
     }
 
     render(){
@@ -395,7 +429,10 @@ export class PackageChoose extends Component {
     onNext(){
         let temp = JSON.parse(window.sessionStorage.getItem('addedServices')) || [];
         if(temp.length===0){
-            if(!confirm('No added services')) return false;
+            // if(!confirm('No added services')) return false;
+            toastr.error('No added service(s).');
+            return;
+
         } else {
             this.context.router.push('/packages/rate');
         }
@@ -545,7 +582,8 @@ export class PackageRate extends Component {
 
         let discount = +evt.target.value;
         if(discount > 100 || discount < 1){
-            alert('Should be greater then 1 and not exceed 100');
+            // alert('Should be greater then 1 and not exceed 100');
+            toastr.error('Discount Should be greater than 1 and not exceeds 100');
             discount = 1;
         }
         
@@ -704,7 +742,9 @@ export class PackagePermission extends Component {
     onNext(){
         let temp = JSON.parse(window.sessionStorage.getItem('permittedPackageUser')) || [];
         if(temp.length===0){
-            if(confirm('No selected user')){ return;} else {return; }
+            // if(confirm('No selected user')){ return;} else {return; }
+            toastr.error('No selected user(s).');
+            return;
         }
         this.context.router.push('/packages/save');
     }
@@ -1017,13 +1057,16 @@ export class PackageSave extends Component {
                 service_ids: JSON.stringify(service_ids),
                 permitted_user_ids: this.state.permitted_user_ids
             }).then(function(response){
-                alert('Updated Package Successfully');
+                // alert('Updated Package Successfully');
+                toastr.success('Package updated.');
+
                 console.log('jeffreyWay update', response);
                 scope.context.router.push('/packages');
             })
             .catch(function(response){
                 if(response.data.error){
-                    alert(response.data.message);
+                    // alert(response.data.message);
+                    toastr.error(response.data.message);
                 }
             });
 
@@ -1052,19 +1095,23 @@ export class PackageSave extends Component {
                 let id = response.data.payload;
                 window.sessionStorage.setItem('packageId', id);
                 // scope.previewById(id);
-                alert('Package added successfully');
+                // alert('Package added successfully');
+                toastr.success('Package added successfully.');
+
                 scope.context.router.push('/packages');
             })
             .catch(function(response){
                 if(response.data.error){
-                    alert(response.data.message);
+                    // alert(response.data.message);
+                    toastr.error(response.data.message);
                 }
             });
         }
     }
 
     previewById(id){
-        alert('Added Package Successfully');
+        // alert('Added Package Successfully');
+        toastr.success('Package added successfully.');
 
         let scope = this;
         window.sessionStorage.clear();

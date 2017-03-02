@@ -140,8 +140,8 @@ let getRateCardPersonnelPagination = function(page, limit){
 
 
 {/* Logs */}
-let getLogs = function(id){
-  return axios.get( baseURL + '/rate-cards/services/logs?service_id='+ id );
+let getLogs = function(id, page, limit){
+  return axios.get( baseURL + '/rate-cards/services/logs?service_id='+ id + '&page=' + page + '&limit=' + limit );
 }
 
 

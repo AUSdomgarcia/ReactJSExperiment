@@ -1,9 +1,12 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router';
 
-import xhr from 'jquery';
+import jquery from 'jquery';
+
+import toastr from 'toastr';
 
 import './ratecard.scss';
+
 import { 
     getRateCards,
     getServiceRateTypes,
@@ -86,7 +89,7 @@ export class RateCard extends Component {
     }
 
     onEdit(evt){
-        let id = xhr(evt.target)[0].dataset.storeid;
+        let id = jquery(evt.target)[0].dataset.storeid;
         let scope = this;
         if(id===undefined || id===null) return;
         
@@ -100,7 +103,7 @@ export class RateCard extends Component {
     }
 
     onViewArchive(evt){
-        let id = xhr(evt.target)[0].dataset.storeid;
+        let id = jquery(evt.target)[0].dataset.storeid;
         let scope = this;
         if(id===undefined || id===null) return;
         
@@ -113,7 +116,7 @@ export class RateCard extends Component {
     }
 
     onViewActivate(evt){
-        let id = xhr(evt.target)[0].dataset.storeid;
+        let id = jquery(evt.target)[0].dataset.storeid;
         let scope = this;
         if(id===undefined || id===null) return;
         
@@ -126,8 +129,8 @@ export class RateCard extends Component {
     }
 
     onArchive(evt){
-        let id = xhr(evt.target)[0].dataset.storeid;
-        let action = xhr(evt.target)[0].dataset.action;
+        let id = jquery(evt.target)[0].dataset.storeid;
+        let action = jquery(evt.target)[0].dataset.action;
         let scope = this;
 
         if(id===undefined || id===null) return;
@@ -143,7 +146,7 @@ export class RateCard extends Component {
         }
 
         if(action==='archive'){
-            if(confirm('Are you sure you want to archived this Rate Card?')){
+            if(confirm('Are you sure you want to archive this Rate Card?')){
                 //
             } else {
                 return;
@@ -155,12 +158,16 @@ export class RateCard extends Component {
             action: action
         }).then(function(response){
             console.log('return', response);
-            alert('Ratecard '+ action +'d successfully');
+            // alert('Ratecard '+ action +'d successfully');
+
+            toastr.success('Ratecard '+ action +'d successfully');
+            
             scope.segregateRateCard(response.data.payload);
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
     }
@@ -333,12 +340,23 @@ export class RateCardAdd extends Component {
         let ratecarddesc = window.sessionStorage.getItem('ratecarddesc') || "";
         let ratecardname = window.sessionStorage.getItem('ratecardname')  || "";
 
-        if(ratecardname.length===0 || ratecarddesc.length===0){
-            if(confirm('Kindly input rate card name or rate card decription')){
-                return;
-            }
+        // if(ratecardname.length===0 || ratecarddesc.length===0){
+        //     if(confirm('Kindly input rate card name or rate card decription')){
+        //         return;
+        //     }
+        //     return;
+        // }
+
+        if(ratecardname.length===0){
+            toastr.error('No ratecard name specified.');
             return;
         }
+
+        if(ratecarddesc.length===0){
+            toastr.error('No ratecard description specified.');
+            return;
+        }
+
         this.context.router.push('/ratecard/choose');
     }
 
@@ -486,9 +504,9 @@ export class RateCardChoose extends Component {
 
     onCheckBoxHandler(evt){
 
-        let id = xhr( xhr(evt.target)[0] ).val();
+        let id = jquery( jquery(evt.target)[0] ).val();
 
-        let bool = xhr( xhr(evt.target)[0] ).is(':checked');
+        let bool = jquery( jquery(evt.target)[0] ).is(':checked');
 
         this.updateIncludedServiceArr(id, bool);
         
@@ -557,11 +575,13 @@ export class RateCardChoose extends Component {
         // console.log(selectedRateTypeId, includedServiceArr);
 
         if(checkArr.length===0){
-            if(confirm('No selected Service')){
-                return;
-            } else {
-                return;
-            }
+            // if(confirm('No selected Service')){
+            //     return;
+            // } else {
+            //     return;
+            // }
+            toastr.error('No selected service(s).');
+            return;
         }
 
         this.context.router.push('/ratecard/permission');
@@ -738,11 +758,13 @@ export class RateCardPermission extends Component {
     onNext(){
         let arr = JSON.parse(window.sessionStorage.getItem('permittedUserArr')) || [];
         if(arr.length===0){
-            if(confirm('No selected user')){
-                return;
-            }else{
-                return;
-            }
+            // if(confirm('No selected user')){
+            //     return;
+            // }else{
+            //     return;
+            // }
+            toastr.error('No selected user(s).');
+            return;
         }
         this.context.router.push('/ratecard/save');
     }
@@ -1051,13 +1073,15 @@ export class RateCardSave extends Component {
                 }).then(function(response){
                     console.log(response);
 
-                    alert('Rate Card Updated.');
+                    // alert('Rate Card Updated.');
+                    toastr.success('Rate Card Updated.');
 
                     scope.context.router.push('/ratecard');
                 })
                 .catch(function(response){
                     if(response.data.error){
-                        alert(response.data.message);
+                        // alert(response.data.message);
+                        toastr.error(response.data.message);
                     }
                 });
             });
@@ -1083,13 +1107,15 @@ export class RateCardSave extends Component {
             }).then(function(response){
                 console.log(response);
                 
-                alert('Created new RateCard Successfully.');
+                // alert('Created new RateCard Successfully.');
+                toastr.success('Rate card added successfully.');
 
                 scope.context.router.push('/ratecard');
             })
             .catch(function(response){
                 if(response.data.error){
-                    alert(response.data.message);
+                    // alert(response.data.message);
+                    toastr.error(response.data.message);
                 }
             });
         }
@@ -1151,13 +1177,16 @@ export class RateCardSave extends Component {
             action: 'activate'
         }).then(function(response){
             if(response.data.payload.length!==0){
-                alert('Rate card activated successfully.');
+                // alert('Rate card activated successfully.');
+                toastr.success('Rate card activated successfully.');
+
                 scope.context.router.push('/ratecard');
             }
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
     }
