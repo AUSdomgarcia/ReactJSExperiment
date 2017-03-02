@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
 
-import xhr from 'jquery';
+import jquery from 'jquery';
+
 import {postServiceDelete} from '../../common/http';
+
+import toastr from 'toastr';
 
 import {Link} from 'react-router';
 
@@ -48,7 +51,7 @@ export class CategoryController extends Component {
 
     onDelete(evt){
         let scope = this;
-        let id = xhr(evt.target)[0].dataset.serviceid;
+        let id = jquery(evt.target)[0].dataset.serviceid;
 
         if(id === undefined || id===null) return;
 
@@ -59,17 +62,22 @@ export class CategoryController extends Component {
         }
 
          postServiceDelete({id: id}).then(function(response){
-            alert('Service deleted.');
+            // alert('Service deleted.');
             scope.state.services.map(function(data, idx){
                 if(data.id.toString() === id.toString()){
                     scope.state.services.splice(idx, 1);
                 }
             });
-            scope.setState({ services: scope.state.services });
+            scope.setState({ services: scope.state.services }, 
+            
+            function(){
+                toastr.success('Service deleted.');
+            });
        })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
     }

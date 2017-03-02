@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 
-import xhr from 'jquery';
+import jquery from 'jquery';
+import toastr from 'toastr';
 
 import "./categories.scss";
 
@@ -56,7 +57,7 @@ export class Categories extends Component {
           let result = [];
           
           for (var i = 0; i < items.length; i++) {
-              let id = xhr(items[i])[0].dataset.id;
+              let id = jquery(items[i])[0].dataset.id;
               let order = i;
               result.push({id, order});
           }
@@ -69,18 +70,19 @@ export class Categories extends Component {
   }
   
   onAddLevel1(evt){
-    xhr('.category-input').removeClass('hide');
+    jquery('.category-input').removeClass('hide');
     this.onCancelArrangementLevel1();
   }
 
   onCancelAddLevel1(evt){
-    xhr('.category-input').addClass('hide');
+    jquery('.category-input').addClass('hide');
     this.setState({categoryName: ''});
   }
   
   onSaveAddLevel1(evt){
     if(this.state.categoryName.length===0){
-      alert('No category name specified.');
+      // alert('No category name specified.');
+      toastr.error('No category name specified.');
       return;
     }
 
@@ -92,24 +94,28 @@ export class Categories extends Component {
     .then(function(response){
       if(response.data.payload.length!==0){
 
-        scope.setState({ categoryLevelOne: response.data.payload });
+        scope.setState({ categoryLevelOne: response.data.payload },
+        
+        function(){
+          toastr.success('Category added successfully');
+        });
 
         scope.setState({ response_last_id: response.data.payload[response.data.payload.length-1].id });
 
         scope.onCancelAddLevel1();
 
-        alert('Category added successfully');
-
+        // alert('Category added successfully');
         
       this.setState({ categoryName: ""});
-      xhr('.category-input').addClass('hide');
+      jquery('.category-input').addClass('hide');
 
         // level1Arr.push(category);
       }
     })
     .catch(function(response){
       if(response.data.error){
-        alert(response.data.message);
+        // alert(response.data.message);
+        toastr.error(response.data.message);
       }
     });
   }
@@ -134,7 +140,8 @@ export class Categories extends Component {
     let scope = this;
 
     if(value.length===0){
-      alert('No category name specified.');
+      // alert('No category name specified.');
+      toastr.error('No category name specified.');
       return;
     }
 
@@ -146,17 +153,19 @@ export class Categories extends Component {
 
     postServiceCategoriesUpdate({name: value, id: id}).then(function(response){
       console.log('[Edit] Level one success', response.data);
-      alert('Category name updated.');
+      // alert('Category name updated.');
+      toastr.success('Category name updated.');
     })
     .catch(function(response){
       if(response.data.error){
-        alert(response.data.message);
+        // alert(response.data.message);
+        toastr.error(response.data.message);
       }
     });
   }
   
   onReArrangeLevel1(){
-    xhr('.myHandle.-layer1').show();
+    jquery('.myHandle.-layer1').show();
     this.setState({isRearrage: true});
     this.onCancelAddLevel1();
   }
@@ -164,7 +173,7 @@ export class Categories extends Component {
   onCancelArrangementLevel1(){
     this.setState({isRearrage: false});
     this.setState({enableSave:false});
-    xhr('.myHandle.-layer1').hide();
+    jquery('.myHandle.-layer1').hide();
   }
 
   onSaveArrangementLevel1(){
@@ -182,13 +191,15 @@ export class Categories extends Component {
       categories_sort: this.state.sortedResults
       })
       .then(function(response){
-        alert('Category arrangement updated.');
+        // alert('Category arrangement updated.');
+        toastr.success('Category arrangement updated.');
         //  reset
         scope.onCancelArrangementLevel1();
       })
       .catch(function(response){
         if(response.data.error){
-          alert(response.data.message);
+          // alert(response.data.message);
+          toastr.error(response.data.message);
         }
       });
     }

@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 
 import {AddLevel} from './addlevel';
 
-import xhr from 'jquery';
+import jquery from 'jquery';
+import toastr from 'toastr';
 
 import sortable from 'sortablejs';
 
@@ -46,7 +47,7 @@ export class LevelThree extends Component {
         let scope = this;
         let delay = setTimeout(function(){
             clearTimeout(delay);
-            xhr('.myHandle.-layer3-'+scope.props.layer).hide();
+            jquery('.myHandle.-layer3-'+scope.props.layer).hide();
         }, 1 );
     }
     
@@ -54,7 +55,7 @@ export class LevelThree extends Component {
         let scope = this;
         let delay = setTimeout(function(){
             clearTimeout(delay);
-            xhr('.myHandle.-layer3-'+scope.props.layer).hide();
+            jquery('.myHandle.-layer3-'+scope.props.layer).hide();
         }, 1 );
     }
 
@@ -81,7 +82,7 @@ export class LevelThree extends Component {
                     var result = [];
                     
                     for (var i = 0; i < items.length; i++) {
-                        let id = xhr(items[i])[0].dataset.id;
+                        let id = jquery(items[i])[0].dataset.id;
                         let order = i;
                         result.push({id, order});
                     }
@@ -104,12 +105,13 @@ export class LevelThree extends Component {
 
                 let delay = setTimeout(function(){
                     clearTimeout(delay);
-                    xhr('.myHandle.-layer3-'+scope.props.layer).hide();
+                    jquery('.myHandle.-layer3-'+scope.props.layer).hide();
                 }, 1 );
             })
             .catch(function(response){
                 if(response.data.error){
-                    alert(response.data.message);
+                    // alert(response.data.message);
+                    toastr.error(response.data.message);
                 }
             });
         }
@@ -132,7 +134,8 @@ export class LevelThree extends Component {
         let scope = this;
 
         if(newValue.length===0){
-            alert('No category name specified.');
+            // alert('No category name specified.');
+            toastr.error('No category name specified.');
             return;
         }
 
@@ -148,16 +151,18 @@ export class LevelThree extends Component {
             scope.setState({showAddLevel: false});
             scope.setState({dataTree: response.data.payload});
             
-            alert('Category added successfully');
+            // alert('Category added successfully');
+            toastr.success('Category added successfully');
 
             let delay = setTimeout(function(){
                 clearTimeout(delay);
-                xhr('.myHandle.-layer3-'+scope.props.layer).hide();
+                jquery('.myHandle.-layer3-'+scope.props.layer).hide();
             }, 1 );
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         })
     }
@@ -184,9 +189,20 @@ export class LevelThree extends Component {
             toggle = !toggle;
 
         this.setState({showInputName: toggle});
+
         this.setState({inputCategoryName: this.props.parentData.name });
+
         if(toggle===false && this.state.inputCategoryName.length !== 0){
-            this.props.onUpdate( this.state.inputCategoryName, this.props.parentData.id ); 
+            
+            if(window.sessionStorage.getItem('category_level2_name') === this.state.inputCategoryName ){
+                this.setState({showInputName: false});
+
+            } else {
+                this.props.onUpdate( this.state.inputCategoryName, this.props.parentData.id ); 
+            }
+
+        } else {
+            window.sessionStorage.setItem('category_level2_name', this.props.parentData.name);
         }
     }
 
@@ -202,13 +218,15 @@ export class LevelThree extends Component {
 
         postServiceCategories_subCategories_delete({id: this.props.parentData.id, level: this.props.nextLevel })
         .then(function(response){
-            alert('Category deleted.');
+            // alert('Category deleted.');
+            toastr.success('Category deleted.');
             if(scope.hackSortableInstance!==null) scope.hackSortableInstance.destroy();
             scope.props.onDelete(scope.props.parentData.id);
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
     }
@@ -227,7 +245,8 @@ export class LevelThree extends Component {
        let scope = this;
 
        if(value.length===0){
-            alert('No category name specified.');
+            // alert('No category name specified.');
+            toastr.error('No category name specified.');
             return;
         }
 
@@ -241,11 +260,13 @@ export class LevelThree extends Component {
         // Server Update
         postServiceCategories_subCategories_update({name: value, id: id})
         .then(function(response){
-            alert('Category name updated.');
+            // alert('Category name updated.');
+            toastr.success('Category name updated.');
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
     }
@@ -253,13 +274,13 @@ export class LevelThree extends Component {
     onReArrange(){
         this.setState({isReArrange:true});
         this.onCancelAddLevel();
-        xhr('.myHandle.-layer3-'+this.props.layer).show();
+        jquery('.myHandle.-layer3-'+this.props.layer).show();
     }
     
     onCancelArrangementLevel3(){
         this.setState({isReArrange:false});
         this.setState({enableSave:false});
-        xhr('.myHandle.-layer3-'+this.props.layer).hide();
+        jquery('.myHandle.-layer3-'+this.props.layer).hide();
     }
 
     onSaveArrangementLevel3(){
@@ -277,13 +298,15 @@ export class LevelThree extends Component {
                 categories_sort: this.state.sortedResults 
             })
             .then(function(response){
-                alert('Category arrangement updated.');
+                // alert('Category arrangement updated.');
+                toastr.success('Category arrangement updated.');
                 // reset
                 scope.onCancelArrangementLevel3();
             })
             .catch(function(response){
                 if(response.data.error){
-                    alert(response.data.message);
+                    // alert(response.data.message);
+                    toastr.error(response.data.message);
                 }
             });
         }

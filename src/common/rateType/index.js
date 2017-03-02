@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 import {AddLevel} from '../_categories/addlevel';
 import './ratetype.scss';
 
-import xhr from 'jquery';
+import jquery from 'jquery';
+import toastr from 'toastr';
 
 import {
     getServiceRateTypes, 
@@ -44,20 +45,26 @@ export class RateType extends Component {
         let scope = this;
 
         if(newValue.length===0){
-            alert('No rate type name specified.');
+            // alert('No rate type name specified.');
+            toastr.error('No Rate type specified.');
             return;
         }
         postServiceRateTypesCreate({ name: newValue }).then(function(response){
-            scope.setState({ rateTypeArr: response.data.payload });
+            scope.setState({ rateTypeArr: response.data.payload },
+            
+            function(){
+                toastr.success('Rate type added successfully.');
+            });
             // reset
             scope.setState({ rateTypeName: "" });
             scope.setState({ showAddRateType: false });
 
-            alert('Added Rate Type Successfully');
+            // alert('Added Rate Type Successfully');
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                toastr.error(response.data.message);
+                // alert(response.data.message);
             }
         })
     }
@@ -67,15 +74,16 @@ export class RateType extends Component {
     }
 
     onEdit(evt){
-        let id = xhr(evt.target)[0].dataset.storedid;
-        let text = xhr(evt.target)[0].dataset.text;
+        let id = jquery(evt.target)[0].dataset.storedid;
+        let text = jquery(evt.target)[0].dataset.text;
         
         let scope = this;
 
         if(id===undefined || id===null) return;
 
         if(text.length===0){
-            alert('No rate type name specified.');
+            // alert('No rate type name specified.');
+            toastr.error('No Rate type specified.');
             return;
         }
 
@@ -87,36 +95,49 @@ export class RateType extends Component {
         if(toggle===true) this.setState({ishowInput: toggle});
         
         this.setState({inputCategoryName: text });
-    
-        if(toggle===false && scope.state.inputCategoryName.length !== 0){
         
-        let newInput = this.state.inputCategoryName;
+        if(toggle===false && scope.state.inputCategoryName.length !== 0){
+            if(window.sessionStorage.getItem('rate_type_name') === scope.state.inputCategoryName ){
+                scope.setState({ishowInput: false});
 
-            postRateCardRateTypesUpdate({
-                id: id,
-                name: newInput
-            })
-            .then(function(response){
-                scope.state.rateTypeArr.map(function(data){
-                    if(+data.id===+id){
-                        data.name = newInput;
+            } else {
+                scope.setState({ishowInput: false});
+
+                let newInput = this.state.inputCategoryName;
+                postRateCardRateTypesUpdate({
+                    id: id,
+                    name: newInput
+                })
+                .then(function(response){
+                    scope.state.rateTypeArr.map(function(data){
+                        if(+data.id===+id){
+                            data.name = newInput;
+                        }
+                    });
+
+                    scope.setState({rateTypeArr: scope.state.rateTypeArr }, function(){
+                        scope.setState({ishowInput: false});
+
+                        toastr.success('Rate type name updated.');
+                    });
+                    // alert('Rate type name updated.');
+                })
+                .catch(function(response){
+                    if(response.data.error){
+                        // alert(response.data.message);
+                        toastr.error(response.data.message);
                     }
                 });
-                scope.setState({rateTypeArr: scope.state.rateTypeArr }, function(){
-                    scope.setState({ishowInput: false});
-                });
-                alert('Rate type name updated.');
-            })
-            .catch(function(response){
-                if(response.data.error){
-                    alert(response.data.message);
-                }
-            });
+            }
+
+        // Get initial Input
+        } else {
+            window.sessionStorage.setItem('rate_type_name', text);
         }
     }
 
     onDelete(evt){
-        let id = xhr(evt.target)[0].dataset.storedid;
+        let id = jquery(evt.target)[0].dataset.storedid;
         let scope = this;
 
         console.log(id);
@@ -136,12 +157,15 @@ export class RateType extends Component {
                     scope.state.rateTypeArr.splice(index, 1);
                 }
             });
-            scope.setState({ rateTypeArr: scope.state.rateTypeArr });
-            alert('Rate Type Deleted.');
+            scope.setState({ rateTypeArr: scope.state.rateTypeArr }, function(){
+                toastr.success('Rate type Deleted.');
+            });
+            // alert('Rate Type Deleted.');
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
     }

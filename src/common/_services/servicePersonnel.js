@@ -1,5 +1,8 @@
 import React, {Component} from 'react';
-import xhr from 'jquery';
+
+import jquery from 'jquery';
+
+import toastr from 'toastr';
 
 import { getServicePersonnels } from '../http';
 
@@ -89,11 +92,15 @@ export class ServicePersonnel extends Component {
         let value = +evt.target.value;
 
         if(value < 0){
-            alert('The number you specified is less than 0.');
+            // alert('The number you specified is less than 0.');
+            toastr.error('Manhour should not be less than 0.');
+
             this.setState({manHour: 1});
             return;
         } else if(value === 0){
-            alert('Kindly specify a number greater than 0.');
+            // alert('Kindly specify a number greater than 0.');
+            toastr.error('Kindly specify a number greater than 0.');
+            
             this.setState({manHour: 1});
             return;
         }

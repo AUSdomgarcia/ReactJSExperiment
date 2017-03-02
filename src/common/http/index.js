@@ -130,7 +130,9 @@ let getPersonnelSearch = function(params){
 let getRateCardsServiceByServiceCategoryByServiceCategoryId = function(id){
   return axios.get( baseURL + '/rate-cards/services/by-service-category?service_category_id=' + id );
 }
-
+let getRateCardPersonnelPagination = function(page, limit){
+  return axios.get( baseURL + '/rate-cards/personnels/search?page=' + page + '&limit=' + limit);
+}
 
 
 
@@ -282,5 +284,6 @@ export {
 
   postRateCardRateTypesUpdate,
   getPersonnelSearch,
-  getRateCardsServiceByServiceCategoryByServiceCategoryId
+  getRateCardsServiceByServiceCategoryByServiceCategoryId,
+  getRateCardPersonnelPagination
 }

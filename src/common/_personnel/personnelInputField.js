@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import './personnel.scss';
-
-import xhr from 'jquery';
+import jquery from 'jquery';
+import toastr from 'toastr';
 
 import {
         getPersonnelsDepartment, 
@@ -69,6 +69,10 @@ export class PersonnelInputField extends Component {
         });
     }
 
+    componentDidMount(){
+        // toastr.options.preventDuplicates = true;
+    }
+
     componentWillReceiveProps(nextProps){
         if(nextProps.isEdit){
             this.setState({ storeId: nextProps.personnelData.id });
@@ -83,11 +87,13 @@ export class PersonnelInputField extends Component {
         let value = +evt.target.value;
         
         if(value < 0){
-            alert('The number you specified is less than 0.');
+            // alert('The number you specified is less than 0.');
+            toastr.error('The number you specified is less than 0.');
             this.setState({manHour: 1});
             return;
         } else if(value === 0){
-            alert('Kindly specify a number greater than 0.');
+            // alert('Kindly specify a number greater than 0.');
+            toastr.error('Kindly specify a number greater than 0.');
             this.setState({manHour: 1});
             return;
         }
@@ -148,16 +154,20 @@ export class PersonnelInputField extends Component {
                     manhour_rate : scope.state.manHour
                 }).then(function(response){
                     if(response.data.error){
-                        alert(response.data.message);
+                        // alert(response.data.message);
+                        toastr.error(response.data.message);
+
                     } else {
                         scope.props.onUpdate(response.data.payload);
-                        alert('Personnel added successfully.');
+                        // alert('Personnel added successfully.');
+                        toastr.success('Personnel added successfully.');
                         scope.resetValues();
                     }
                 })
                 .catch(function(response){
                     if(response.data.error){
-                        alert(response.data.message);
+                        // alert(response.data.message);
+                        toastr.error(response.data.message);
                     }
                 });
             break;
@@ -178,16 +188,20 @@ export class PersonnelInputField extends Component {
                     manhour_rate : +scope.state.manHour
                 }).then(function(response){
                     if(response.data.error){
-                        alert(response.data.message);
+                        // alert(response.data.message);
+                        toastr.error(response.data.message);
+
                     } else {
-                        alert('Personnel updated.');
+                        // alert('Personnel updated.');
+                        toastr.success('Personnel updated.');
                         scope.props.onUpdate(response.data.payload);
                         scope.resetValues();
                     }
                 })
                 .catch(function(response){
                     if(response.data.error){
-                        alert(response.data.message);
+                        // alert(response.data.message);
+                        toastr.error(response.data.message);
                     }
                 });
 

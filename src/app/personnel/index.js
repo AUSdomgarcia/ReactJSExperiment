@@ -1,14 +1,22 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router';
 import './personnel.scss';
-import xhr from 'jquery';
 
 import {PersonnelInputField} from '../../common/_personnel/personnelInputField';
 // import {PersonnelList} from '../../common/_personnel/personnelList';
 // import {Filt eredList} from '../../common/_personnel/filteredList';
-import {getServicePersonnels, postPersonnelsDelete, getPersonnelSearch} from '../../common/http';
+import {getServicePersonnels, 
+        postPersonnelsDelete, 
+        getPersonnelSearch, 
+        getRateCardPersonnelPagination} from '../../common/http';
 
 import {ActionButton} from '../../common/actionButton/actionButton';
+
+import Pagination from 'react-js-pagination';
+
+import jquery from 'jquery';
+
+import toastr from 'toastr';
 
 export class Personnel extends Component {
 
@@ -23,20 +31,80 @@ export class Personnel extends Component {
         search_position: "",
         search_department: "",
         search_manhour_rate: "",
+
+        itemsCountPerPage: 10,
+        totalItemsCount: 0,
+        pageRangeDisplayed: 0,
+        activePage: 1,
       }
   }
 
   componentWillMount(){
     let scope = this;
     
-    getServicePersonnels().then(function(response){
-      if(response.data.payload.length!==0){
+    // getServicePersonnels().then(function(response){
+    //   if(response.data.payload.length!==0){
         
-        console.log(response.data.payload);
+    //     console.log( response.data.payload.length / scope.state.itemsCountPerPage );
 
+    //     scope.setState({ personnels: response.data.payload });
+
+    //     console.log( response.data );
+
+    //     return;
+
+    //     let pagination = response.data.pagination;
+
+    //     scope.setState({ totalItemsCount: pagination.total_records });
+    //     scope.setState({ activePage: pagination.current_page });
+    //     scope.setState({ itemsCountPerPage: pagination.limit });
+
+    //   }
+    // });
+
+    this.mypagination(this.state.activePage, this.state.itemsCountPerPage);
+
+  }
+
+  mypagination(page, limit){
+    let scope = this;
+
+    getRateCardPersonnelPagination(page, limit)
+    .then(function(response){
+      if(response.data.payload.length!==0){
+        console.log('pagination:', response);
+
+        let pagination = response.data.pagination;
+        // data
         scope.setState({ personnels: response.data.payload });
+
+        scope.setState({ activePage: pagination.current_page });
+        scope.setState({ totalItemsCount: pagination.total_records });
+        scope.setState({ itemsCountPerPage: pagination.limit });
+        // scope.setState({ pageRangeDisplayed: pagination.total_pages });
+        scope.setState({ pageRangeDisplayed: pagination.total_records });
+      }
+    })
+    .catch(function(response){
+      if(response.data.error){
+        alert(response.data.message);
       }
     });
+  }
+
+  componentDidMount(){
+    // toastr.options.closeButton = true;
+    // toastr.options.closeMethod = 'fadeOut';
+    // toastr.options.closeDuration = 300;
+    // toastr.options.closeEasing = 'swing';
+    // toastr.options.newestOnTop = true;
+    // toastr.options.preventDuplicates = true;
+    // toastr.options.extendedTimeOut = 60;
+    // toastr.options.progressBar = true;
+    // toastr.options.rtl = true; 
+    // console.log(toastr);
+
+    // toastr.options.preventDuplicates = true;
   }
 
   componentWillReceiveProps(nextProps){} 
@@ -45,26 +113,18 @@ export class Personnel extends Component {
     console.log('add', newValue);
     this.setState({personnels: newValue});
     this.setState({isUpdated:false});
+
+    this.mypagination(this.state.activePage, this.state.itemsCountPerPage);
   }
 
   callbackPersonnelUpdate(newValue){
     this.setState({personnels: newValue});
     this.setState({isUpdated:true});
     this.context.router.push('/personnel');
+    
+    // this.mypagination(this.state.activePage, this.state.itemsCountPerPage);
   }
   
-  callbackDeletePersonnel(id){
-    let scope = this;
-     this.state.personnels.map(function(data, index){
-        if(data.id === +id){
-          scope.state.personnels.splice(index, 1);
-          scope.setState({ personnels: scope.state.personnels });   
-        }
-    });
-    alert('Deleted Personnel');
-    this.redirectPersonnel();
-  }
-
   redirectPersonnel(){
     if(this.state.personnels.length===0){
       this.context.router.push('/personnel');
@@ -79,7 +139,7 @@ export class Personnel extends Component {
   onDeletePersonnel(id){
       let scope = this;
 
-      if(confirm('Are you sure you want to delete?')){
+      if(confirm('Are you sure you want to delete this personnel?')){
             //
         } else {
             return;
@@ -95,7 +155,8 @@ export class Personnel extends Component {
 
               if(index === arr.length-1){
                 scope.setState({personnels: _personnels}, function(){
-                  alert('Personnel deleted.')
+                  // alert('Personnel deleted.')
+                  toastr.success('Personnel deleted.'); //, 'Cerebrum Notification');
                 })
               }
             });
@@ -103,9 +164,10 @@ export class Personnel extends Component {
           })
           .catch(function(response){
               if(response.data.error){
-                  alert(response.data.message);
+                  // alert(response.data.message);
+                  toastr.warning(response.data.message);
               }
-          }) 
+          });
   }
 
   onSearch(evt){
@@ -160,9 +222,29 @@ export class Personnel extends Component {
     let word = evt.target.value;
     this.setState({search_ratetype: word});
   }
+  
+  callbackPageChange(pageNumber){
+    console.log(`active page is ${pageNumber}`);
+    let scope = this;
+
+    this.setState({activePage: pageNumber}, function(){
+      scope.mypagination(scope.state.activePage, scope.state.itemsCountPerPage);
+    });
+  }
+
+  onPaginationLimit(evt){
+    let scope = this;
+    let value = +evt.target.value
+    this.setState({activePage: 1}, function(){
+      scope.setState({itemsCountPerPage: value}, function(){
+        scope.mypagination(scope.state.activePage, scope.state.itemsCountPerPage);
+      });
+    });
+  }
 
   render() {
     let personnelComponent = null;
+    let paginationComponent = null;
     let personnelTable = <tr><td colSpan={5}>No data.</td></tr>
     let scope = this;
 
@@ -217,6 +299,48 @@ export class Personnel extends Component {
           </tr>
         )
       });
+
+      paginationComponent =
+        <div>
+          <div className="col-xs-6">
+            <Pagination
+              activePage={ this.state.activePage }
+              itemsCountPerPage={ this.state.itemsCountPerPage }
+              totalItemsCount={ this.state.totalItemsCount }
+              pageRangeDisplayed={ this.state.pageRangeDisplayed }
+              onChange={this.callbackPageChange.bind(this)}
+            />
+          </div>
+          
+          <div className="col-xs-6">
+            <div className="row">
+              
+              <div className="col-xs-6">
+                <label>Page display limit:</label>
+              </div>
+              
+              <div className="col-xs-6">
+                <select className="form-control" value={this.state.itemsCountPerPage} onChange={this.onPaginationLimit.bind(this)}>
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                  <option value={40}>40</option>
+                  <option value={50}>50</option>
+                  <option value={60}>60</option>
+                  <option value={70}>70</option>
+                  <option value={80}>80</option>
+                  <option value={90}>90</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            
+            <br className="clearfix" />
+            </div>
+          </div>
+        
+        <br className="clearfix" />     
+        </div>
     }
 
     return (
@@ -305,6 +429,8 @@ export class Personnel extends Component {
             </tbody>
           </table>
 
+          {paginationComponent}
+
           <br className="clearfix"/>
         </div>
 
@@ -316,25 +442,3 @@ export class Personnel extends Component {
 Personnel.contextTypes = {
   router: React.PropTypes.object.isRequired
 };
-
-
-/*<PersonnelList
-  parentData={this.state.personnels_copy} 
-  onDelete={this.callbackDeletePersonnel.bind(this)}/>
-*/
-
-/*<FilteredList 
-    data={this.state.personnels}
-    onFilter={this.callbackFiltered.bind(this)}
-  />
-
-  <span className="input-group-btn">
-    <button className="btn btn-default" type="button">Go!</button>
-  </span>
-*/
-
-/*
-  callbackFiltered(filters){
-    this.setState({ personnels_copy: filters });
-  }
- */

@@ -8,7 +8,9 @@ import {InputHelper} from '../../common/helpers/inputhelpers';
 import {ServicePersonnel} from '../../common/_services/servicePersonnel';
 import { Logs } from '../../common/_services/logs';
 
-import xhr from 'jquery';
+import jquery from 'jquery';
+
+import toastr from 'toastr';
 
 import {
     getServices,
@@ -55,7 +57,7 @@ export class Services extends Component {
     }
 
     onDelete(evt){
-        let id = xhr(evt.target)[0].dataset.storeid;
+        let id = jquery(evt.target)[0].dataset.storeid;
         let scope = this;
 
         if(id===undefined || id===null) return;
@@ -70,17 +72,14 @@ export class Services extends Component {
 
         postServiceCategoriesDelete({id: id})
         .then(function(response){
-            
             console.log('deleted', response);
 
-            alert('Category deleted.');
-            
-            if(response.data.hasOwnProperty('payload')===false) return;
-
+            // alert('Category deleted.');
             if(response.data.payload.length!==0){
             
-                scope.setState({ categoriesArr: response.data.payload });    
-            
+                scope.setState({ categoriesArr: response.data.payload }, function(){
+                    toastr.success('Category deleted.');
+                });    
             }
 
             scope.state.categoriesArr.map(function(data, idx){
@@ -94,13 +93,14 @@ export class Services extends Component {
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
     }
 
     render(){
-        let categories = null;
+        let categories = <tr><td colSpan={4}>No data.</td></tr>;
         let scope = this;
 
         if(this.state.categoriesArr !== null){
@@ -222,7 +222,8 @@ export class ManageServices extends Component {
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
 
@@ -236,7 +237,7 @@ export class ManageServices extends Component {
 
     onDelete(evt){
         let scope = this;
-        let id = xhr(evt.target)[0].dataset.serviceid;
+        let id = jquery(evt.target)[0].dataset.serviceid;
 
         if(id === undefined || id===null) return;
 
@@ -247,17 +248,20 @@ export class ManageServices extends Component {
         }
 
          postServiceDelete({id: id}).then(function(response){
-            alert('Service deleted.');
+            // alert('Service deleted.');
             scope.state.services.map(function(data, idx){
                 if(data.id.toString() === id.toString()){
                     scope.state.services.splice(idx, 1);
                 }
             });
-            scope.setState({ services: scope.state.services });
+            scope.setState({ services: scope.state.services }, function(){
+                toastr.success('Service deleted.');
+            });
        })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
     }
@@ -860,14 +864,21 @@ export class ServiceAdd extends Component {
 
     onSaveService(){
         // Will create new Service
-        if(this.state.serviceName.length===0 || this.state.description.length===0 || this.state.servicePersonnelArr.length ===0){
-            if(confirm('No Service Name or Description or Selected Personnel')){
-                return;
-            } else {
-                return;
-            }
+        if(this.state.serviceName.length===0){
+            toastr.error('No service name specified.');
+            return;
         }
 
+        if(this.state.description.length===0){
+            toastr.error('No description specified.');
+            return;
+        }
+
+        if(this.state.servicePersonnelArr.length===0){
+            toastr.error('No selected personnel(s).');
+            return;
+        }
+        
         let scope = this;
         let personnelFormat = [];
 
@@ -909,7 +920,8 @@ export class ServiceAdd extends Component {
                 created_at: this.state.createdAt,
             }).then(function(response){
                 console.log('onCreate', response);
-                alert('Created service successfully.');
+                // alert('Created service successfully.');
+                toastr.success('Created service successfully.');
 
                 let id = scope.state.serviceCategoryIdReference;
 
@@ -919,8 +931,10 @@ export class ServiceAdd extends Component {
                 scope.context.router.push('/services/manage/' + id + '/' + name);
             })
             .catch(function(response){
-                if(response.data.error)
-                alert(JSON.stringify(response.data.message))
+                if(response.data.error){
+                    toastr.error(response.data.message);
+                }
+                // alert(JSON.stringify(response.data.message));
             })
         }
 
@@ -944,15 +958,18 @@ export class ServiceAdd extends Component {
                 created_at: this.state.createdAt,
             }).then(function(response){
                 // scope.context.router.push('/services');
-                alert('Save successfully!');
+                // alert('Save successfully!');
+                toastr.success('Service updated successfully.');
 
                 let id = scope.state.serviceCategoryIdReference;
                 let name = scope.state.titleReference;
                 scope.context.router.push('/services/manage/' + id + '/' + name);
             })
             .catch(function(response){
-                if(response.data.error)
-                alert(JSON.stringify(response.data.message))
+                if(response.data.error){
+                    toastr.error(response.data.message);
+                }
+                // alert(JSON.stringify(response.data.message))
             })
         }
     }
@@ -1454,7 +1471,7 @@ export class ServiceAll extends Component {
     }
 
     onEdit(evt){
-        let id = xhr(evt.target)[0].dataset.storeid;
+        let id = jquery(evt.target)[0].dataset.storeid;
         let scope = this;
 
         if(id===undefined || id===null ) return;
@@ -1502,7 +1519,7 @@ export class ServiceAll extends Component {
     }
 
     onDelete(evt){
-        let id = xhr(evt.target)[0].dataset.storeid;
+        let id = jquery(evt.target)[0].dataset.storeid;
         let scope = this;
 
         console.log('delete', id );
@@ -1516,17 +1533,23 @@ export class ServiceAll extends Component {
         }
         // delete
         postServiceDelete({id:id}).then(function(response){
-            alert('Service deleted.');
+            // alert('Service deleted.');
+
             scope.state.services.map(function(data, index){
                 if(+data.id === +id){
                     scope.state.services.splice(index, 1);
-                    scope.setState({services: scope.state.services});
+                    scope.setState({services: scope.state.services}, 
+                    
+                    function(){
+                        toastr.success('Service deleted.');
+                    });
                 }
             });
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         });
     }

@@ -3,7 +3,8 @@ import React, {Component} from 'react';
 import {LevelThree} from './levelthree';
 import {AddLevel} from './addlevel';
 
-import xhr from 'jquery';
+import jquery from 'jquery';
+import toastr from 'toastr';
 
 import sortable from 'sortablejs';
 
@@ -60,7 +61,7 @@ export class LevelTwo extends Component {
                 var result = [];
                 
                 for (var i = 0; i < items.length; i++) {
-                    let id = xhr(items[i])[0].dataset.id;
+                    let id = jquery(items[i])[0].dataset.id;
                     let order = i;
                     result.push({id, order});
                 }
@@ -98,7 +99,7 @@ export class LevelTwo extends Component {
 
             let delay = setTimeout(function(){
                 clearTimeout(delay);
-                xhr('.myHandle.-layer2-'+scope.props.layer).hide();
+                jquery('.myHandle.-layer2-'+scope.props.layer).hide();
             }, 1 );
         });
     }
@@ -110,7 +111,7 @@ export class LevelTwo extends Component {
 
         let delay = setTimeout(function(){
             clearTimeout(delay);
-            xhr('.myHandle.-layer2-'+scope.props.layer).hide();
+            jquery('.myHandle.-layer2-'+scope.props.layer).hide();
         }, 1 );
     }
 
@@ -125,13 +126,15 @@ export class LevelTwo extends Component {
         }
         
         postServiceCategoriesDelete({id: this.state.myCurrentId}).then(function(response){
-            alert('Category deleted.');
+            // alert('Category deleted.');
+            toastr.success('Category deleted.');
             scope.hackSortableInstance.destroy();
             scope.props.onDelete(scope.state.myCurrentId);
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         })
     }
@@ -155,7 +158,8 @@ export class LevelTwo extends Component {
         let scope = this;
 
         if(newValue.length===0){
-            alert('No category name specified.');
+            // alert('No category name specified.');
+            toastr.error('No category name specified.');
             return;
         }
 
@@ -171,16 +175,18 @@ export class LevelTwo extends Component {
             
             scope.onCancelAddLevel2();
 
-            alert('Category added successfully');
+            // alert('Category added successfully');
+            toastr.success('Category added successfully.');
 
             let delay = setTimeout(function(){
                 clearTimeout(delay);
-                xhr('.myHandle.-layer2-'+scope.props.layer).hide();
+                jquery('.myHandle.-layer2-'+scope.props.layer).hide();
             }, 1 );
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         })
     }
@@ -195,7 +201,15 @@ export class LevelTwo extends Component {
         this.setState({inputCategoryName: this.props.parentData.name });
 
         if(toggle===false && scope.state.inputCategoryName.length !== 0){
-            scope.props.onUpdate( scope.state.inputCategoryName, scope.state.myCurrentId ); 
+            if(window.sessionStorage.getItem('category_level1_name') === scope.state.inputCategoryName ){
+                scope.setState({showInputName: false});
+
+            } else {
+                scope.props.onUpdate( scope.state.inputCategoryName, scope.state.myCurrentId ); 
+            }
+        
+        } else {
+            window.sessionStorage.setItem('category_level1_name', this.props.parentData.name);
         }
     }
 
@@ -225,7 +239,8 @@ export class LevelTwo extends Component {
        let scope = this;
 
         if(value.length===0){
-            alert('No category name specified.');
+            // alert('No category name specified.');
+            toastr.error('No category name specified.');
             return;
         }
 
@@ -238,11 +253,13 @@ export class LevelTwo extends Component {
         postServiceCategories_subCategories_update({name: value, id: id})
         .then(function(response){
             console.log('[Edit] Level two success', response.data);
-            alert('Category name updated.');
+            // alert('Category name updated.');
+            toastr.success('Category name updated.');
         })
         .catch(function(response){
             if(response.data.error){
-                alert(response.data.message);
+                // alert(response.data.message);
+                toastr.error(response.data.message);
             }
         })
     }
@@ -250,13 +267,13 @@ export class LevelTwo extends Component {
     onReArrangeLevel2(){
         this.setState({isReArrange:true});
         this.onCancelAddLevel2();
-        xhr('.myHandle.-layer2-'+this.props.layer).show();
+        jquery('.myHandle.-layer2-'+this.props.layer).show();
     }
 
     onCancelArrangementLevel2(){
         this.setState({enableSave:false});
         this.setState({isReArrange:false});
-        xhr('.myHandle.-layer2-'+this.props.layer).hide();
+        jquery('.myHandle.-layer2-'+this.props.layer).hide();
     }
 
     onSaveArrangementLevel2(){
@@ -275,12 +292,14 @@ export class LevelTwo extends Component {
             })
             .then(function(response){
                 // reset
-                alert('Category arrangement updated.');
+                // alert('Category arrangement updated.');
+                toastr.success('Category arrangement updated.');
                 scope.onCancelArrangementLevel2();
             })
             .catch(function(response){
                 if(response.data.error){
-                    alert(response.data.message);
+                    // alert(response.data.message);
+                    toastr.error(response.data.message);
                 }
             })
         }
