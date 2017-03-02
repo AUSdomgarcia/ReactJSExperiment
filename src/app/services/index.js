@@ -823,11 +823,13 @@ export class ServiceAdd extends Component {
         this.calculateSubtotal();
 
         if(hasCopy===true){
-            if(confirm('Cannot add with the same position.')){
-                return;
-            } else {
-                return;
-            }
+            // if(confirm('Cannot add with the same position.')){
+            //     return;
+            // } else {
+            //     return;
+            // }
+            toastr.error('Cannot add personnel with the same position.');            
+            return;
         }
     }
 

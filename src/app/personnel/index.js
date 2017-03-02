@@ -36,6 +36,7 @@ export class Personnel extends Component {
         totalItemsCount: 0,
         pageRangeDisplayed: 0,
         activePage: 1,
+        globalSearchWord: ""
       }
   }
 
@@ -242,6 +243,15 @@ export class Personnel extends Component {
     });
   }
 
+  onGlobalSearchInput(evt){
+    let word = evt.target.value;
+    this.setState({globalSearchWord: word});
+  }
+
+  onGlobalSearch(evt){
+    alert('Nothing will happen for now.')
+  }
+
   render() {
     let personnelComponent = null;
     let paginationComponent = null;
@@ -397,17 +407,36 @@ export class Personnel extends Component {
                   <button 
                     type="button" 
                     className="btn btn-primary"
-                    onClick={this.onSearch.bind(this)}>Search</button>
+                    onClick={this.onSearch.bind(this)}>Submit</button>
                 </div>
               </div>
 
             <br className="clearfix" />
             </div>  
 
-            <button 
+            <div className="col-xs-6">
+              <button 
                 type="button" 
                 className={"btn " + (this.state.hasFilter ? 'btn-primary' : 'btn-primary') }
                 onClick={this.onShowFilter.bind(this)}>{(this.state.hasFilter ? 'Hide Filter' : 'Show Filter')}</button>
+            </div>
+
+            <div className="col-xs-6">
+              <div className="row">
+                  <div className="col-xs-6">
+                    <input type="text" className="form-control" value={this.state.globalSearchWord} onChange={this.onGlobalSearchInput.bind(this)}/>&nbsp;
+                  </div>
+
+                  <div className="col-xs-6 text-left">
+                    <button type="button" className="btn btn-default" onClick={this.onGlobalSearch.bind(this)}>Keyword Search</button>
+                  </div>
+              </div>
+              
+              <br className="clearfix" />
+
+            </div>
+            
+            <br className="clearfix" />
           </div>
           
           <br className="clearfix" />
