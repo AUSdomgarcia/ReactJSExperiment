@@ -15,7 +15,7 @@ let getServices = function() {
   return axios.get( baseURL + '/rate-cards/service-categories/services');
 }
 let getServiceByCategoryId = function(id){
-  return axios.get( baseURL + '/rate-cards/services?service_category_id=' + id);
+  return axios.get( baseURL + '/rate-cards/services?service_category_id=' + id +'&level1=1');
 }
 let getServiceCreateDetails = function(){
   return axios.get( baseURL + '/rate-cards/services/create-details');
