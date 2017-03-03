@@ -22,8 +22,14 @@ export class CategoryController extends Component {
 
     componentWillMount(){
         // Level 2
+        let scope = this;
+        
         if(this.state.services !== this.props.data.services){
-            this.setState({ services: this.props.data.services });
+            this.setState({ services: this.props.data.services },
+            
+            function(){
+                console.log(scope.state.services);
+            });
         }
 
         // Level 3
@@ -68,6 +74,7 @@ export class CategoryController extends Component {
                     scope.state.services.splice(idx, 1);
                 }
             });
+
             scope.setState({ services: scope.state.services }, 
             
             function(){

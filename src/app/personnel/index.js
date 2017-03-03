@@ -166,7 +166,7 @@ export class Personnel extends Component {
           .catch(function(response){
               if(response.data.error){
                   // alert(response.data.message);
-                  toastr.warning(response.data.message);
+                  toastr.error(response.data.message);
               }
           });
   }

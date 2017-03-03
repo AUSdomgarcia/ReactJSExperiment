@@ -43,6 +43,8 @@ export class Services extends Component {
     }
 
     componentWillMount(){
+        window.sessionStorage.clear();
+        
         let scope = this;
         getServices().then(function(response){
             if(response.data.hasOwnProperty('payload')===false) return;
@@ -328,7 +330,7 @@ export class ManageServices extends Component {
                 <div className="header">
                     <div className="col-xs-6 text-left">
                         <div className="row">
-                            <Link to="/services">Return to Full List 1</Link>
+                            <Link to="/services">Return to Full List</Link>
                         </div>
                     </div>
 
@@ -539,8 +541,18 @@ export class ServiceAdd extends Component {
                     });
 
                     // #4 Subtotal
-                    let subtotal = resZero.subtotal;
-                    scope.setState({subtotal: +subtotal});
+                    // let subtotal = resZero.subtotal;
+                    // scope.setState({subtotal: +subtotal});
+
+                    let subtotal = 0;
+                    resZero.personnel_users.map(function(data, idx, arr){
+                        subtotal += (+data.manhour_rate * +data.manhours);
+                        
+                        if(idx === arr.length-1){
+                            scope.setState({subtotal: +subtotal});
+                        }
+                    });
+
 
                     // #5 Status
                     let status = resZero.is_active;
@@ -548,7 +560,7 @@ export class ServiceAdd extends Component {
                     
                     // #6 Personnel User
                     let personnel_users = resZero.personnel_users;
-                    scope.setState({servicePersonnelArr: personnel_users});
+                    scope.setState({servicePersonnelArr: personnel_users}); //       <------------ Focus here
 
                     console.log('service_category_id',resZero.service_category_id);
                     console.log('service_sub_category_id',resZero.service_sub_category_id);
@@ -632,16 +644,18 @@ export class ServiceAdd extends Component {
                         if(service_category_id !==null && 
                             service_category_id !== 'undefined' && 
                             service_category_id !== undefined){
-                                scope.setState({ level1ValueId: service_category_id });
-                                scope.setState({ isAddedServiceInsideCategory: true});
-                                scope.setState({serviceCategoryIdReference: service_category_id });
-                                scope.checkSubCategoyById(service_category_id); console.log('edit|add-inside', service_category_id);
+                            scope.setState({ level1ValueId: service_category_id });
+                            scope.setState({ isAddedServiceInsideCategory: true});
+                            scope.setState({serviceCategoryIdReference: service_category_id });
+                            // trigger 
+                            scope.checkSubCategoyById(service_category_id); console.log('edit|add-inside', service_category_id);
                                 
                         } else {
                             scope.setState({ level1ValueId: resZero.id });
                             scope.setState({ isAddedServiceInsideCategory: false});
                             scope.setState({serviceCategoryIdReference: resZero.id });
                             scope.setState({service_category_temp_name: resZero.name});
+                            // trigger
                             scope.checkSubCategoyById(resZero.id); console.log('add-outside', resZero.id);
                         }
 
@@ -674,7 +688,7 @@ export class ServiceAdd extends Component {
                 scope.setState({level2Arr: response.data.payload}, function(){
                     scope.setState({level2ValueId: scope.state.level2Arr[0].id });
                     scope.setState({service_sub_category_id: scope.state.level2Arr[0].service_sub_category_id });
-                    scope.checkSubInnerCategoryById(resZero.id);
+                    // scope.checkSubInnerCategoryById(resZero.id);
                 });
             } else {
                 scope.setState({level2Arr: []});
@@ -699,8 +713,8 @@ export class ServiceAdd extends Component {
                 scope.setState({level3Arr: response.data.payload},function(){
                     scope.setState({level3ValueId: scope.state.level3Arr[0].id });
                     scope.setState({sub_service_sub_category_id: scope.state.level3Arr[0].sub_service_sub_category_id });
+                    // nothing more..
                 });
-                // nothing more..
             } else {
                 scope.setState({level3Arr: []});
                 scope.setState({sub_service_sub_category_id: null});
@@ -820,8 +834,6 @@ export class ServiceAdd extends Component {
             console.log('ADDED PERSON!!!!:', scope.state.servicePersonnelArr);
         }
 
-        this.calculateSubtotal();
-
         if(hasCopy===true){
             // if(confirm('Cannot add with the same position.')){
             //     return;
@@ -831,18 +843,23 @@ export class ServiceAdd extends Component {
             toastr.error('Cannot add personnel with the same position.');            
             return;
         }
+
+        this.calculateSubtotal();
     }
 
     calculateSubtotal(){
         let subtotal = 0;
+        
         this.state.servicePersonnelArr.map(function(data){
-            subtotal += data.subtotal || 0;
+            // subtotal += +data.subtotal || 0;
+            subtotal += (+data.manhour_rate * +data.manhours) || 0;
         });
 
         console.log('hest', subtotal);
 
         this.setState({ subtotal: subtotal });
-        console.log('Personnel_', this.state.servicePersonnelArr);
+
+        console.log('onCalculateSubtotal -> Personnel_', this.state.servicePersonnelArr);
     }
 
     calbackDelete(id){
@@ -930,7 +947,18 @@ export class ServiceAdd extends Component {
                 console.log('sdada>>', scope.state.service_category_temp_name, scope.state.titleReference);
 
                 let name = (scope.state.titleReference===undefined ? scope.state.service_category_temp_name : scope.state.titleReference);
-                scope.context.router.push('/services/manage/' + id + '/' + name);
+                
+                // switch redirect..
+                let toServiceAll = window.sessionStorage.getItem('service_redirect_all') || null;
+
+                console.log('create', toServiceAll);
+                
+                if(toServiceAll!==null){
+                    scope.context.router.push('/services/all');
+                } else {
+                    scope.context.router.push('/services/manage/' + id + '/' + name);
+                }
+                
             })
             .catch(function(response){
                 if(response.data.error){
@@ -965,7 +993,17 @@ export class ServiceAdd extends Component {
 
                 let id = scope.state.serviceCategoryIdReference;
                 let name = scope.state.titleReference;
-                scope.context.router.push('/services/manage/' + id + '/' + name);
+
+                // switch redirect..
+                let toServiceAll = window.sessionStorage.getItem('service_redirect_all') || null;
+
+                console.log('update', toServiceAll);
+
+                if(toServiceAll!==null){
+                    scope.context.router.push('/services/all');
+                } else {
+                    scope.context.router.push('/services/manage/' + id + '/' + name);
+                }
             })
             .catch(function(response){
                 if(response.data.error){
@@ -1466,6 +1504,7 @@ export class ServiceAll extends Component {
     addSevice(){
         window.sessionStorage.clear();
         this.context.router.push('/services/new/0');
+        window.sessionStorage.setItem('service_redirect_all', '1');
     }
 
     extractAll(){
@@ -1515,6 +1554,7 @@ export class ServiceAll extends Component {
                     // Personnel users
                     // window.sessionStorage.setItem('personnel_users', JSON.stringify(res.personnel_users));
 
+                    window.sessionStorage.setItem('service_redirect_all', '1');
                 }
             }
         });

@@ -31,7 +31,7 @@ export class ServicePersonnel extends Component {
                 subtotal: +scope.state.manhour_rate * +scope.state.manhours,
                 manhours: +scope.state.manhours,
                 personnel_id: scope.state.personnel_id,
-                multiplier: +scope.state.manhour_rate,
+                manhour_rate: +scope.state.manhour_rate,
                 position: {
                     name: scope.state.name,
                 },
