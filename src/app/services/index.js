@@ -44,7 +44,7 @@ export class Services extends Component {
 
     componentWillMount(){
         window.sessionStorage.clear();
-        
+
         let scope = this;
         getServices().then(function(response){
             if(response.data.hasOwnProperty('payload')===false) return;
@@ -1472,14 +1472,22 @@ export class ServiceEdit extends Component {
 
 
 
-import {getRateCardServicesAll, getServicesById} from '../../common/http';
+import {getRateCardServicesAll, getServicesById, getRateCardServicesSearch} from '../../common/http';
 
 export class ServiceAll extends Component {
 
     constructor(props){
         super(props);
         this.state = {
-            services: []
+            services: [],
+            showFilter: false,
+            service_id: "",
+            category: "",
+            name: "",
+            description: "",
+            rate_type: "",
+            cost: "",
+            status: "",
         }
     }
     
@@ -1608,9 +1616,85 @@ export class ServiceAll extends Component {
         return name;
     }
 
+    showFilterHandler(){
+        let toggle = !this.state.showFilter;
+        this.setState({showFilter: toggle});
+    }
+
+    serviceGlobalSearchHandler(){
+        let scope = this;
+        
+        let service_id = this.state.service_id || '';
+        let category = this.state.category || '';
+        let name = this.state.name || '';
+        let description = this.state.description || '';
+        let rate_type = this.state.rate_type || '';
+        let cost = this.state.cost || '';
+        let status = this.state.status || '';
+
+        let params = [];
+            params.push( service_id.trim() );
+            params.push( category.trim() );
+            params.push( name.trim() );
+            params.push( description.trim() );
+            params.push( rate_type.trim() );
+            params.push( cost.trim() );
+            params.push( status.trim() );
+
+        let paramsStr = '?service_id='+ params[0] + 
+                        '&category='+ params[1] + 
+                        '&name='+ params[2] + 
+                        '&description='+ params[3] +
+                        '&rate_type='+ params[4] +
+                        '&cost='+ params[5] + 
+                        '&status='+ params[6];
+
+        console.log(paramsStr);
+
+        getRateCardServicesSearch(paramsStr).then(function(response){
+            console.log('search results', response);
+
+            let payload = response.data.payload;
+            
+            if(payload.length!==0){
+                scope.setState({services: payload});
+            } else {
+                scope.setState({services: []});
+            }
+        })
+        .catch(function(response){
+            if(response.data.error){
+                toastr.error(response.data.error);
+            }
+        });
+    }
+
+    serviceInputHandler(evt){
+        this.setState({ service_id: evt.target.value });
+    }
+    categoryInputHandler(evt){
+        this.setState({ category: evt.target.value });
+    }
+    nameInputHandler(evt){
+        this.setState({ name: evt.target.value });
+    }
+    descriptionInputHandler(evt){
+        this.setState({ description: evt.target.value });
+    }
+    rateTypeInputHandler(evt){
+        this.setState({ rate_type: evt.target.value });
+    }
+    costInputHandler(evt){
+        this.setState({ cost: evt.target.value });
+    }
+    statusInputHandler(evt){
+        this.setState({ status: evt.target.value });    
+    }
+
     render(){
         let scope = this;
-        let servicesTable = <tr><td colSpan={8}>No data.</td></tr>
+        let servicesTable = <tr><td colSpan={8}>No data.</td></tr>;
+        let searchFilter = null;
 
         if(this.state.services.length!==0){
             servicesTable = 
@@ -1631,24 +1715,142 @@ export class ServiceAll extends Component {
                     </tr>
                 )
             });
+
+        } else {
+            servicesTable = <tr><td colSpan={8}>No data.</td></tr>;
+        }
+
+        if(this.state.showFilter){
+            searchFilter =
+            <div className="filter-content">
+                <div>
+                    <div className="col-xs-3">
+                        <div className="form-group">
+                            <label>Sevice ID</label>
+                            <input type="text" 
+                                value={this.state.service_id} 
+                                onChange={this.serviceInputHandler.bind(this)} 
+                                className="form-control" />
+                        </div>    
+                    </div>
+                    <div className="col-xs-3">
+                        <div className="form-group">
+                            <label>Category</label>
+                            <input type="text" 
+                                value={this.state.category} 
+                                onChange={this.categoryInputHandler.bind(this)} 
+                                className="form-control" />
+                        </div>    
+                    </div>
+                    <div className="col-xs-3">
+                        <div className="form-group">
+                            <label>Name</label>
+                            <input type="text" 
+                                value={this.state.name} 
+                                onChange={this.nameInputHandler.bind(this)} 
+                                className="form-control" />
+                        </div>    
+                    </div>
+                    <div className="col-xs-3">
+                        <div className="form-group">
+                            <label>Description</label>
+                            <input type="text" 
+                                value={this.state.description} 
+                                onChange={this.descriptionInputHandler.bind(this)} 
+                                className="form-control" />
+                        </div>    
+                    </div>
+                    <br className="clearfix" />
+                </div>
+
+                <div>
+                    <div className="col-xs-3">
+                        <div className="form-group">
+                            <label>Rate Type</label>
+                            <input type="text" 
+                                value={this.state.rate_type} 
+                                onChange={this.rateTypeInputHandler.bind(this)} 
+                                className="form-control" />
+                        </div>    
+                    </div>
+                    <div className="col-xs-3">
+                        <div className="form-group">
+                            <label>Cost</label>
+                            <input type="text" 
+                                value={this.state.cost} 
+                                onChange={this.costInputHandler.bind(this)}
+                                className="form-control" />
+                        </div>    
+                    </div>
+                    <div className="col-xs-3">
+                        <div className="form-group">
+                            <label>Status</label>
+                            <input type="text" 
+                                value={this.state.status} 
+                                onChange={this.statusInputHandler.bind(this)}
+                                className="form-control" />
+                        </div>    
+                    </div>
+                    <div className="col-xs-3">
+                        <div className="form-group">
+                        <label className="center-block">&nbsp;</label>
+                        <button type="button" 
+                            className="btn btn-primary"
+                            onClick={this.serviceGlobalSearchHandler.bind(this)}
+                            >Submit</button>
+                        </div>  
+                    </div>
+                    <br className="clearfix" />
+                </div>
+                
+                <br />
+                <br />
+
+                <div className="divider"></div>
+            </div>
         }
 
 
         return (
             <div>
                 <h3 className="sky">All Services</h3>
+                
+                <Link to="/services">Return to Manage Services</Link>   
+                
+                <br />
+                <br />
 
-                <div>
-                    <div className="col-xs-6">
-                     <div className="row">
-                         <Link to="/services">Return to Manage Services</Link>   
-                     </div>
+                <div className="row">
+                    {searchFilter}
+
+                    <div className="col-xs-4">
+                        <div className="form-group">
+                            <button type="button" 
+                                className="btn btn-primary"
+                                onClick={this.showFilterHandler.bind(this)}>
+                                {( !this.state.showFilter ? 'Show Filter' : 'Hide Filter' )}
+                            </button>
+                        </div>
                     </div>
-                    <div className="col-xs-6 text-right">
-                        <button type="button" className="btn btn-primary" onClick={this.addSevice.bind(this)}>Add Service</button>&nbsp;
-                        <button type="button" className="btn btn-primary" onClick={this.extractAll.bind(this)}>Extract All</button>
+
+                    <div className="col-xs-8">
+
+                        <div className="navbar-form navbar-left pull-right"> 
+
+                            <div className="form-group"> 
+                                <input className="form-control" placeholder="Search"/>
+                            </div>&nbsp;
+                        
+                            <button type="button" className="btn btn-primary">Submit</button>&nbsp;
+                        
+                            <button type="button" className="btn btn-primary" onClick={this.addSevice.bind(this)}>Add Service</button>&nbsp;
+                            
+                            <button type="button" className="btn btn-primary" onClick={this.extractAll.bind(this)}>Extract All</button>
+                        </div>
                     </div>    
-                    <br className="clearfix" />                
+
+                    <br className="clearfix" />   
+
                 </div>
                 
                 <p>Total Services: {(this.state.services.length!==0 ? this.state.services.length : 0)}</p>

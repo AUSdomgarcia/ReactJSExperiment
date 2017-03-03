@@ -415,27 +415,32 @@ export class Personnel extends Component {
             </div>  
 
             <div className="col-xs-6">
-              <button 
-                type="button" 
-                className={"btn " + (this.state.hasFilter ? 'btn-primary' : 'btn-primary') }
-                onClick={this.onShowFilter.bind(this)}>{(this.state.hasFilter ? 'Hide Filter' : 'Show Filter')}</button>
+              <div className="form-group">
+                <button 
+                  type="button" 
+                  className={"btn " + (this.state.hasFilter ? 'btn-primary' : 'btn-primary') }
+                  onClick={this.onShowFilter.bind(this)}>{(this.state.hasFilter ? 'Hide Filter' : 'Show Filter')}
+                </button>
+              </div>
             </div>
 
             <div className="col-xs-6">
-              <div className="row">
-                  <div className="col-xs-6">
-                    <input type="text" className="form-control" value={this.state.globalSearchWord} onChange={this.onGlobalSearchInput.bind(this)}/>&nbsp;
-                  </div>
-
-                  <div className="col-xs-6 text-left">
-                    <button type="button" className="btn btn-default" onClick={this.onGlobalSearch.bind(this)}>Keyword Search</button>
-                  </div>
+              <div className="navbar-form navbar-left"> 
+                <div className="form-group"> 
+                  <input className="form-control" placeholder="Search"
+                     value={this.state.globalSearchWord} 
+                     onChange={this.onGlobalSearchInput.bind(this)}
+                     />
+                </div>&nbsp;
+                <button type="submit" 
+                  onClick={this.onGlobalSearch.bind(this)}
+                  className="btn btn-primary">Submit
+                </button> 
               </div>
               
               <br className="clearfix" />
-
             </div>
-            
+
             <br className="clearfix" />
           </div>
           

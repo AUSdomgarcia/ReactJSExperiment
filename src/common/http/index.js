@@ -38,6 +38,15 @@ let getRateCardServicesAll = function(){
 let getServicesById = function(id){
   return axios.get( baseURL + '/rate-cards/services?id=' + id);
 }
+let getRateCardServicesSearch = function(params){
+  return axios.get( baseURL + '/rate-cards/services/search' + params );
+}
+
+
+
+
+
+
 
 
 
@@ -285,5 +294,7 @@ export {
   postRateCardRateTypesUpdate,
   getPersonnelSearch,
   getRateCardsServiceByServiceCategoryByServiceCategoryId,
-  getRateCardPersonnelPagination
+  getRateCardPersonnelPagination,
+  getRateCardServicesSearch
+  
 }
