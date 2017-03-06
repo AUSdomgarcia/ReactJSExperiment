@@ -99,8 +99,8 @@ export class CategoryController extends Component {
             this.state.services.map(function(data){
                 return (
                     <tr key={data.id}>
-                        <td>{data.service_id}</td>
-                        <td>{'data.rate_type.name'}</td>
+                        <td>{data.name}</td>
+                        <td>{(data.rate_type===null) ? 'broken-data' : data.rate_type.name}</td>
                         <td>{ data.subtotal } </td>
                         <td>{(data.is_active==='1' ? 'Active' : 'Inactive')}</td>
                         <td>
