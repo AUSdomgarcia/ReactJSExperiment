@@ -41,30 +41,7 @@ export class Personnel extends Component {
   }
 
   componentWillMount(){
-    let scope = this;
-    
-    // getServicePersonnels().then(function(response){
-    //   if(response.data.payload.length!==0){
-        
-    //     console.log( response.data.payload.length / scope.state.itemsCountPerPage );
-
-    //     scope.setState({ personnels: response.data.payload });
-
-    //     console.log( response.data );
-
-    //     return;
-
-    //     let pagination = response.data.pagination;
-
-    //     scope.setState({ totalItemsCount: pagination.total_records });
-    //     scope.setState({ activePage: pagination.current_page });
-    //     scope.setState({ itemsCountPerPage: pagination.limit });
-
-    //   }
-    // });
-
     this.mypagination(this.state.activePage, this.state.itemsCountPerPage);
-
   }
 
   mypagination(page, limit){
@@ -104,7 +81,6 @@ export class Personnel extends Component {
     // toastr.options.progressBar = true;
     // toastr.options.rtl = true; 
     // console.log(toastr);
-
     // toastr.options.preventDuplicates = true;
   }
 
@@ -290,7 +266,7 @@ export class Personnel extends Component {
             <td>{data.department.name}</td>
             <td>{data.manhour_rate}</td>
             <td>
-              <Link className='btn btn-primary' 
+              <Link className='btn btn-default' 
                   to={'/personnel/edit' + 
                       '/' + data.id +
                       '/' + data.rate_type.id + 

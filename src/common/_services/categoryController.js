@@ -102,7 +102,11 @@ export class CategoryController extends Component {
                         <td>{data.name}</td>
                         <td>{(data.rate_type===null) ? 'broken-data' : data.rate_type.name}</td>
                         <td>{ data.subtotal } </td>
-                        <td>{(data.is_active==='1' ? 'Active' : 'Inactive')}</td>
+                        <td><span 
+                            className={"label " + (data.is_active==='1' ? 'label-success' : 'label-danger')}>
+                            {(data.is_active==='1' ? 'Active' : 'Inactive')}
+                            </span>
+                        </td>
                         <td>
                             <Link 
                                 className="btn btn-default" 

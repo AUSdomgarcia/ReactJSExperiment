@@ -85,19 +85,29 @@ export class PersonnelInputField extends Component {
 
     onSetManHourHandler(evt){
         let value = +evt.target.value;
+
+        this.setState({manHour: evt.target.value});
+
+        let valueStr = value.toString().trim();
         
-        if(value < 0){
+        if(valueStr.length===0){
+            console.log(value);
+
+        } else {
+            if(value < 0){
             // alert('The number you specified is less than 0.');
             toastr.error('The number you specified is less than 0.');
-            this.setState({manHour: 1});
-            return;
-        } else if(value === 0){
-            // alert('Kindly specify a number greater than 0.');
-            toastr.error('Kindly specify a number greater than 0.');
-            this.setState({manHour: 1});
-            return;
+            
+                // this.setState({manHour: 0});
+                return;
+            }
+            //  else if(value === 0){
+            //     // alert('Kindly specify a number greater than 0.');
+            //     toastr.error('Kindly specify a number greater than 0.');
+            //     this.setState({manHour: 0});
+            //     return;
+            // }
         }
-        this.setState({manHour: evt.target.value});
     }
 
     onSelectRateType(evt){

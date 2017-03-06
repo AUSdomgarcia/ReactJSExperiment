@@ -281,7 +281,11 @@ export class ManageServices extends Component {
                         <td>{ data.name }</td>
                         <td>{ data.rate_type.name }</td>
                         <td>{ data.subtotal } </td>
-                        <td>{(data.is_active==='1' ? 'Active' : 'Inactive')}</td>
+                        <td><span 
+                            className={"label " + (data.is_active==='1' ? 'label-success' : 'label-danger')}>
+                            {(data.is_active==='1' ? 'Active' : 'Inactive')}
+                            </span>
+                        </td>
                         <td>
                             <Link 
                                 className="btn btn-default" 
@@ -1488,6 +1492,7 @@ export class ServiceAll extends Component {
             rate_type: "",
             cost: "",
             status: "",
+            searchByKeyword: ""
         }
     }
     
@@ -1496,9 +1501,8 @@ export class ServiceAll extends Component {
         getRateCardServicesAll().then(function(response){
             if(response.data.hasOwnProperty('payload')){
                 if(response.data.payload.length!==0){
-                    console.log('service all', JSON.stringify(response));
+                    // console.log('service all', JSON.stringify(response));
                     scope.setState({services: response.data.payload});
-
                     // console.log(JSON.stringify(response.data.payload));
                 }
             }
@@ -1691,6 +1695,35 @@ export class ServiceAll extends Component {
         this.setState({ status: evt.target.value });    
     }
 
+    onSearchInputHandler(evt){
+        this.setState({ searchByKeyword: evt.target.value });      
+    }
+
+    onSearchHandler(){
+        this.searchByKeywordHandler();
+    }
+
+    onSearchKeyboardHandler(e){
+        const scope =this;
+
+        if(e.key==='Enter'){
+            scope.searchByKeywordHandler();
+        }
+    }
+
+    searchByKeywordHandler(){
+        let params = '?keyword='+this.state.searchByKeyword;
+        const scope = this;
+
+        getRateCardServicesSearch(params).then(function(response){
+        if(response.data.payload.length!==0){
+                scope.setState({ services: response.data.payload });
+            } else {
+                scope.setState({ services: [] });
+            }
+        });
+    }
+
     render(){
         let scope = this;
         let servicesTable = <tr><td colSpan={8}>No data.</td></tr>;
@@ -1838,10 +1871,14 @@ export class ServiceAll extends Component {
                         <div className="navbar-form navbar-left pull-right"> 
 
                             <div className="form-group"> 
-                                <input className="form-control" placeholder="Search"/>
+                                <input className="form-control" placeholder="Search" onChange={this.onSearchInputHandler.bind(this)}/>
                             </div>&nbsp;
                         
-                            <button type="button" className="btn btn-primary">Submit</button>&nbsp;
+                            <button type="button" 
+                                className="btn btn-primary" 
+                                onClick={this.onSearchHandler.bind(this)}
+                                onKeyPress={this.onSearchKeyboardHandler.bind(this)}
+                                >Submit</button>&nbsp;
                         
                             <button type="button" className="btn btn-primary" onClick={this.addSevice.bind(this)}>Add Service</button>&nbsp;
                             

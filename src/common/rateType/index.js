@@ -209,7 +209,7 @@ export class RateType extends Component {
                                 </td>
                                 <td className="text-right">
                                     <button type="button" 
-                                        className={"btn "+ (scope.state.ishowInput && +scope.state.targetInput===+data.id ? 'btn-success' : 'btn-primary') } 
+                                        className={"btn "+ (scope.state.ishowInput && +scope.state.targetInput===+data.id ? 'btn-success' : 'btn-default') } 
                                         data-storedid={data.id} 
                                         data-text={data.name} 
                                         onClick={scope.onEdit.bind(scope)}>{(scope.state.ishowInput && +scope.state.targetInput===+data.id ? 'Save' : 'Edit')}
