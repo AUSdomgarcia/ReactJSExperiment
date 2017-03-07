@@ -302,6 +302,7 @@ RateCard.contextTypes = {
 
 {/* R A T E C A R D  A D D */}
 import { AsideRateCard } from './asideRateCard.js';
+import { postRateCardRateCardValidate } from '../../common/http';
 
 export class RateCardAdd extends Component {
 
@@ -309,7 +310,10 @@ export class RateCardAdd extends Component {
         super(props);
         this.state = {
             ratecardname: "",
-            ratecarddesc: ""
+            ratecarddesc: "",
+
+            hasName: true,
+            hasDescription: true
         };
     }
 
@@ -337,27 +341,52 @@ export class RateCardAdd extends Component {
     }
 
     onNext(){
+        let scope = this;
         let ratecarddesc = window.sessionStorage.getItem('ratecarddesc') || "";
         let ratecardname = window.sessionStorage.getItem('ratecardname')  || "";
-
-        // if(ratecardname.length===0 || ratecarddesc.length===0){
-        //     if(confirm('Kindly input rate card name or rate card decription')){
-        //         return;
-        //     }
-        //     return;
-        // }
+        let ratecard_id = window.sessionStorage.getItem('id');
 
         if(ratecardname.length===0){
-            toastr.error('No ratecard name specified.');
-            return;
+            this.setState({hasName: false});
+        } else {
+            this.setState({hasName:true});
         }
 
         if(ratecarddesc.length===0){
-            toastr.error('No ratecard description specified.');
-            return;
+            this.setState({hasDescription: false});
+        } else {
+            this.setState({hasDescription:true})
         }
 
-        this.context.router.push('/ratecard/choose');
+        console.log( ratecard_id, ratecardname );
+
+        if(ratecardname.length!==0 && ratecarddesc.length !==0){
+            postRateCardRateCardValidate({name: ratecardname, id: ratecard_id }).then(function(response){
+                scope.context.router.push('/ratecard/choose');
+            })
+            .catch(function(response){
+                if(response.data.error){
+                    toastr.error(response.data.message);
+                }
+            })
+        }
+    }
+
+
+    nameNotifier(){
+        let display = null;
+        if(!this.state.hasName){
+            display = "Kindly provide rate card name.";
+        }
+        return display;
+    }
+
+    descriptionNotifier(){
+        let display = null;
+        if(!this.state.hasDescription){
+            display = "Kindly provide rate card description.";
+        }
+        return display;
     }
 
     render(){
@@ -372,8 +401,12 @@ export class RateCardAdd extends Component {
                         <div className='form-group'>
                             <label>Rate Card name</label>
                             <input className='form-control' type='text' value={this.state.ratecardname} onChange={this.onRateCardNameHandler.bind(this)} />
+                            <span className="text-red">{this.nameNotifier()}</span>
+
+                            <br />
                             <label>Rate Card Description</label>
                             <input className='form-control' type='text' value={this.state.ratecarddesc} onChange={this.onRateCardDescriptionHandler.bind(this)} />
+                            <span className="text-red">{this.descriptionNotifier()}</span>
                         </div>
                         
                         <Link className='btn btn-default pull-left' to='/ratecard'>Back</Link>

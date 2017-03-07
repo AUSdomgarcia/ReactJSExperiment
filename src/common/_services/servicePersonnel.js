@@ -17,16 +17,19 @@ export class ServicePersonnel extends Component {
             manhour_rate: 0,
             manhours: 1,
             id: 0,
-
             personnel_id: "",
             name: "",
-
-            isReady: false
+            isReady: false,
+            canProceed: true,
         }
         
         // Hack 
         let scope = this;
+        
         this.getValue = function(){
+            
+            if(!this.state.canProceed) return false;
+
             return {
                 subtotal: +scope.state.manhour_rate * +scope.state.manhours,
                 manhours: +scope.state.manhours,
@@ -35,7 +38,7 @@ export class ServicePersonnel extends Component {
                 position: {
                     name: scope.state.name,
                 },
-                id: scope.state.id
+                id: scope.state.id,
             }
         }
 
@@ -89,24 +92,38 @@ export class ServicePersonnel extends Component {
     }
 
     onChangeManHour(evt){
-        let value = +evt.target.value;
-
-        if(value < 0){
+        // let value = +evt.target.value;
+        // if(value < 0){
             // alert('The number you specified is less than 0.');
-            toastr.error('Manhour should not be less than 0.');
+            // toastr.error('Manhour should not be less than 0.');
+            // this.setState({manHour: 1});
+            // return;
 
-            this.setState({manHour: 1});
-            return;
-        } else if(value === 0){
+        // } else if(value === 0){
             // alert('Kindly specify a number greater than 0.');
-            toastr.error('Kindly specify a number greater than 0.');
-            
-            this.setState({manHour: 1});
-            return;
-        }
-        let manhour = value;
+            // toastr.error('Kindly specify a number greater than 0.');
+            // this.setState({manHour: 1});
+            // return;
+
+        // }
+        // let manhour = value;
+        // this.setState({manhours: manhour});
+        // let total = +this.state.manhour_rate * +this.state.manhours;
+
+        let manhour = +evt.target.value;
+        let word     = evt.target.value;
+
         this.setState({manhours: manhour});
-        let total = +this.state.manhour_rate * +this.state.manhours;
+
+        if(word.trim() === ""){
+            // do nothing...
+        } else {
+            if(manhour < 0 || manhour === 0){
+                this.setState({canProceed: false});
+            } else {
+                this.setState({canProceed: true});
+            }
+        }
     }
 
     onDelete(){
@@ -130,6 +147,17 @@ export class ServicePersonnel extends Component {
         console.log('manhour_rate', dataset.manhour_rate);
         console.log('name', dataset.personnelposition);
         console.log('----------------------------------');
+    }
+
+    manhourStatus(){
+        let display = "";
+        if(!this.state.canProceed){
+            display = "Kindly provide an appropriate manhour.";
+        }
+        if(this.state.manhours===0){
+            display = "Manhour should be greater than 0.";
+        }
+        return display;
     }
 
     render() {
@@ -188,7 +216,8 @@ export class ServicePersonnel extends Component {
 
                 <div className="form-group">
                     <label>Manhours</label>
-                    {manhourInput}
+                    {manhourInput} <br />
+                    <span className="error-color">{this.manhourStatus()}</span>
                 </div>
             </div>
         )

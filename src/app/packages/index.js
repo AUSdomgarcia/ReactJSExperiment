@@ -23,10 +23,9 @@ export class Packages extends Component {
     componentDidMount(){}
 
     componentWillMount(){
-        let scope = this;
-        
         window.sessionStorage.clear();
-
+        
+        let scope = this;
         getRateCardPackages().then(function(response){
             console.log('/packages', response);
             if(response.data.hasOwnProperty('payload')===false) return;
@@ -38,11 +37,14 @@ export class Packages extends Component {
 
     setupEditModeById(id, cb){
         let scope = this;
-        
+        let _id = id;
+
+        console.log('setupEditModeById', id);
+
         getRateCardPackageById(id).then(function(response){
             console.log('package >', response);
             // origin
-            window.sessionStorage.setItem('packageId', id);
+            window.sessionStorage.setItem('package_id', _id);
             window.sessionStorage.setItem('packagename', response.data.payload[0].name);
             window.sessionStorage.setItem('packagedesc', response.data.payload[0].description);
             window.sessionStorage.setItem('addedServices', JSON.stringify(response.data.payload[0].services));
@@ -71,10 +73,12 @@ export class Packages extends Component {
         this.setupEditModeById(id, function(){
             let delay = setTimeout(function(){
                 clearTimeout(delay);
+
+                console.log('onEditAsManage', id);
                 
                 window.sessionStorage.setItem('packageAction','update');
 
-                window.sessionStorage.setItem('packageId', id);
+                window.sessionStorage.setItem('package_id', id);
 
                 scope.context.router.push('/packages/add');
             }, 16);
@@ -240,14 +244,17 @@ Packages.contextTypes = {
 
 
 
-
+import {postRateCardPackageValidate} from '../../common/http';
 // Step1 - Add Service
 export class PackageAdd extends Component {
     constructor(props){
         super(props);
         this.state = {
             name: "",
-            description: ""
+            description: "",
+
+            hasName: true,
+            hasDescription: true
         }
     }
     componentWillMount(){
@@ -276,27 +283,54 @@ export class PackageAdd extends Component {
     }
 
     onNext(){
-        let WSname = window.sessionStorage.getItem('packagename') || "";
-        let WSdesc = window.sessionStorage.getItem('packagedesc') || "";
-        // if(WSname.length===0 || WSdesc.length===0){
-            // if(confirm('No description or name.')){return;} else {return;}
-            // toastr.error('No description specified.');
-            // return;
-        // }else{
-            
-        // }
+        let scope = this;
+        let packageName = window.sessionStorage.getItem('packagename') || "";
+        let packageDescription = window.sessionStorage.getItem('packagedesc') || "";
+        let package_id = window.sessionStorage.getItem('package_id');
 
-        if(WSname.length===0){
-            toastr.error('No name specified.');
-            return;
+        packageName = packageName.trim();
+        packageDescription = packageDescription.trim();
+        
+        if(packageName.length===0){
+            this.setState({hasName: false});
+        } else {
+            this.setState({hasName:true})
         }
 
-        if(WSdesc.length===0){
-            toastr.error('No description specified.');
-            return;
+        if(packageDescription.length===0){
+            this.setState({hasDescription: false});
+        } else {
+            this.setState({hasDescription:true})
         }
 
-        this.context.router.push('/packages/choose');
+        console.log( package_id, packageName );
+
+        if(packageName.length!==0 && packageDescription.length !==0){
+            postRateCardPackageValidate({name: packageName, id: package_id }).then(function(response){
+                scope.context.router.push('/packages/choose');
+            })
+            .catch(function(response){
+                if(response.data.error){
+                    toastr.error(response.data.message);
+                }
+            })
+        }
+    }
+
+    nameNotifier(){
+        let display = null;
+        if(!this.state.hasName){
+            display = "Kindly provide package name.";
+        }
+        return display;
+    }
+
+    descriptionNotifier(){
+        let display = null;
+        if(!this.state.hasDescription){
+            display = "Kindly provide package description.";
+        }
+        return display;
     }
 
     render(){
@@ -310,8 +344,10 @@ export class PackageAdd extends Component {
                             <div className='form-group'>
                                 <label>Package name</label>
                                 <input className='form-control' type='text' value={this.state.name} onChange={this.onChangeName.bind(this)} />
+                                <span className="text-red">{this.nameNotifier()}</span><br/>
                                 <label>Package Description</label> 
                                 <input className='form-control' type='text'  value={this.state.description} onChange={this.onChangeDescription.bind(this)} />
+                                <span className="text-red">{this.descriptionNotifier()}</span>
                             </div>
                         </form>
                         
@@ -640,7 +676,7 @@ export class PackageRate extends Component {
 
                             <div className='clearfix'>
                                 <div className="col-xs-3">
-                                    <label>Discount</label>
+                                    <label>Discount <small>(1%-100%)</small></label>
                                 </div>
                                 <div className="col-xs-9">
                                     <input type='number' className='form-control' value={this.state.package_discount} onChange={this.onDiscountChange.bind(this)} />

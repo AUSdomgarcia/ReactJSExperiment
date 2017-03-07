@@ -334,7 +334,7 @@ export class ManageServices extends Component {
                 <div className="header">
                     <div className="col-xs-6 text-left">
                         <div className="row">
-                            <Link to="/services">Return to Full List</Link>
+                            <Link to="/services">&lt;&lt; Back</Link>
                         </div>
                     </div>
 
@@ -456,6 +456,11 @@ export class ServiceAdd extends Component {
             isAddedServiceInsideCategory: false,
 
             service_category_temp_name: "",
+
+
+            hasDescription: true,
+            hasServiceName: true,
+            hasPersonnel: true,
         }
     }
 
@@ -576,7 +581,7 @@ export class ServiceAdd extends Component {
                         getServiceCategories_subCategories_level2_byParentId( resZero.service_category_id ).then(function(response){
                             if(response.data.payload.length!==0){
 
-                                response.data.payload.unshift({ id: 222222222, name: "- - - ", service_sub_category_id: null});
+                                response.data.payload.unshift({ id: 222222222, name: "Select service ", service_sub_category_id: null});
                                 
                                 scope.setState({level2Arr: response.data.payload },
                                 function(){
@@ -591,7 +596,7 @@ export class ServiceAdd extends Component {
                         getServiceCategories_subCategories_level3_byParentId( resZero.service_sub_category_id ).then(function(response){
                             if(response.data.payload.length!==0){
                                 
-                                response.data.payload.unshift({ id: 333333333, name: "- - - ", sub_service_sub_category_id: null});
+                                response.data.payload.unshift({ id: 333333333, name: "Select service ", sub_service_sub_category_id: null});
                                 
                                 scope.setState({level3Arr: response.data.payload },
                                 function(){
@@ -687,7 +692,7 @@ export class ServiceAdd extends Component {
                 // Stored id
                 let resZero = response.data.payload[0];
                 // prepend null values
-                response.data.payload.unshift({ id: 222222222, name: "- - - ", service_sub_category_id: null});
+                response.data.payload.unshift({ id: 222222222, name: "Select service ", service_sub_category_id: null});
                 // Apply to Array
                 scope.setState({level2Arr: response.data.payload}, function(){
                     scope.setState({level2ValueId: scope.state.level2Arr[0].id });
@@ -712,7 +717,7 @@ export class ServiceAdd extends Component {
                 // Stored id
                 let resZero = response.data.payload[0];
                 // prepend null values
-                response.data.payload.unshift({ id: 333333333, name: "- - - ", sub_service_sub_category_id: null});
+                response.data.payload.unshift({ id: 333333333, name: "Select service ", sub_service_sub_category_id: null});
                 // Apply to Array
                 scope.setState({level3Arr: response.data.payload},function(){
                     scope.setState({level3ValueId: scope.state.level3Arr[0].id });
@@ -800,6 +805,8 @@ export class ServiceAdd extends Component {
     onAddPersonnel(evt){
         if(this._child.getIsReady() === false) return;
 
+        if(this._child.getValue()===false) return;
+
         // Get data from ServicePersonnel Component        
         this.setState( { personnelComp_previous_myId         : this._child.getValue().id || 0 });
         this.setState( { personnelComp_previous_personnel_id : this._child.getValue().personnel_id || "" });
@@ -885,25 +892,41 @@ export class ServiceAdd extends Component {
         this.setState({ activeStatus: 1 });
     }
 
-    onSaveService(){
-        // Will create new Service
+    onSaveHandler(){
+        let scope = this;
+
+        let serviceName = this.state.serviceName.trim();
+        let description = this.state.description.trim();
+        let personnels = this.state.servicePersonnelArr;
+
         if(this.state.serviceName.length===0){
-            toastr.error('No service name specified.');
-            return;
+            this.setState({ hasServiceName: false });
+        } else {
+            this.setState({ hasServiceName: true });
         }
 
         if(this.state.description.length===0){
-            toastr.error('No description specified.');
-            return;
+            this.setState({ hasDescription: false });
+        } else {
+            this.setState({ hasDescription: true });
         }
 
         if(this.state.servicePersonnelArr.length===0){
-            toastr.error('No selected personnel(s).');
-            return;
+            this.setState({ hasPersonnel: false });
+        } else {
+            this.setState({ hasPersonnel: true });
         }
         
-        let scope = this;
+        if(serviceName.length!==0 && 
+            description.length!==0 && 
+            personnels.length!==0 ){  
+            this.saveServiceInfo();
+        }
+    }
+
+    saveServiceInfo(){
         let personnelFormat = [];
+        let scope = this;
 
         this.state.servicePersonnelArr.map(function(data){
             let tempObj = {};
@@ -1037,6 +1060,31 @@ export class ServiceAdd extends Component {
         }
         return markup;
     }
+
+    personnelStatus(){
+        let display = "";
+        if(!this.state.hasPersonnel){
+            display = "Kindly provide personnel to proceed."
+        }
+        return display;
+    }
+
+    descriptionStatus(){
+        let display = "";
+        if(!this.state.hasDescription){
+            display = "Kindly provide description to proceed."
+        }
+        return display;
+    }
+
+    serviceNameStatus(){
+        let display = "";
+        if(!this.state.hasServiceName){
+            display = "Kindly provide service name to proceed."
+        }
+        return display;
+    }
+
     
     render(){
         let scope = this;
@@ -1149,7 +1197,7 @@ export class ServiceAdd extends Component {
                 
                 {/*this.displayAlert()*/}
 
-                <Link to="/services">Return to full list</Link>
+                <Link to="/services">&lt;&lt; Back</Link>
 
                 <br />
 
@@ -1166,11 +1214,13 @@ export class ServiceAdd extends Component {
                             className="form-control" 
                             value={this.state.serviceName} 
                             onChange={this.onServiceNameChange.bind(this)} />
+                            <span className="text-red">{this.serviceNameStatus()}</span>
                     </div>
 
                     <div className="form-group">
                         <label>Description</label>
                         <textarea className="form-control" rows="5"  value={this.state.description} onChange={this.onDescriptionChange.bind(this)}  ></textarea>
+                        <span className="text-red">{this.descriptionStatus()}</span>
                     </div>
 
                     <div className="form-group">
@@ -1210,7 +1260,8 @@ export class ServiceAdd extends Component {
                         ref={(child) => { this._child = child; }} />
 
                     <p className="personnel-btn-wrapper">
-                        <button type="button" className="btn btn-default" onClick={this.onAddPersonnel.bind(this)}>Add More Personnel</button>
+                        <button type="button" className="btn btn-default" onClick={this.onAddPersonnel.bind(this)}>Add More Personnel</button><br/>
+                        <span className="text-red">{this.personnelStatus()}</span>
                     </p>
                 </div>
 
@@ -1258,7 +1309,7 @@ export class ServiceAdd extends Component {
                     <br />
 
                     <p className="text-right">
-                        <button type="button" className="btn btn-success" onClick={this.onSaveService.bind(this)}>Save Service</button>
+                        <button type="button" className="btn btn-success" onClick={this.onSaveHandler.bind(this)}>Save Service</button>
                     </p>
 
                     <br className="clearfix"/>
@@ -1476,7 +1527,8 @@ export class ServiceEdit extends Component {
 
 
 
-import {getRateCardServicesAll, getServicesById, getRateCardServicesSearch} from '../../common/http';
+import {getRateCardServicesAll, getRateCardServiceAllPagination, getServicesById, getRateCardServicesSearch} from '../../common/http';
+import Pagination from 'react-js-pagination';
 
 export class ServiceAll extends Component {
 
@@ -1492,22 +1544,54 @@ export class ServiceAll extends Component {
             rate_type: "",
             cost: "",
             status: "",
-            searchByKeyword: ""
+            searchByKeyword: "",
+
+            activePage: 1,
+            itemsCountPerPage: 10,
+            totalItemsCount: 0,
+            pageRangeDisplayed: 0,
         }
     }
     
+    // componentWillMount(){
+    //     let scope = this;
+    //     getRateCardServicesAll().then(function(response){
+    //         if(response.data.hasOwnProperty('payload')){
+    //             if(response.data.payload.length!==0){
+    //                 // console.log('service all', JSON.stringify(response));
+    //                 scope.setState({services: response.data.payload});
+    //                 // console.log(JSON.stringify(response.data.payload));
+    //             }
+    //         }
+    //     });
+    // }
+
     componentWillMount(){
-        let scope = this;
-        getRateCardServicesAll().then(function(response){
-            if(response.data.hasOwnProperty('payload')){
-                if(response.data.payload.length!==0){
-                    // console.log('service all', JSON.stringify(response));
-                    scope.setState({services: response.data.payload});
-                    // console.log(JSON.stringify(response.data.payload));
-                }
+        this.mypagination(this.state.activePage, this.state.itemsCountPerPage);
+    }
+    
+    mypagination(page, limit){
+    let scope = this;
+
+    getRateCardServiceAllPagination(page, limit)
+        .then(function(response){
+            if(response.data.payload.length!==0){
+                let pagination = response.data.pagination;
+                // data
+                scope.setState({ services: response.data.payload });
+                scope.setState({ activePage: pagination.current_page });
+                scope.setState({ totalItemsCount: pagination.total_records });
+                scope.setState({ itemsCountPerPage: pagination.limit });
+                // scope.setState({ pageRangeDisplayed: pagination.total_pages });
+                scope.setState({ pageRangeDisplayed: pagination.total_records });
             }
         })
-    }
+        .catch(function(response){
+            // if(response.data.error){
+                // alert(response.data.message);
+            // }
+        });
+  }
     
     componentDidMount(){
         // 
@@ -1724,10 +1808,28 @@ export class ServiceAll extends Component {
         });
     }
 
+    onPaginationLimit(evt){
+        let scope = this;
+        let value = +evt.target.value
+        this.setState({activePage: 1}, function(){
+            scope.setState({itemsCountPerPage: value}, function(){
+                scope.mypagination(scope.state.activePage, scope.state.itemsCountPerPage);
+            });
+        });
+    }
+
+        callbackPageChange(pageNumber){
+        let scope = this;
+        this.setState({activePage: pageNumber}, function(){
+        scope.mypagination(scope.state.activePage, scope.state.itemsCountPerPage);
+        });
+    }
+
     render(){
         let scope = this;
         let servicesTable = <tr><td colSpan={8}>No data.</td></tr>;
         let searchFilter = null;
+        let paginationComponent = null;
 
         if(this.state.services.length!==0){
             servicesTable = 
@@ -1742,12 +1844,56 @@ export class ServiceAll extends Component {
                         <td>{data.subtotal}</td>
                         <td>{(data.is_active==='0' ? 'Inactive' : 'Active')}</td>
                         <td>
-                            <button type="button" className="btn btn-default" data-storeid={data.id} onClick={scope.onEdit.bind(scope)}>Edit</button>&nbsp;
-                            <button type="button" className="btn btn-danger"  data-storeid={data.id} onClick={scope.onDelete.bind(scope)}>&times;</button>
+                            <div>
+                                <button type="button" className="btn btn-default" data-storeid={data.id} onClick={scope.onEdit.bind(scope)}>Edit</button>&nbsp;
+                                <button type="button" className="btn btn-danger"  data-storeid={data.id} onClick={scope.onDelete.bind(scope)}>&times;</button>
+                            </div>
                         </td>
                     </tr>
                 )
             });
+
+            paginationComponent = 
+            <div>
+            <div className="col-xs-6">
+                <Pagination
+                activePage={ this.state.activePage }
+                itemsCountPerPage={ this.state.itemsCountPerPage }
+                totalItemsCount={ this.state.totalItemsCount }
+                pageRangeDisplayed={ this.state.pageRangeDisplayed }
+                onChange={this.callbackPageChange.bind(this)}
+                />
+            </div>
+            
+            <div className="col-xs-6">
+                <div className="row">
+                
+                <div className="col-xs-6">
+                    <label>Page display limit:</label>
+                </div>
+                
+                <div className="col-xs-6">
+                    <select className="form-control" value={this.state.itemsCountPerPage} onChange={this.onPaginationLimit.bind(this)}>
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={30}>30</option>
+                    <option value={40}>40</option>
+                    <option value={50}>50</option>
+                    <option value={60}>60</option>
+                    <option value={70}>70</option>
+                    <option value={80}>80</option>
+                    <option value={90}>90</option>
+                    <option value={100}>100</option>
+                    </select>
+                </div>
+                
+                <br className="clearfix" />
+                </div>
+            </div>
+            
+            <br className="clearfix" />     
+        </div>
 
         } else {
             servicesTable = <tr><td colSpan={8}>No data.</td></tr>;
@@ -1844,6 +1990,7 @@ export class ServiceAll extends Component {
         }
 
 
+
         return (
             <div>
                 <h3 className="sky">All Services</h3>
@@ -1913,6 +2060,7 @@ export class ServiceAll extends Component {
                     </tbody>                           
                 </table>
 
+                {paginationComponent}
                     
             <br className="clearfix" />
             </div>

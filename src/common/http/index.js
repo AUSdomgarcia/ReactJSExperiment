@@ -32,9 +32,15 @@ let postServiceDelete = function(obj){
 let getServiceByServiceIdWithServiceCategoryId = function(categoryId, serviceId){
   return axios.get( baseURL + '/rate-cards/services?id=' + serviceId + '&service_category_id=' + categoryId);
 }
+
 let getRateCardServicesAll = function(){
   return axios.get( baseURL + '/rate-cards/services' );
 }
+
+let getRateCardServiceAllPagination = function(page, limit){
+  return axios.get( baseURL + '/rate-cards/services?page=' + page + '&limit=' + limit);
+}
+
 let getServicesById = function(id){
   return axios.get( baseURL + '/rate-cards/services?id=' + id);
 }
@@ -193,6 +199,10 @@ let postRateCardPreview = function(obj){
 let postRateCardAction = function(obj){
   return axios.post( baseURL + '/rate-cards/rate-cards/action', obj);
 }
+let postRateCardRateCardValidate = function(obj){
+  return axios.post( baseURL + '/rate-cards/rate-cards/validate', obj);
+}
+
 
 
 
@@ -218,6 +228,9 @@ let postPackageDelete = function(obj){
 }
 let postPackagePreview = function(obj){
   return axios.post( baseURL + '/rate-cards/packages/preview', obj);
+}
+let postRateCardPackageValidate = function(obj){
+  return axios.post( baseURL + '/rate-cards/packages/validate', obj);
 }
 
 
@@ -247,6 +260,7 @@ export {
   postServiceCategories_subCategories_update,
   postServiceCategories_subCategories_delete,
   getRateCardServicesAll,
+  getRateCardServiceAllPagination,
 
   getServiceCategoriesRoot,
   postServiceCategoriesCreate,
@@ -283,6 +297,7 @@ export {
   getRateCardById,
   postRateCardPreview,
   postRateCardAction,
+  postRateCardRateCardValidate,
 
   getRateCardPackages,
   postPackageCreate,
@@ -290,6 +305,7 @@ export {
   postPackageDelete,
   getRateCardPackageById,
   postPackagePreview,
+  postRateCardPackageValidate,
 
   postRatecardServiceCategoriesSortServiceCategories,
   postRatecardServiceCategoriesSortServiceSubCategories,

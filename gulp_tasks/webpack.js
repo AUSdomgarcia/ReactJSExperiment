@@ -28,9 +28,9 @@ function webpackWrapper(watch, conf, done) {
     }
     gutil.log(stats.toString({
       colors: true,
-      chunks: false,
+      chunks: true,//false
       hash: false,
-      version: false
+      version: true//false
     }));
     if (done) {
       done();
