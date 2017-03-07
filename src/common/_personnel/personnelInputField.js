@@ -32,6 +32,8 @@ export class PersonnelInputField extends Component {
             hasPosition: true,
             hasDepartment: true,
             hasManhour: true,
+
+            canProceed: true
         };
     }
 
@@ -84,30 +86,56 @@ export class PersonnelInputField extends Component {
     }
 
     onSetManHourHandler(evt){
-        let value = +evt.target.value;
+        // let value = +evt.target.value;
 
-        this.setState({manHour: evt.target.value});
+        // this.setState({manHour: evt.target.value});
 
-        let valueStr = value.toString().trim();
+        // let valueStr = value.toString().trim();
         
-        if(valueStr.length===0){
-            console.log(value);
+        // if(valueStr.length===0){
+        //     console.log(value);
 
+        // } else {
+        //     if(value < 0){
+        //     // alert('The number you specified is less than 0.');
+        //     toastr.error('The number you specified is less than 0.');
+
+        //         // this.setState({manHour: 0});
+        //         return;
+        //     }
+        //     //  else if(value === 0){
+        //     //     // alert('Kindly specify a number greater than 0.');
+        //     //     toastr.error('Kindly specify a number greater than 0.');
+        //     //     this.setState({manHour: 0});
+        //     //     return;
+        //     // }
+        // }
+
+        let manhour = +evt.target.value;
+        let word     = evt.target.value;
+
+        this.setState({manHour: manhour});
+
+        if(word.trim() === ""){
+            // do nothing...
         } else {
-            if(value < 0){
-            // alert('The number you specified is less than 0.');
-            toastr.error('The number you specified is less than 0.');
-            
-                // this.setState({manHour: 0});
-                return;
+            if(manhour < 0){
+                this.setState({canProceed: false});
+            } else {
+                this.setState({canProceed: true});
             }
-            //  else if(value === 0){
-            //     // alert('Kindly specify a number greater than 0.');
-            //     toastr.error('Kindly specify a number greater than 0.');
-            //     this.setState({manHour: 0});
-            //     return;
-            // }
         }
+    }
+
+    manhourStatus(){
+        let display = "";
+        if(!this.state.canProceed){
+            display = "Kindly provide an appropriate manhour."
+        }
+        if(!this.state.manHour===0){
+            display = "Should not be equal to 0.";
+        }
+        return display;
     }
 
     onSelectRateType(evt){
@@ -149,11 +177,9 @@ export class PersonnelInputField extends Component {
             this.setState({hasDepartment: false});
         } 
 
-        if(+this.state.manHour <= 0){
-            this.setState({hasManhour: false});
+        if(+this.state.manHour <= 0 || +this.state.manHour === NaN){
+            this.setState({canProceed: false});
         }
-
-        console.log('proceed');
 
         switch(this.props.btnName.toLowerCase()){
             case 'add':
@@ -165,7 +191,8 @@ export class PersonnelInputField extends Component {
                 }).then(function(response){
                     if(response.data.error){
                         // alert(response.data.message);
-                        toastr.error(response.data.message);
+                        // toastr.error(response.data.message);
+                        scope.clientCheckBeforeServer(response.data.message);
 
                     } else {
                         scope.props.onUpdate(response.data.payload);
@@ -177,7 +204,8 @@ export class PersonnelInputField extends Component {
                 .catch(function(response){
                     if(response.data.error){
                         // alert(response.data.message);
-                        toastr.error(response.data.message);
+                        // toastr.error(response.data.message);
+                        scope.clientCheckBeforeServer(response.data.message);
                     }
                 });
             break;
@@ -199,7 +227,7 @@ export class PersonnelInputField extends Component {
                 }).then(function(response){
                     if(response.data.error){
                         // alert(response.data.message);
-                        toastr.error(response.data.message);
+                        scope.clientCheckBeforeServer(response.data.message);
 
                     } else {
                         // alert('Personnel updated.');
@@ -211,11 +239,22 @@ export class PersonnelInputField extends Component {
                 .catch(function(response){
                     if(response.data.error){
                         // alert(response.data.message);
-                        toastr.error(response.data.message);
+                        scope.clientCheckBeforeServer(response.data.message);
                     }
                 });
 
             break;
+        }
+    }
+
+    clientCheckBeforeServer(message){
+        if(this.state.hasRatetype===false && 
+            this.state.hasPosition===false && 
+            this.state.hasDepartment===false && 
+            this.state.hasManhour===false ){
+                // Client side
+        } else {
+            // toastr.error(message .concat('NONONO') );
         }
     }
 
@@ -260,47 +299,43 @@ export class PersonnelInputField extends Component {
         departmentAlert = <small className="text-red">Select a department</small>
     }
 
-    if(!this.state.hasManhour){
-        manHourAlert = <small className="text-red">Manhour should be greater than 0</small>
-    }
-
     return (
       <div className='row'>
         <div className='col-xs-6'>
                 <div className='form-group'>
                     <label>Rate Type</label>
-                    &nbsp; {rateTypeAlert}
                     <select className="form-control" value={this.state.rateTypeValue} onChange={this.onSelectRateType.bind(this)}>
                         {this.state.rateType.map(function(options){
                             return (<option key={options.id} value={options.id}>{options.name}</option>)
                         })}
                     </select>
+                    {rateTypeAlert}
                 </div>
                 
                 <div className='form-group'>
                     <label>Position</label>
-                    &nbsp; {positionAlert}
                     <select className="form-control" value={this.state.positionValue} onChange={this.onSelectPosition.bind(this)}>
                         {this.state.position.map(function(options){
                             return (<option key={options._id} value={options._id}>{options.name}</option>)
                         })}
                     </select>
+                    {positionAlert}
                 </div>
                 
                 <div className='form-group'>
                     <label>Department</label>
-                    &nbsp; {departmentAlert}
                     <select className="form-control" value={this.state.departmentValue} onChange={this.onSelectDepartment.bind(this)}>
                         {this.state.department.map(function(options){
                             return (<option key={options._id} value={options._id}>{options.name}</option>)
                         })}
                     </select>
+                    {departmentAlert}
                 </div>
 
                 <div className='form-group'>
                     <label>Manhour Rate</label>
-                    &nbsp; {manHourAlert}
                     <input type="number" maxLength={"8"} className='form-control' value={this.state.manHour} onChange={this.onSetManHourHandler.bind(this)}/>
+                    <span className="error-color">{this.manhourStatus()}</span>
                 </div>
                 
                 <div className='btn-wrap'>

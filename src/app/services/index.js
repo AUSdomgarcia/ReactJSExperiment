@@ -1217,7 +1217,7 @@ export class ServiceAdd extends Component {
                 {/* RIGHT SIDE */}
                 <div className="col-xs-6">
                     <div className="form-group">
-                        <label>Create By</label>
+                        <label>Created By</label>
                         <input type="text" className="form-control" value={this.state.accountName} disabled/>
                     </div>
 
@@ -1386,7 +1386,7 @@ export class ServiceEdit extends Component {
                 {/* RIGHT SIDE */}
                 <div className="col-xs-6">
                     <div className="form-group">
-                        <label>Create By</label>
+                        <label>Created By</label>
                         <input type="text" className="form-control" disabled/>
                     </div>
 

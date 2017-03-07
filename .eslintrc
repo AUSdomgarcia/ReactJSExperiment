@@ -38,6 +38,11 @@
         "no-unreachable": 0,
         
         "react/no-direct-mutation-state": 0,
-        "no-case-declarations":0
+        
+        "no-case-declarations":0,
+
+        "use-isnan": 0,
+
+        "react/no-danger": 0
     }
 }

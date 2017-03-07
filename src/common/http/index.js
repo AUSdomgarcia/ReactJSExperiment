@@ -1,8 +1,8 @@
 import axios from 'axios';
 import jquery from 'jquery';
 
-// const baseURL = 'http://www.cerebrum-api-staging.dev:8096/api'; // PROD
-const baseURL = 'http://172.16.100.90/api.cerebrum/public'; // LOCAL
+const baseURL = 'http://www.cerebrum-api-staging.dev:8096/api'; // PROD
+// const baseURL = 'http://172.16.100.90/api.cerebrum/public'; // LOCAL
 
 
 
@@ -134,6 +134,9 @@ let postPersonnelsDelete = function(obj){
   return axios.post( baseURL + '/rate-cards/personnels/delete', obj );
 }
 let getPersonnelSearch = function(params){
+
+  console.log( baseURL + '/rate-cards/personnels/search' + params );
+  
   return axios.get( baseURL + '/rate-cards/personnels/search' + params )
 }
 let getRateCardsServiceByServiceCategoryByServiceCategoryId = function(id){

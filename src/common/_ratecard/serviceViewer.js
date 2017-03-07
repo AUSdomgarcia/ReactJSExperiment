@@ -4,7 +4,7 @@ import sortable from 'sortablejs';
 
 import '../categoryTreeView/categoryTreeView.scss';
 
-import xhr from 'jquery';
+import jquery from 'jquery';
 
 export class ServiceViewer extends Component {
     
@@ -21,7 +21,7 @@ export class ServiceViewer extends Component {
         if(this.props.servicesRef!==null || this.props.servicesRef!==undefined ){
             if(this.props.servicesRef.length!==0){
                 this.props.servicesRef.map(function(data, index){
-                    xhr.extend(data, {order:index});
+                    jquery.extend(data, {order:index});
                 });
             this.setState({servicesRef: this.props.servicesRef});
             }
@@ -31,6 +31,9 @@ export class ServiceViewer extends Component {
 
     componentDidMount(){
         let scope = this;
+
+        const column = jquery('.three-column');
+        column.height(column.parent().height() + 10);
 
         let el = document.getElementById('sortableItem_' + this.props.uniqueId);
 
@@ -54,7 +57,7 @@ export class ServiceViewer extends Component {
                 var items = e.to.children;
                 var result = [];
                 for (var i = 0; i < items.length; i++) {
-                    result.push({ id: xhr(items[i])[0].dataset.id, service_id: xhr(items[i])[0].dataset.id, order: i });
+                    result.push({ id: jquery(items[i])[0].dataset.id, service_id: jquery(items[i])[0].dataset.id, order: i });
                 }
 
                 console.log('ratecard/save/onEnd', result);
@@ -66,7 +69,7 @@ export class ServiceViewer extends Component {
                 var items = e.to.children;
                 var result = [];
                 for (var i = 0; i < items.length; i++) {
-                    result.push({ id: xhr(items[i])[0].dataset.id, service_id: xhr(items[i])[0].dataset.id, order: i });
+                    result.push({ id: jquery(items[i])[0].dataset.id, service_id: jquery(items[i])[0].dataset.id, order: i });
                 }
 
                 console.log('ratecard/save/onSort', result);

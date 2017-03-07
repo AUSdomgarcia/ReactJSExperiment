@@ -4,6 +4,8 @@ import React, {Component} from 'react';
 
 import './categoryTreeView.scss';
 
+import jquery from 'jquery';
+
 import {ServiceViewer} from '../../common/_ratecard/serviceViewer';
 
 export class CategoryTreeView extends Component {
@@ -18,7 +20,7 @@ export class CategoryTreeView extends Component {
     }
 
     componentDidMount(){
-        console.log('componentDidMount');
+        //
     }
 
     componentWillReceiveProps(nextProps){

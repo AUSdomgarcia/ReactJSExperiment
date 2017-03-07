@@ -100,8 +100,8 @@ export class Logs extends Component {
                         <td>{ data.user.name }</td>
                         <td>{ data.activity }</td>
                         <td>{ data.field }</td>
-                        <td>{ data.from }</td>
-                        <td>{ data.to }</td>
+                        <td dangerouslySetInnerHTML={{__html: data.from}}></td>
+                        <td dangerouslySetInnerHTML={{__html: data.to}}></td>
                         <td>{ data.updated_at }</td>
                     </tr>
                 )

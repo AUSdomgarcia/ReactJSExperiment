@@ -996,6 +996,10 @@ export class RateCardSave extends Component {
             }
         }
     }
+
+    componentDidMount(){
+        //
+    }
     
     callbackUpdateServiceCategory(serviceCategory){
         this.setState({serviceCategory});

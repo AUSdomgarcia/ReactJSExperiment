@@ -534,8 +534,9 @@ export class PackageRate extends Component {
 
         this.state = {
             'package_total': 0,
-            'package_discount': 1,
-            'package_rate': 0
+            'package_discount': 0,
+            'package_rate': 0,
+            'canProceed': true
         }
     }
 
@@ -554,7 +555,7 @@ export class PackageRate extends Component {
             });
         }
 
-        let WSpackageDiscount = window.sessionStorage.getItem('package_discount') || 1;
+        let WSpackageDiscount = window.sessionStorage.getItem('package_discount') || 0;
         let discount = +WSpackageDiscount;
         this.setState({package_discount: discount});
 
@@ -578,23 +579,46 @@ export class PackageRate extends Component {
     }
 
     onDiscountChange(evt){
-        console.log('called');
-
         let discount = +evt.target.value;
-        if(discount > 100 || discount < 1){
-            // alert('Should be greater then 1 and not exceed 100');
-            toastr.error('Discount Should be greater than 1 and not exceeds 100');
-            discount = 1;
-        }
-        
+        let word     = evt.target.value;
+
         this.setState({package_discount: discount});
 
-        window.sessionStorage.setItem('package_discount', discount);
+        if(word.trim() === ""){
+            // do nothing...
+        } else {
+            if(discount > 100){
+                this.setState({canProceed: false});
+            } else if(discount < 0){
+                this.setState({canProceed: false});
+            } else {
+                this.setState({canProceed: true});
+                this.computePackageRate(discount);
+                window.sessionStorage.setItem('package_discount', discount);
+            }
+        }
+    }
 
-        this.computePackageRate(discount);
+    onNextHandler(){
+        if(this.state.canProceed){
+            this.context.router.push('/packages/permission');
+        } else {
+            this.setState({package_discount:0});
+        }
+    }
+
+    nextStateStatus(){
+        let display = "";
+        if(!this.state.canProceed){
+            display = "Kindly provide an appropriate discount."
+        }
+        return display;
     }
 
     render () {
+
+        
+
         return (
             <div>
                 <AsideNav path={this.props.location.pathname}/>
@@ -620,6 +644,7 @@ export class PackageRate extends Component {
                                 </div>
                                 <div className="col-xs-9">
                                     <input type='number' className='form-control' value={this.state.package_discount} onChange={this.onDiscountChange.bind(this)} />
+                                    <span className="error-color">{this.nextStateStatus()}</span>
                                 </div>
                             </div>
 
@@ -639,7 +664,9 @@ export class PackageRate extends Component {
                     <br />
 
                     <Link className='btn btn-default pull-left' to='/packages/choose'>Back</Link>
-                    <Link className='btn btn-primary pull-right' to='/packages/permission'>Next</Link>
+                    {/*<Link className='btn btn-primary pull-right' to='/packages/permission'>Next</Link>
+                */}
+                    <button type="button" className='btn btn-primary pull-right' onClick={this.onNextHandler.bind(this)}>Next</button>
                     </div>
 
                 </div>
@@ -649,7 +676,9 @@ export class PackageRate extends Component {
     }
 }
 
-
+PackageRate.contextTypes = {
+  router: React.PropTypes.object.isRequired
+};
 
 
 

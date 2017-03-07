@@ -36,7 +36,9 @@ export class Personnel extends Component {
         totalItemsCount: 0,
         pageRangeDisplayed: 0,
         activePage: 1,
-        globalSearchWord: ""
+        globalSearchWord: "",
+
+        personnelKeyword: ""
       }
   }
 
@@ -169,6 +171,12 @@ export class Personnel extends Component {
       let payload = response.data.payload;
       if(payload.length!==0){
         scope.setState({personnels: payload});
+
+        scope.setState({ activePage: response.data.pagination.current_page });
+        scope.setState({ totalItemsCount: response.data.pagination.total_records });
+        scope.setState({ itemsCountPerPage: response.data.pagination.limit });
+        scope.setState({ pageRangeDisplayed: response.data.pagination.total_records });
+
       } else {
         scope.setState({personnels: []});
       }
@@ -221,12 +229,34 @@ export class Personnel extends Component {
 
   onGlobalSearchInput(evt){
     let word = evt.target.value;
-    this.setState({globalSearchWord: word});
+    this.setState({personnelKeyword: word});
   }
 
   onGlobalSearch(evt){
-    alert('Nothing will happen for now.')
-  }
+    let scope = this;
+    let params = "?keyword=" + this.state.personnelKeyword;
+
+    getPersonnelSearch(params).then(function(response){
+      if(response.data.payload.length!==0){
+
+        scope.setState({ personnels: response.data.payload });
+
+        scope.setState({ activePage: response.data.pagination.current_page });
+        scope.setState({ totalItemsCount: response.data.pagination.total_records });
+        scope.setState({ itemsCountPerPage: response.data.pagination.limit });
+        scope.setState({ pageRangeDisplayed: response.data.pagination.total_records });
+
+      } else {
+         scope.setState({ personnels: [] });
+      }
+    })
+    .then(function(response){
+      // if(response.data.error){
+        // toastr.error(response.data.message);
+      // }
+      console.log('ERR<>', response);
+    })
+  }  
 
   render() {
     let personnelComponent = null;
@@ -404,7 +434,7 @@ export class Personnel extends Component {
               <div className="navbar-form navbar-left"> 
                 <div className="form-group"> 
                   <input className="form-control" placeholder="Search"
-                     value={this.state.globalSearchWord} 
+                     value={this.state.personnelKeyword} 
                      onChange={this.onGlobalSearchInput.bind(this)}
                      />
                 </div>&nbsp;
