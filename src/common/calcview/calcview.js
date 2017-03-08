@@ -14,11 +14,15 @@ export class CalcView extends Component {
 
     componentWillMount(){
         if(this.state.rate!==this.props.rate){
-            this.setState({rate:this.props.rate});
+            let rate = this.props.rate;
+            this.setState({rate: (+rate).formatMoney(2, '.', ',') });
         }
+
         if(this.state.total!==this.props.total){
-            this.setState({total:this.props.total});
+            let total = this.props.total;
+            this.setState({total: (+total).formatMoney(2, '.', ',') });
         }
+
         if(this.state.discount!==this.props.discount){
             this.setState({discount:this.props.discount});
         }

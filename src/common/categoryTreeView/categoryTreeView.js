@@ -24,9 +24,9 @@ export class CategoryTreeView extends Component {
     }
 
     componentWillReceiveProps(nextProps){
-        if(nextProps.ratecardname!==this.state.name){
-            this.setState({ name: nextProps.ratecardname });
-            this.setState({ description: nextProps.ratecarddesc });
+        if(nextProps.rateCardName!==this.state.name){
+            this.setState({ name: nextProps.rateCardName });
+            this.setState({ description: nextProps.rateCardDesc });
         }
 
         console.log('componentWillReceiveProps');
@@ -37,9 +37,9 @@ export class CategoryTreeView extends Component {
     }
 
     componentWillMount(){
-        if(this.props.ratecardname.length!==0){
-            this.setState({ name: this.props.ratecardname });
-            this.setState({ description: this.props.ratecarddesc });
+        if(this.props.rateCardName.length!==0){
+            this.setState({ name: this.props.rateCardName });
+            this.setState({ description: this.props.rateCardDesc });
         }
 
         console.log('componentWillMount');

@@ -334,7 +334,7 @@ export class ManageServices extends Component {
                 <div className="header">
                     <div className="col-xs-6 text-left">
                         <div className="row">
-                            <Link to="/services">&lt;&lt; Back</Link>
+                            <Link to="/services">Back</Link>
                         </div>
                     </div>
 
@@ -1194,10 +1194,8 @@ export class ServiceAdd extends Component {
         return ( 
             <div>
                 <h3 className="sky">Manage Service: <small>{this.state.titleReference}</small></h3>
-                
-                {/*this.displayAlert()*/}
 
-                <Link to="/services">&lt;&lt; Back</Link>
+                <Link to="/services">Back</Link>
 
                 <br />
 

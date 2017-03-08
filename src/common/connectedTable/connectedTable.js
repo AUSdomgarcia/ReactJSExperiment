@@ -219,7 +219,7 @@ export class ConnectedTable extends Component {
                         <td>{data.category.name}</td>
                         <td>{data.name}</td>
                         <td>{data.description}</td>
-                        <td>{data.subtotal}</td>
+                        <td>{ (+data.subtotal).formatMoney(2, '.', ',') }</td>
                         <td>
                             <button type="button" 
                             data-index={index}
@@ -241,7 +241,7 @@ export class ConnectedTable extends Component {
                         <td>{data.category.name}</td>
                         <td>{data.name}</td>
                         <td>{data.description}</td>
-                        <td>{data.subtotal}</td>
+                        <td>{ (+data.subtotal).formatMoney(2, '.', ',') }</td>
                         <td>
                             <button type="button" 
                             data-index={index}

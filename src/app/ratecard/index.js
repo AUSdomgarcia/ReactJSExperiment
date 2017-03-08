@@ -1,10 +1,7 @@
 import React, {Component} from 'react';
 import {Link} from 'react-router';
-
 import jquery from 'jquery';
-
 import toastr from 'toastr';
-
 import './ratecard.scss';
 
 import { 
@@ -22,8 +19,8 @@ export class RateCard extends Component {
         super(props);
 
         this.state = {
-            rateCardArr: [],
-            archiveRateCardArr: [],
+            rateCards: [],
+            archiveRateCards: [],
             has_changed: false,
             final_services: []
         };
@@ -33,20 +30,22 @@ export class RateCard extends Component {
         //
     }
 
-    segregateRateCard(dataArr){
-        let tempRateCard = [];
-        let tempArchived = [];
+    segregateRateCard(data){
+        let ratecards = [];
+        let archives = [];
 
-        dataArr.map(function(data){
+        data.map(function(data){
             if(data.is_archived==='0'){
-                tempRateCard.push(data);
+                ratecards.push(data);
             } else {
-                tempArchived.push(data);
+                archives.push(data);
             }
         });
-        console.log('active', tempRateCard.length, 'archive', tempArchived.length);
-        this.setState({rateCardArr: tempRateCard});
-        this.setState({archiveRateCardArr: tempArchived });
+
+        console.log('active', ratecards.length, 'archive', archives.length);
+
+        this.setState({rateCards: ratecards});
+        this.setState({archiveRateCards: archives });
     }
 
     componentWillMount(){
@@ -62,26 +61,26 @@ export class RateCard extends Component {
         });
     }
 
-    setupEditModeById(id, cb){
+    saveSessionByAction(id, cb){
         let scope = this;
         window.sessionStorage.clear();
         getRateCardById(id).then(function(response){
             console.log('>>>>', id, response);
             // original
             window.sessionStorage.setItem('id', id);
-            window.sessionStorage.setItem('ratecardname', response.data.payload[0].name);
-            window.sessionStorage.setItem('ratecarddesc', response.data.payload[0].description);
+            window.sessionStorage.setItem('rateCardName', response.data.payload[0].name);
+            window.sessionStorage.setItem('rateCardDesc', response.data.payload[0].description);
             window.sessionStorage.setItem('selectedRateTypeId', response.data.payload[0].rate_type_id);
-            window.sessionStorage.setItem('includedServiceArr', JSON.stringify(response.data.payload[0].services));
+            window.sessionStorage.setItem('includedServices', JSON.stringify(response.data.payload[0].services));
             window.sessionStorage.setItem('permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
             console.log('raw', response.data.payload[0].permitted_users);
 
             // bckup
             window.sessionStorage.setItem('bck_id', id);
-            window.sessionStorage.setItem('bck_ratecardname', response.data.payload[0].name);
-            window.sessionStorage.setItem('bck_ratecarddesc', response.data.payload[0].description);
+            window.sessionStorage.setItem('bck_rateCardName', response.data.payload[0].name);
+            window.sessionStorage.setItem('bck_rateCardDesc', response.data.payload[0].description);
             window.sessionStorage.setItem('bck_selectedRateTypeId', response.data.payload[0].rate_type_id);
-            window.sessionStorage.setItem('bck_includedServiceArr', JSON.stringify(response.data.payload[0].services));
+            window.sessionStorage.setItem('bck_includedServices', JSON.stringify(response.data.payload[0].services));
             window.sessionStorage.setItem('bck_permittedUserArr', JSON.stringify(response.data.payload[0].permitted_users));
             // callback
             cb();
@@ -93,12 +92,9 @@ export class RateCard extends Component {
         let scope = this;
         if(id===undefined || id===null) return;
         
-        this.setupEditModeById(id, function(){
-            let delay = setTimeout(function(){
-                clearTimeout(delay);
+        this.saveSessionByAction(id, function(){
                 window.sessionStorage.setItem('ratecardAction', 'edit');
                 scope.context.router.push('/ratecard/add');
-            }, 16);
         });
     }
 
@@ -109,7 +105,7 @@ export class RateCard extends Component {
         
         window.sessionStorage.clear();
 
-        this.setupEditModeById(id, function(){
+        this.saveSessionByAction(id, function(){
             window.sessionStorage.setItem('ratecardAction', 'view');
             scope.context.router.push('/ratecard/save');
         });
@@ -122,7 +118,7 @@ export class RateCard extends Component {
         
         window.sessionStorage.clear();
 
-        this.setupEditModeById(id, function(){
+        this.saveSessionByAction(id, function(){
             window.sessionStorage.setItem('ratecardAction', 'archive_view');
             scope.context.router.push('/ratecard/save');
         });
@@ -179,13 +175,13 @@ export class RateCard extends Component {
     }
 
     render(){
-        let activeRateCards = <tr><td colSpan={5}>No data.</td></tr>;
-        let archiveRateCards = <tr><td colSpan={5}>No data.</td></tr>;
+        let activeRateCardsTable = <tr><td colSpan={5}>No data.</td></tr>;
+        let archiveRateCardsTable = <tr><td colSpan={5}>No data.</td></tr>;
         let scope = this;
 
-        if(this.state.rateCardArr.length !== 0){
-            activeRateCards = 
-            this.state.rateCardArr.map(function(data){
+        if(this.state.rateCards.length !== 0){
+            activeRateCardsTable = 
+            this.state.rateCards.map(function(data){
                 return (
                     <tr key={data.id}>
                         <td>{data.name}</td>
@@ -201,9 +197,9 @@ export class RateCard extends Component {
             })
         }
 
-        if(this.state.archiveRateCardArr.length !== 0){
-            archiveRateCards = 
-            this.state.archiveRateCardArr.map(function(data){
+        if(this.state.archiveRateCards.length !== 0){
+            archiveRateCardsTable = 
+            this.state.archiveRateCards.map(function(data){
                 return (
                     <tr key={data.id}>
                         <td>{data.name}</td>
@@ -239,7 +235,7 @@ export class RateCard extends Component {
                             </thead>
 
                             <tbody>
-                                {activeRateCards}
+                                {activeRateCardsTable}
                             </tbody>
                         </table>
 
@@ -263,7 +259,7 @@ export class RateCard extends Component {
                             </thead>
 
                             <tbody>
-                                {archiveRateCards}
+                                {archiveRateCardsTable}
                             </tbody>
                         </table>
                     </div>
@@ -309,8 +305,8 @@ export class RateCardAdd extends Component {
     constructor(props){
         super(props);
         this.state = {
-            ratecardname: "",
-            ratecarddesc: "",
+            rateCardName: "",
+            rateCardDesc: "",
 
             hasName: true,
             hasDescription: true
@@ -318,11 +314,11 @@ export class RateCardAdd extends Component {
     }
 
     componentWillMount(){
-        if(window.sessionStorage.getItem('ratecardname')){
-            this.setState({ ratecardname: window.sessionStorage.getItem('ratecardname') });
+        if(window.sessionStorage.getItem('rateCardName')){
+            this.setState({ rateCardName: window.sessionStorage.getItem('rateCardName') });
         }
-        if(window.sessionStorage.getItem('ratecarddesc')){
-            this.setState({ ratecarddesc: window.sessionStorage.getItem('ratecarddesc') });
+        if(window.sessionStorage.getItem('rateCardDesc')){
+            this.setState({ rateCardDesc: window.sessionStorage.getItem('rateCardDesc') });
         }
     }
 
@@ -330,38 +326,48 @@ export class RateCardAdd extends Component {
         // 
     }
 
-    onRateCardNameHandler(evt){
-        this.setState({ ratecardname: evt.target.value });
-        window.sessionStorage.setItem('ratecardname', evt.target.value);
+    onrateCardNameHandler(evt){
+        let word = evt.target.value;
+            word = word.trim();
+        this.setState({ rateCardName: word });
+        this.setState({hasName: true});
+        window.sessionStorage.setItem('rateCardName', word);
     }
 
-    onRateCardDescriptionHandler(evt){
-        this.setState({ ratecarddesc: evt.target.value });
-        window.sessionStorage.setItem('ratecarddesc', evt.target.value);
+    onrateCardDescriptionHandler(evt){
+        let word = evt.target.value;
+            word = word.trim();
+        this.setState({ rateCardDesc: word });
+        this.setState({hasDescription: true});
+        window.sessionStorage.setItem('rateCardDesc', word);
     }
 
     onNext(){
         let scope = this;
-        let ratecarddesc = window.sessionStorage.getItem('ratecarddesc') || "";
-        let ratecardname = window.sessionStorage.getItem('ratecardname')  || "";
+        let rateCardDesc = window.sessionStorage.getItem('rateCardDesc') || "";
+        let rateCardName = window.sessionStorage.getItem('rateCardName')  || "";
         let ratecard_id = window.sessionStorage.getItem('id');
+        let rateCardAction = window.sessionStorage.getItem('ratecardAction') || null;
 
-        if(ratecardname.length===0){
+        rateCardName = rateCardName.trim();
+        rateCardDesc = rateCardDesc.trim();
+
+        if(rateCardName.length===0){
             this.setState({hasName: false});
         } else {
             this.setState({hasName:true});
         }
 
-        if(ratecarddesc.length===0){
+        if(rateCardDesc.length===0){
             this.setState({hasDescription: false});
         } else {
-            this.setState({hasDescription:true})
+            this.setState({hasDescription:true});
         }
 
-        console.log( ratecard_id, ratecardname );
+        if(rateCardName.length!==0 && rateCardDesc.length !==0){
+            let data = (rateCardAction==='edit') ? {name: rateCardName, id: ratecard_id } : { name: rateCardName};
 
-        if(ratecardname.length!==0 && ratecarddesc.length !==0){
-            postRateCardRateCardValidate({name: ratecardname, id: ratecard_id }).then(function(response){
+            postRateCardRateCardValidate(data).then(function(response){
                 scope.context.router.push('/ratecard/choose');
             })
             .catch(function(response){
@@ -400,17 +406,16 @@ export class RateCardAdd extends Component {
                     <div className='col-md-12'>
                         <div className='form-group'>
                             <label>Rate Card name</label>
-                            <input className='form-control' type='text' value={this.state.ratecardname} onChange={this.onRateCardNameHandler.bind(this)} />
+                            <input className='form-control' type='text' value={this.state.rateCardName} onChange={this.onrateCardNameHandler.bind(this)} />
                             <span className="text-red">{this.nameNotifier()}</span>
 
                             <br />
                             <label>Rate Card Description</label>
-                            <input className='form-control' type='text' value={this.state.ratecarddesc} onChange={this.onRateCardDescriptionHandler.bind(this)} />
+                            <input className='form-control' type='text' value={this.state.rateCardDesc} onChange={this.onrateCardDescriptionHandler.bind(this)} />
                             <span className="text-red">{this.descriptionNotifier()}</span>
                         </div>
                         
                         <Link className='btn btn-default pull-left' to='/ratecard'>Back</Link>
-                    {/*<Link className='btn btn-primary pull-right' to='/ratecard/choose'>Next</Link>*/}
                         <button type="button" className="btn btn-primary pull-right" onClick={this.onNext.bind(this)}>Next</button>
                     </div>
 
@@ -454,18 +459,19 @@ export class RateCardChoose extends Component {
         super(props);
         this.state = {
             rateTypeValue: 0,
-            rateTypeArr: [],
-
-            serviceArr: [],
-            includedServiceArr: [],
+            rateTypes: [],
+            services: [],
+            includedServices: [],
             selectedRateTypeId: 0,
             totalServices: 0,
+
+            hasService: true,
         }
     }
 
     componentWillMount(){
         // Update when available
-        let arr = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || [];
+        let arr = JSON.parse(window.sessionStorage.getItem('includedServices')) || [];
         let scope = this;
         let id = 0;
         let wsratetypeid = window.sessionStorage.getItem('selectedRateTypeId');
@@ -474,21 +480,21 @@ export class RateCardChoose extends Component {
 
         if(arr.length!==0){
             this.setState({ totalServices: arr.length });
-            this.setState({ includedServiceArr: arr });
+            this.setState({ includedServices: arr });
         }
 
         // getRateTypes
         getServiceRateTypes().then(function(response){
             if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
-                scope.setState({ rateTypeArr: response.data.payload });        
+                scope.setState({ rateTypes: response.data.payload });        
 
                 if(wsratetypeid){
                     id = wsratetypeid;
                     scope.setState({rateTypeValue: id});
                 } else {
                     // Fetch rateType automatically
-                    id = scope.state.rateTypeArr[0].id;
+                    id = scope.state.rateTypes[0].id;
                     window.sessionStorage.setItem('selectedRateTypeId', id);
                     scope.setState({rateTypeValue: id});
                 }
@@ -497,7 +503,7 @@ export class RateCardChoose extends Component {
                     console.log('get_services_by_id', response.data.payload);
                     if(response.data.hasOwnProperty('payload')===false) return;
                     if(response.data.payload.length!==0){
-                        scope.setState({ serviceArr: response.data.payload })
+                        scope.setState({ services: response.data.payload })
                     }
                 });
             }
@@ -516,21 +522,21 @@ export class RateCardChoose extends Component {
             console.log(response.data);
             if(response.data.hasOwnProperty('payload')===false) return;
             if(response.data.payload.length!==0){
-                scope.setState({ serviceArr: response.data.payload })
+                scope.setState({ services: response.data.payload })
             } else {
-                scope.setState({ serviceArr: [] });
+                scope.setState({ services: [] });
             }
         });
 
         this.setState({rateTypeValue: id});
 
-        this.setState({includedServiceArr: []});
+        this.setState({includedServices: []});
 
         this.setState({ totalServices: 0});
 
         let resetArr = [];
         
-        window.sessionStorage.setItem('includedServiceArr', JSON.stringify(resetArr) );
+        window.sessionStorage.setItem('includedServices', JSON.stringify(resetArr) );
 
         window.sessionStorage.setItem('selectedRateTypeId', evt.target.value);
     }
@@ -541,88 +547,72 @@ export class RateCardChoose extends Component {
 
         let bool = jquery( jquery(evt.target)[0] ).is(':checked');
 
-        this.updateIncludedServiceArr(id, bool);
+        this.updateincludedServices(id, bool);
         
-        this.setState({ totalServices: this.state.includedServiceArr.length});
+        this.setState({ totalServices: this.state.includedServices.length});
     }
 
-    updateIncludedServiceArr(id, bool){
+    updateincludedServices(id, bool){
         // console.log(id, bool);
         let scope = this;
         let exists = false;
         let currIndex = 0;
 
         // initial when 0
-        if(this.state.includedServiceArr.length===0){
+        if(this.state.includedServices.length===0){
             console.log('once');
-            this.state.includedServiceArr.push({ "service_id": id });
-            this.setState({ includedServiceArr: this.state.includedServiceArr });
+            this.state.includedServices.push({ "service_id": id });
+            this.setState({ includedServices: this.state.includedServices });
 
-            window.sessionStorage.setItem('includedServiceArr', JSON.stringify(this.state.includedServiceArr) );
-            console.log('Included service', window.sessionStorage.getItem('includedServiceArr') );
+            this.setState({hasService:true});
+
+            window.sessionStorage.setItem('includedServices', JSON.stringify(this.state.includedServices) );
+            console.log('Included service', window.sessionStorage.getItem('includedServices') );
             return;
         }
 
         // checking availability
-        for (let i = 0; i < this.state.includedServiceArr.length; i++) {
-            if (+this.state.includedServiceArr[i].service_id === +id) {
+        for (let i = 0; i < this.state.includedServices.length; i++) {
+            if (+this.state.includedServices[i].service_id === +id) {
                 currIndex = i;
                 exists = true;
             }
         }
 
         if(bool===false){
-            this.state.includedServiceArr.splice(currIndex, 1);
+            this.state.includedServices.splice(currIndex, 1);
         }
 
         if(exists===false){
-            this.state.includedServiceArr.push({ "service_id": id });
+            this.state.includedServices.push({ "service_id": id });
         }
 
-        this.setState({ includedServiceArr: this.state.includedServiceArr });
+        this.setState({ includedServices: this.state.includedServices });
 
-        let updatedArr = JSON.stringify(this.state.includedServiceArr);
-        window.sessionStorage.setItem('includedServiceArr', updatedArr);
+        let updatedArr = JSON.stringify(this.state.includedServices);
+        window.sessionStorage.setItem('includedServices', updatedArr);
         
-        // console.log('includedServiceArr', window.sessionStorage.getItem('includedServiceArr') );
+        console.log('>>', this.state.includedServices.length); 
 
-        console.log('>>', this.state.includedServiceArr.length); 
+        this.setState({hasService:true});
     }
     
-    // getCategoryName(data){
-    //     let name = "no-name";
-    //     if(data.category!==null){
-    //         if(data.category.hasOwnProperty('name')){
-    //             name = data.category.name;
-    //         }
-    //     }
-    //     return name;
-    // }
-
     onNext(){
         let selectedRateTypeId = window.sessionStorage.getItem('selectedRateTypeId') || 0;
-        let includedServiceArr = window.sessionStorage.getItem('includedServiceArr') || [];
+        let includedServices = window.sessionStorage.getItem('includedServices') || [];
             
-        let checkArr = (includedServiceArr.length!==0) ? JSON.parse(includedServiceArr) : [];
+        let myServices = (includedServices.length!==0) ? JSON.parse(includedServices) : [];
 
-        // console.log(selectedRateTypeId, includedServiceArr);
-
-        if(checkArr.length===0){
-            // if(confirm('No selected Service')){
-            //     return;
-            // } else {
-            //     return;
-            // }
-            toastr.error('No selected service(s).');
+        if(myServices.length===0){
+            this.setState({hasService: false});
             return;
         }
-
         this.context.router.push('/ratecard/permission');
     }
 
     checkStored(id){
         let bool = false;
-        let checkBoxer = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || this.state.includedServiceArr;
+        let checkBoxer = JSON.parse(window.sessionStorage.getItem('includedServices')) || this.state.includedServices;
         
         checkBoxer.map(function(data){
             if(+id===+data.service_id){
@@ -632,13 +622,21 @@ export class RateCardChoose extends Component {
         return bool;
     }
 
+    serviceNotifier(){
+        let display = null;
+        if(!this.state.hasService){
+            display = "Kindly select a service.";
+        }
+        return display;
+    }
+
     render(){
         let selectRateTypes = <option>No data.</option>;
         let scope = this;
 
-        if(this.state.rateTypeArr.length!==0){
+        if(this.state.rateTypes.length!==0){
             selectRateTypes =
-            this.state.rateTypeArr.map(function(data){
+            this.state.rateTypes.map(function(data){
                 return (
                     <option key={data.id} value={data.id}>{data.name}</option>
                 )
@@ -647,9 +645,9 @@ export class RateCardChoose extends Component {
 
         let servicesDynamic = <tr><td colSpan={5}>No data.</td></tr>      
 
-        if(this.state.serviceArr.length!==0 && this.state.rateTypeArr.length!==0){
+        if(this.state.services.length!==0 && this.state.rateTypes.length!==0){
             servicesDynamic = 
-            this.state.serviceArr.map(function(data){
+            this.state.services.map(function(data){
                 if(data.category!==null){
                     return (
                         <tr key={data.id}>
@@ -714,15 +712,16 @@ export class RateCardChoose extends Component {
 
                         <div className='selected-count'>Total Services:&nbsp;<span>{this.state.totalServices}</span></div>
                     </div>
+                    
+                    <br />
 
+                    <span className="text-red">{this.serviceNotifier()}</span>
+                    
+                    <br />
                     <br />
 
                     <Link className='btn btn-default pull-left' to='/ratecard/add'>Back</Link>
-
                     <button type="button" className="btn btn-primary pull-right" onClick={this.onNext.bind(this)}>Next</button>
-                    
-                    {/*<Link className='btn btn-primary pull-right' to='/ratecard/permission'>Next</Link>*/}
-
                     </div>
 
                 </div>
@@ -763,7 +762,8 @@ export class RateCardPermission extends Component {
     constructor(props){
         super(props);
         this.state = {
-            permittedUserArr: []
+            permittedUserArr: [],
+            hasPermittedUser: true,
         };     
     }
 
@@ -782,24 +782,30 @@ export class RateCardPermission extends Component {
     }
 
     callbackonUpdateArray(arrObject){
-        console.log('callback to parent', arrObject);
-
-        this.setState({permittedUserArr: arrObject});
-        window.sessionStorage.setItem('permittedUserArr', JSON.stringify(arrObject) );
+        let scope = this;
+        this.setState({permittedUserArr: arrObject},
+        
+        function(){
+            scope.setState({hasPermittedUser: true});
+            window.sessionStorage.setItem('permittedUserArr', JSON.stringify(arrObject) );
+        });
     }
     
     onNext(){
-        let arr = JSON.parse(window.sessionStorage.getItem('permittedUserArr')) || [];
-        if(arr.length===0){
-            // if(confirm('No selected user')){
-            //     return;
-            // }else{
-            //     return;
-            // }
-            toastr.error('No selected user(s).');
+        let permittedUsers = JSON.parse(window.sessionStorage.getItem('permittedUserArr')) || [];
+        if(permittedUsers.length===0){
+            this.setState({hasPermittedUser:false});
             return;
         }
         this.context.router.push('/ratecard/save');
+    }
+
+    userNotifier(){
+        let display = null;
+        if(!this.state.hasPermittedUser){
+            display = "Kindly select a user.";
+        }
+        return display;
     }
 
     render(){
@@ -816,12 +822,16 @@ export class RateCardPermission extends Component {
                         users={this.state.permittedUserArr} 
                         onUpdateArray={this.callbackonUpdateArray.bind(this)} />
 
+                        <span className="text-red">{this.userNotifier()}</span>
+
+                        <br />
                         <br />
 
                         <Link className='btn btn-default pull-left' to='/ratecard/choose'>Back</Link>
                         <button type="button" className="btn btn-primary pull-right" onClick={this.onNext.bind(this)}>Next</button>
-                        {/*<Link className='btn btn-primary pull-right' to='/ratecard/save'>Next</Link>*/}
+                    
                     </div>
+
                 </div>
 
             <br className="clearfix" /><br />
@@ -968,18 +978,18 @@ export class RateCardSave extends Component {
 
     // FIRST CHECK SESSION then change state
     componentWillMount(){
-        if(window.sessionStorage.getItem('ratecardname')) this.setState({ name : window.sessionStorage.getItem('ratecardname') });
-        if(window.sessionStorage.getItem('ratecarddesc')) this.setState({ description : window.sessionStorage.getItem('ratecarddesc') });
+        if(window.sessionStorage.getItem('rateCardName')) this.setState({ name : window.sessionStorage.getItem('rateCardName') });
+        if(window.sessionStorage.getItem('rateCardDesc')) this.setState({ description : window.sessionStorage.getItem('rateCardDesc') });
         if(window.sessionStorage.getItem('selectedRateTypeId')) this.setState({ rate_type_id : window.sessionStorage.getItem('selectedRateTypeId') });
         if(window.sessionStorage.getItem('permittedUserArr')) this.setState({ permitted_user_ids : window.sessionStorage.getItem('permittedUserArr') });
 
         // Prepare Service Category
-        let includedServiceArr = JSON.parse(window.sessionStorage.getItem('includedServiceArr')) || []; 
+        let includedServices = JSON.parse(window.sessionStorage.getItem('includedServices')) || []; 
         let scope = this;
 
         let servicesWithOrder = [];
-        if(includedServiceArr.length!==0){
-            includedServiceArr.map(function(data, index){
+        if(includedServices.length!==0){
+            includedServices.map(function(data, index){
                 servicesWithOrder.push({ service_id: data.service_id, order: index });
             });
 
@@ -1001,7 +1011,7 @@ export class RateCardSave extends Component {
                 break;
                 ///
                 case 'edit':
-                    let isRetain = window.sessionStorage.getItem('includedServiceArr')===window.sessionStorage.getItem('bck_includedServiceArr');
+                    let isRetain = window.sessionStorage.getItem('includedServices')===window.sessionStorage.getItem('bck_includedServices');
                     console.log('using edit_mode, isRetain:', isRetain);
 
                     if(isRetain){
@@ -1041,14 +1051,14 @@ export class RateCardSave extends Component {
     getChanges(){
         let changed = '0';
         
-        if(window.sessionStorage.getItem('bck_ratecardname')!==this.state.name){
+        if(window.sessionStorage.getItem('bck_rateCardName')!==this.state.name){
             changed = '1';
-            console.log('#1', window.sessionStorage.getItem('bck_ratecardname'), this.state.name);
+            console.log('#1', window.sessionStorage.getItem('bck_rateCardName'), this.state.name);
             console.log('------------------------------');
         }
-        if(window.sessionStorage.getItem('bck_ratecarddesc')!==this.state.description){
+        if(window.sessionStorage.getItem('bck_rateCardDesc')!==this.state.description){
             changed = '1';
-            console.log('#2', window.sessionStorage.getItem('bck_ratecarddesc'), this.state.description);
+            console.log('#2', window.sessionStorage.getItem('bck_rateCardDesc'), this.state.description);
             console.log('------------------------------');
         }
         if(window.sessionStorage.getItem('bck_selectedRateTypeId')!==this.state.rate_type_id){
@@ -1056,9 +1066,9 @@ export class RateCardSave extends Component {
             console.log('#3', window.sessionStorage.getItem('bck_selectedRateTypeId'), this.state.rate_type_id);
             console.log('------------------------------');
         }
-        if(window.sessionStorage.getItem('bck_includedServiceArr')!==window.sessionStorage.getItem('includedServiceArr')){
+        if(window.sessionStorage.getItem('bck_includedServices')!==window.sessionStorage.getItem('includedServices')){
             changed = '1';
-            console.log('#4', window.sessionStorage.getItem('bck_includedServiceArr'));
+            console.log('#4', window.sessionStorage.getItem('bck_includedServices'));
             console.log('#4', JSON.stringify(this.state.service_ids));
             console.log('------------------------------');
         }
@@ -1260,8 +1270,8 @@ export class RateCardSave extends Component {
 
                         <CategoryTreeView
                             serviceCategory={this.state.serviceCategory}
-                            ratecardname={this.state.name}
-                            ratecarddesc={this.state.description}
+                            rateCardName={this.state.name}
+                            rateCardDesc={this.state.description}
                             onUpdateServiceCategory={this.callbackUpdateServiceCategory.bind(this)}
                             onDrag={this.callbackOndrag.bind(this)}
                             onDrop={this.callbackOndrop.bind(this)}

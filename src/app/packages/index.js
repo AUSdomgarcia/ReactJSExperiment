@@ -258,14 +258,14 @@ export class PackageAdd extends Component {
         }
     }
     componentWillMount(){
-        let WSpackagename = window.sessionStorage.getItem('packagename');
-        let WSpackagedesc = window.sessionStorage.getItem('packagedesc');
+        let packageName = window.sessionStorage.getItem('packagename');
+        let packageDescription = window.sessionStorage.getItem('packagedesc');
         
-        if(WSpackagename){
-            this.setState({name: WSpackagename})
+        if(packageName){
+            this.setState({name: packageName})
         }
-        if(WSpackagedesc){
-            this.setState({description: WSpackagedesc})
+        if(packageDescription){
+            this.setState({description: packageDescription})
         }
         console.log('packageidistore', window.sessionStorage.getItem('packageId'));
     }
@@ -274,10 +274,12 @@ export class PackageAdd extends Component {
 
     onChangeName(evt){
         this.setState({name:evt.target.value});
+        this.setState({hasName: true});
         window.sessionStorage.setItem('packagename',evt.target.value);
     }
 
     onChangeDescription(evt){
+        this.setState({hasDescription: true});
         this.setState({description:evt.target.value});
         window.sessionStorage.setItem('packagedesc',evt.target.value);
     }
@@ -439,7 +441,8 @@ export class PackageChoose extends Component {
         super(props);
         this.state = {
             count: 0,
-            added_services: []
+            added_services: [],
+            hasService: true,
         }
     }
 
@@ -456,6 +459,9 @@ export class PackageChoose extends Component {
     callbackOnUpdate(addedServices){
         let scope = this;
         this.setState({ added_services: addedServices }, function(){
+
+            scope.setState({hasService:true});
+
             window.sessionStorage.setItem('addedServices', JSON.stringify(scope.state.added_services));
         });
         // Reset package_discount
@@ -463,15 +469,21 @@ export class PackageChoose extends Component {
     }
 
     onNext(){
-        let temp = JSON.parse(window.sessionStorage.getItem('addedServices')) || [];
-        if(temp.length===0){
-            // if(!confirm('No added services')) return false;
-            toastr.error('No added service(s).');
+        let addedSevices = JSON.parse(window.sessionStorage.getItem('addedServices')) || [];
+        if(addedSevices.length===0){
+            this.setState({hasService:false});
             return;
-
         } else {
             this.context.router.push('/packages/rate');
         }
+    }
+
+    serviceNotifier(){
+        let display = null;
+        if(!this.state.hasService){
+            display = "Kindly select a service.";
+        }
+        return display;
     }
 
     render(){
@@ -483,9 +495,15 @@ export class PackageChoose extends Component {
                         <ConnectedTable 
                             addedServices={this.state.added_services} 
                             onUpdate={this.callbackOnUpdate.bind(this)}/>  
-                            
+
+                        <span className="text-red">{this.serviceNotifier()}</span>
+
+                        <br />
+                        <br />
+
                         <Link className='btn btn-default pull-left' to='/packages/add'>Back</Link>
                         <button type="button" className="btn btn-primary pull-right" onClick={this.onNext.bind(this)}>Next</button>
+                    
                     </div>
                 </div>
             <br className="clearfix" /><br />
@@ -571,7 +589,7 @@ export class PackageRate extends Component {
         this.state = {
             'package_total': 0,
             'package_discount': 0,
-            'package_rate': 0,
+            'package_rate': "0",
             'canProceed': true
         }
     }
@@ -584,6 +602,7 @@ export class PackageRate extends Component {
         let WSaddedServices = window.sessionStorage.getItem('addedServices');
         let temp = (WSaddedServices)? JSON.parse(WSaddedServices) : [];
         let comulative = 0;
+        let scope = this;
 
         if(temp.length!==0){
             temp.map(function(data){
@@ -593,25 +612,31 @@ export class PackageRate extends Component {
 
         let WSpackageDiscount = window.sessionStorage.getItem('package_discount') || 0;
         let discount = +WSpackageDiscount;
+
         this.setState({package_discount: discount});
 
-        this.setState({package_total: comulative}, function(){
-            this.computePackageRate(discount);
+        let val = (+comulative).formatMoney(2, '.', ',');
+
+        this.setState({package_total: val}, function(){
+            scope.computePackageRate(discount);
         });
     }
 
     computePackageRate(discount){
         console.log('>>discount ', discount);
 
-        let packageTotal = +this.state.package_total;
+        let packageTotal = +this.state.package_total.replace(',','');
         let discounted   = packageTotal * discount / 100;
         let packageRate  = packageTotal - discounted;
             packageRate  = packageRate.toFixed(2);
 
-            console.log(discounted, this.state.package_total, packageRate);
+            console.log('see', discounted, this.state.package_total, packageRate);
+
+        packageRate = (+packageRate).formatMoney(2, '.', ',');
 
         this.setState({package_rate: packageRate });
-        window.sessionStorage.setItem('package_rate', packageRate);
+
+        window.sessionStorage.setItem('package_rate', packageRate );
     }
 
     onDiscountChange(evt){
@@ -668,7 +693,7 @@ export class PackageRate extends Component {
                                     <label>Total Package Rate</label>
                                 </div>
                                 <div className="col-xs-9">
-                                    <input type='number' className='form-control' value={this.state.package_total} disabled />
+                                    <input type='text' className='form-control' value={this.state.package_total} disabled />
                                 </div>
                             </div>
                             
@@ -676,7 +701,7 @@ export class PackageRate extends Component {
 
                             <div className='clearfix'>
                                 <div className="col-xs-3">
-                                    <label>Discount <small>(1%-100%)</small></label>
+                                    <label>Discount <small>(%)</small></label>
                                 </div>
                                 <div className="col-xs-9">
                                     <input type='number' className='form-control' value={this.state.package_discount} onChange={this.onDiscountChange.bind(this)} />
@@ -691,7 +716,7 @@ export class PackageRate extends Component {
                                     <label>Package Rate</label>
                                 </div>
                                 <div className="col-xs-9">
-                                    <input type='number' className='form-control' value={this.state.package_rate} disabled />
+                                    <input type='text' className='form-control' value={this.state.package_rate} disabled />
                                 </div>
                             </div>
 
@@ -786,7 +811,8 @@ export class PackagePermission extends Component {
     constructor(props){
         super(props);
         this.state = {
-            permittedUsers: []
+            permittedUsers: [],
+            hasUser: true,
         }
     }
 
@@ -800,18 +826,28 @@ export class PackagePermission extends Component {
     }
 
     callbackUpdate(permittedUsers){
-        this.setState({permittedUsers});
-        window.sessionStorage.setItem('permittedPackageUser', JSON.stringify(permittedUsers));
+        let scope = this;
+        this.setState({permittedUsers}, function(){
+            window.sessionStorage.setItem('permittedPackageUser', JSON.stringify(permittedUsers));
+            scope.setState({hasUser:true});
+        });
     }
 
     onNext(){
         let temp = JSON.parse(window.sessionStorage.getItem('permittedPackageUser')) || [];
         if(temp.length===0){
-            // if(confirm('No selected user')){ return;} else {return; }
-            toastr.error('No selected user(s).');
+            this.setState({hasUser: false});
             return;
         }
         this.context.router.push('/packages/save');
+    }
+
+    userNotifier(){
+        let display = null;
+        if(!this.state.hasUser){
+            display = "Kindly select a user.";
+        }
+        return display;
     }
 
     render () {
@@ -827,6 +863,8 @@ export class PackagePermission extends Component {
                             onUpdateArray={this.callbackUpdate.bind(this)} 
                         />
 
+                        <span className="text-red">{this.userNotifier()}</span>
+                        <br />
                         <br />
 
                         <Link className='btn btn-default pull-left' to='/packages/rate'>Back</Link>
@@ -1304,8 +1342,8 @@ export class PackageSave extends Component {
 
                         <CategoryTreeView
                             serviceCategory={this.state.categories}
-                            ratecardname={this.state.name}
-                            ratecarddesc={this.state.description}
+                            rateCardName={this.state.name}
+                            rateCardDesc={this.state.description}
                             onUpdateServiceCategory={this.callbackUpdateServiceCategory.bind(this)}
                             onDrag={this.callbackOndrag.bind(this)}
                             onDrop={this.callbackOndrop.bind(this)}

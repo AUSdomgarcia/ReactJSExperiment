@@ -22,13 +22,7 @@ export class Logs extends Component {
     }
 
     componentDidMount(){
-        // let scope = this;
-        // getLogs(this.props.serviceid).then(function(response){
-        //     if(response.data.hasOwnProperty('payload')===false) return;
-        //     if(response.data.payload.length!==0){
-        //         scope.setState({ logs: response.data.payload });    
-        //     }
-        // });
+        //
     }
 
     componentWillMount(){
@@ -161,13 +155,13 @@ export class Logs extends Component {
                 <table className="table table-bordered">
                     <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>Id</th>
                         <th>User</th>
                         <th>Activity</th>
                         <th>Field</th>
                         <th>From</th>
-                        <th>to</th>
-                        <th>Updated at</th>
+                        <th>To</th>
+                        <th>Updated on</th>
                     </tr>
                     </thead>
 
