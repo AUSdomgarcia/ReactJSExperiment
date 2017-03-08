@@ -94,7 +94,7 @@ export class ServiceViewer extends Component {
                         <span className='my-handle'>:: </span>
                         <div className='three-column'>{data.name}</div>{/*<strong>[{data.order}]</strong> */}    
                         <div className='three-column'>{data.description}</div>    
-                        <div className='three-column'>{data.subtotal}</div>    
+                        <div className='three-column'>{ (+data.subtotal).formatMoney(2, '.', ',') }</div>    
                     </li>
                 )
             })

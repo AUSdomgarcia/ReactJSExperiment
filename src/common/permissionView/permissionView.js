@@ -61,7 +61,7 @@ export class PermissionView extends Component {
                     Creator
                 </div>
                 <div className='right-section -small'>
-                    <p className='creator-name'>Dynamic Name</p>
+                    <p className='creator-name'>{'Love NuWorks'}</p>
                 </div>
 
                 <div className='left-section -big'>
