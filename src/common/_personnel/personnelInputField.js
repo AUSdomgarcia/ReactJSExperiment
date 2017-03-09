@@ -81,15 +81,15 @@ export class PersonnelInputField extends Component {
             this.setState({ rateTypeValue: nextProps.personnelData.ratetype });
             this.setState({ departmentValue: nextProps.personnelData.department });
             this.setState({ positionValue: nextProps.personnelData.position });
-            this.setState({ manHour: nextProps.personnelData.manhour });
+            this.setState({ manHour:  nextProps.personnelData.manhour });
         }
     }
 
     onSetManHourHandler(evt){
         let manhour = +evt.target.value;
-        let word     = evt.target.value;
+        let word = evt.target.value;
 
-        this.setState({manHour: manhour});
+        this.setState({manHour: word});
 
         if(word.trim() === ""){
             // do nothing...
@@ -168,12 +168,15 @@ export class PersonnelInputField extends Component {
                         // alert(response.data.message);
                         // toastr.error(response.data.message);
                         scope.clientCheckBeforeServer(response.data.message);
+                        
 
                     } else {
                         scope.props.onUpdate(response.data.payload);
                         // alert('Personnel added successfully.');
                         toastr.success('Personnel added successfully.');
                         scope.resetValues();
+                        scope.setState({canProceed:true});
+                        scope.setState({isUpdated:false});
                     }
                 })
                 .catch(function(response){
@@ -209,6 +212,7 @@ export class PersonnelInputField extends Component {
                         toastr.success('Personnel updated.');
                         scope.props.onUpdate(response.data.payload);
                         scope.resetValues();
+                        scope.setState({canProceed:true});
                     }
                 })
                 .catch(function(response){
@@ -223,13 +227,15 @@ export class PersonnelInputField extends Component {
     }
 
     clientCheckBeforeServer(message){
+        this.setState({isUpdated:false});
+
         if(this.state.hasRatetype===false && 
             this.state.hasPosition===false && 
             this.state.hasDepartment===false && 
             this.state.hasManhour===false ){
                 // Client side
         } else {
-            // toastr.error(message .concat('NONONO') );
+            // toastr.error(message);
         }
     }
 
@@ -309,10 +315,10 @@ export class PersonnelInputField extends Component {
 
                 <div className='form-group'>
                     <label>Manhour Rate</label>
-                    <input type="number" maxLength={"8"} 
+                    <input type="number" 
                         className='form-control' 
-                        value={this.state.manHour} 
-                        onChange={this.onSetManHourHandler.bind(this)}/>
+                        value= { this.state.manHour } 
+                        onChange={ this.onSetManHourHandler.bind(this)}/>
                         
                     <span className="error-color">{this.manhourStatus()}</span>
                 </div>

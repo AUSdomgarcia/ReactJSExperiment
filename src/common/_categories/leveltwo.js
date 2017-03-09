@@ -16,6 +16,8 @@ postRatecardServiceCategoriesSortServiceSubCategories,
 getServiceCategories_subCategories_level2_byParentId
  } from '../../common/http';
 
+ import ReactModal from 'react-modal';
+
 export class LevelTwo extends Component {
 
     constructor(props){
@@ -38,7 +40,12 @@ export class LevelTwo extends Component {
 
             isReArrange: false,
             enableSave: false,
-            sortedResults:[]
+            sortedResults:[],
+            
+            showModal: false,
+            modalAction: "",
+            rateTypeId: 0
+
         }
         this.hackSortableInstance = null;
     }
@@ -119,24 +126,28 @@ export class LevelTwo extends Component {
         let scope = this;
         let target = evt.target;
 
-        if (confirm('Are you sure you want to delete this category?')) {
-            // continue
-        } else {
-            return;
-        }
+        this.setState({modalAction: "delete_category"}, function(){
+            scope.setState({showModal: true});
+        });
         
-        postServiceCategoriesDelete({id: this.state.myCurrentId}).then(function(response){
-            // alert('Category deleted.');
-            toastr.success('Category deleted.');
-            scope.hackSortableInstance.destroy();
-            scope.props.onDelete(scope.state.myCurrentId);
-        })
-        .catch(function(response){
-            if(response.data.error){
-                // alert(response.data.message);
-                toastr.error(response.data.message);
-            }
-        })
+        // if (confirm('Are you sure you want to delete this category?')) {
+        //     // continue
+        // } else {
+        //     return;
+        // }
+
+        // postServiceCategoriesDelete({id: this.state.myCurrentId}).then(function(response){
+        //     // alert('Category deleted.');
+        //     toastr.success('Category deleted.');
+        //     scope.hackSortableInstance.destroy();
+        //     scope.props.onDelete(scope.state.myCurrentId);
+        // })
+        // .catch(function(response){
+        //     if(response.data.error){
+        //         // alert(response.data.message);
+        //         toastr.error(response.data.message);
+        //     }
+        // });
     }
 
     onCancelManageButton(){
@@ -305,6 +316,72 @@ export class LevelTwo extends Component {
         }
     }
 
+    getModalContent(action){
+        let rateType_id = this.state.rateTypeId;
+        let modal_action = action;
+
+        let content = <span>No action</span>;
+        
+        switch(action){
+            case "delete_category":
+                content = 
+                <div className="modal-inner-content">
+                    <h5><i className="fa fa-exclamation-circle fa-2"></i>
+                        &nbsp;&nbsp;Are you sure you want to delete this category?
+                    </h5>
+                    <br />
+                </div>
+            break;
+
+        }
+
+        return (
+            <div>
+                {content}
+                <div className="text-right">
+
+                <button type="button"
+                    className="btn btn-primary" 
+                    onClick={ ()=> {
+                        let scope = this;
+
+                        switch(modal_action){
+                            case "delete_category":
+                                
+                                postServiceCategoriesDelete({id: scope.state.myCurrentId})
+
+                                .then(function(response){
+                                    toastr.success('Category deleted.');
+                                    
+                                    scope.hackSortableInstance.destroy();
+
+                                    scope.setState({showModal:false}, function(){
+                                        scope.props.onDelete(scope.state.myCurrentId);
+                                    });
+                                })
+                                .catch(function(response){
+                                    if(response.data.error){
+                                        toastr.error(response.data.message);
+                                        scope.setState({showModal:false});
+                                    }
+                                });
+
+                            break;
+                        }
+                    }} >Yes</button>&nbsp;
+
+                <button type="button" 
+                    className="btn btn-default" 
+                    onClick={ ()=> {
+                        this.setState({showModal:false});
+                    }} >No</button>
+
+                </div>
+            </div>
+        )
+
+    }
+
     render(){
         let menuBtn = null;
         let scope = this;
@@ -430,6 +507,29 @@ export class LevelTwo extends Component {
         
         return (
             <div>
+                <ReactModal 
+                    isOpen={this.state.showModal}
+                    contentLabel="Inline Styles Modal Example"
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0,0,0,0.3)'
+                        },
+                        content: {
+                            color: '#000',
+                            top: '53px',
+                            minHeight: '100px',
+                            height:'135px',
+                            width:'450px',
+                            maxWidth:'100%',
+                            left: '50%',
+                            transform: 'translateX(-50%)'
+                        }
+                        }} >
+                    {this.getModalContent(this.state.modalAction)}
+
+                </ReactModal>
+
+
                 {menuBtn}
 
                 <ul style={ulStyle(style)} id={'SortableLevelTwo_'+scope.props.sortableId}>

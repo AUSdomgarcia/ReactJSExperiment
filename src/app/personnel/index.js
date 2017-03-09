@@ -8,7 +8,13 @@ import {PersonnelInputField} from '../../common/_personnel/personnelInputField';
 import {getServicePersonnels, 
         postPersonnelsDelete, 
         getPersonnelSearch, 
-        getRateCardPersonnelPagination} from '../../common/http';
+        getRateCardPersonnelPagination,
+      
+        getServiceRateTypes,
+        getPersonnelsPositions,
+        getPersonnelsDepartment
+
+      } from '../../common/http';
 
 import {ActionButton} from '../../common/actionButton/actionButton';
 
@@ -27,9 +33,6 @@ export class Personnel extends Component {
         hasFilter: false,
         isUpdated: false,
 
-        search_ratetype: "",
-        search_position: "",
-        search_department: "",
         search_manhour_rate: "",
 
         itemsCountPerPage: 10,
@@ -38,12 +41,45 @@ export class Personnel extends Component {
         activePage: 1,
         globalSearchWord: "",
 
-        personnelKeyword: ""
+        personnelKeyword: "",
+
+        filter_rate_types: [],
+        filter_positions: [],
+        filter_departments: [],
+
+        rate_type_value: "",
+        position_value: "",
+        department_value: "",
       }
   }
 
   componentWillMount(){
     this.mypagination(this.state.activePage, this.state.itemsCountPerPage);
+    let scope = this;
+    
+    getServiceRateTypes().then(function(response){
+      if(response.data.payload.length!==0){
+        let rate_types = response.data.payload;
+            rate_types.unshift({id:12345, name: 'Select rate type'});
+        scope.setState({ filter_rate_types: rate_types });
+      }
+    });
+
+    getPersonnelsPositions().then(function(response){
+      if(response.data.payload.length!==0){
+        let positions = response.data.payload;
+            positions.unshift({_id:12345, name: 'Select position'});
+        scope.setState({ filter_positions: positions });
+      }
+    });
+
+    getPersonnelsDepartment().then(function(response){
+      if(response.data.payload.length!==0){
+        let departments = response.data.payload;
+            departments.unshift({_id:12345, name: 'Select department'});
+        scope.setState({ filter_departments: departments });
+      }
+    });
   }
 
   mypagination(page, limit){
@@ -73,17 +109,7 @@ export class Personnel extends Component {
   }
 
   componentDidMount(){
-    // toastr.options.closeButton = true;
-    // toastr.options.closeMethod = 'fadeOut';
-    // toastr.options.closeDuration = 300;
-    // toastr.options.closeEasing = 'swing';
-    // toastr.options.newestOnTop = true;
-    // toastr.options.preventDuplicates = true;
-    // toastr.options.extendedTimeOut = 60;
-    // toastr.options.progressBar = true;
-    // toastr.options.rtl = true; 
-    // console.log(toastr);
-    // toastr.options.preventDuplicates = true;
+    //
   }
 
   componentWillReceiveProps(nextProps){} 
@@ -151,10 +177,10 @@ export class Personnel extends Component {
 
   onSearch(evt){
     let scope = this;
-    let ratetype = this.state.search_ratetype || '';
-    let position = this.state.search_position || '';
-    let department = this.state.search_department || '';
-    let manhour_rate = this.state.search_manhour_rate || '';
+    let ratetype = ( ! this.state.rate_type_value.includes('Select rate type')) ? this.state.rate_type_value : '';
+    let position = ( ! this.state.position_value.includes('Select position')) ? this.state.position_value : '';
+    let department = ( ! this.state.department_value.includes('Select department')) ? this.state.department_value : '';
+    let manhour_rate = this.state.search_manhour_rate || 0.00;
 
     let params = [];
         params.push( ratetype.trim() );
@@ -188,26 +214,11 @@ export class Personnel extends Component {
     });
   }
 
-  onDepartmentValue(evt){
-    let word = evt.target.value;
-    this.setState({search_department: word});
-  }
-
-  onPositionValue(evt){
-    let word = evt.target.value;
-    this.setState({search_position: word});
-  }
-
   onManhourRateValue(evt){
     let word = evt.target.value;
     this.setState({search_manhour_rate: word});
   }
 
-  onRateTypeValue(evt){
-    let word = evt.target.value;
-    this.setState({search_ratetype: word});
-  }
-  
   callbackPageChange(pageNumber){
     console.log(`active page is ${pageNumber}`);
     let scope = this;
@@ -294,7 +305,7 @@ export class Personnel extends Component {
             <td>{data.rate_type.name}</td>
             <td>{data.position.name}</td>
             <td>{data.department.name}</td>
-            <td>{data.manhour_rate}</td>
+            <td>{ ( + data.manhour_rate ).formatMoney(2, '.', ',') }</td>
             <td>
               <Link className='btn btn-default' 
                   to={'/personnel/edit' + 
@@ -377,31 +388,55 @@ export class Personnel extends Component {
             <div className={"row " + (this.state.hasFilter ? '' : 'hidden')}>
               <div className="col-xs-6">
                 <label>Rate Type</label>
-                <input type="text" 
-                  className="form-control" 
-                  value={this.state.search_ratetype}
-                  onChange={this.onRateTypeValue.bind(this)} />  
+                <select className="form-control" 
+                    value={this.state.rate_type_value} 
+                    onChange={ (e) => { 
+                        scope.setState({ rate_type_value: e.target.value}); 
+                    } }>
+
+                    { this.state.filter_rate_types.map(function(data){
+                      return (
+                        <option key={data.id} value={data.name}>{data.name}</option>
+                      )
+                    })}
+                </select>
               </div>
 
               <div className="col-xs-6">
                 <label>Position</label>
-                <input type="text" 
-                  className="form-control" 
-                  value={this.state.search_position}
-                  onChange={this.onPositionValue.bind(this)} />  
+                <select className="form-control" 
+                    value={this.state.position_value} 
+                    onChange={ (e) => { 
+                        scope.setState({ position_value: e.target.value}); 
+                    } }>
+
+                    { this.state.filter_positions.map(function(data){
+                      return (
+                        <option key={data._id} value={data.name}>{data.name}</option>
+                      )
+                    })}
+                </select>
               </div>
 
               <div className="col-xs-6">
                 <label>Department</label>
-                <input type="text" 
-                  className="form-control" 
-                  value={this.state.search_department}
-                  onChange={this.onDepartmentValue.bind(this)} />    
+                <select className="form-control" 
+                    value={this.state.department_value} 
+                    onChange={ (e) => { 
+                        scope.setState({ department_value: e.target.value}); 
+                    } }>
+
+                    { this.state.filter_departments.map(function(data){
+                      return (
+                        <option key={data._id} value={data.name}>{data.name}</option>
+                      )
+                    })}
+                </select>
               </div>
 
               <div className="col-xs-6">
-                <label>Manhour Rate</label>
-                <input type="text" 
+                <label>Manhour Rate <small>(integer)</small></label>
+                <input type="number" 
                   className="form-control" 
                   value={this.state.search_manhour_rate}
                   onChange={this.onManhourRateValue.bind(this)} />    

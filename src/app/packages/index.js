@@ -999,11 +999,11 @@ export class PackageSave extends Component {
 
             let json = JSON.stringify(servicesWithOrder);
             let WSpackageAction = window.sessionStorage.getItem('packageAction') || 'none';
-            let WSpackageId = window.sessionStorage.getItem('packageId') || 0;
+            let package_id = window.sessionStorage.getItem('package_id') || 0;
 
-            this.setState({ packageId: WSpackageId });
+            this.setState({ packageId: package_id });
 
-            console.log('WSpackageId', WSpackageId);
+            console.log('package_id', package_id);
 
             this.setState({service_ids: json}, function(){
                 switch(WSpackageAction){
@@ -1025,11 +1025,11 @@ export class PackageSave extends Component {
                             temp = {service_ids: json}
                             console.log('goes here/:0');
                         } else {
-                            temp = {package_id: WSpackageId}
+                            temp = {package_id};
                             console.log('goes here/:1');
                         }
 
-                        console.log('given', json, 'id', WSpackageId);
+                        console.log('given', json, 'id', package_id);
 
                         postPackagePreview(temp)
                         .then(function(response){

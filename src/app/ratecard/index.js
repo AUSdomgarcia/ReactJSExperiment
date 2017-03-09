@@ -666,7 +666,7 @@ export class RateCardChoose extends Component {
                                 {data.description}
                             </td>
                             <td>
-                                {+data.subtotal}
+                                { ( +data.subtotal ).formatMoney(2, '.', ',') }
                             </td>
                         </tr>
                     )

@@ -201,19 +201,15 @@ export class ManageServices extends Component {
 
     componentWillMount(){
         let id = this.props.params.serviceCategoryId;
+        let scope = this;
 
         this.setState({ title: this.props.params.title });
         this.setState({ service_category_id: id }); 
-
-        // not yet in use
-        let scope = this;
 
         getServiceByCategoryId(id).then(function(response){
             console.log('manage_service', response);
             scope.setState({ services: response.data.payload })
         });
-
-        // /rate-cards/services/by-service-category?service_category_id=
 
         getRateCardsServiceByServiceCategoryByServiceCategoryId(id)
         .then(function(response){
@@ -224,13 +220,9 @@ export class ManageServices extends Component {
         })
         .catch(function(response){
             if(response.data.error){
-                // alert(response.data.message);
                 toastr.error(response.data.message);
             }
         });
-
-        // Hold service_category_id to return here after Add or Edit.
-        // window.sessionStorage.setItem('service_category_id', id);
     }
 
     componentDidMount(){
@@ -250,7 +242,6 @@ export class ManageServices extends Component {
         }
 
          postServiceDelete({id: id}).then(function(response){
-            // alert('Service deleted.');
             scope.state.services.map(function(data, idx){
                 if(data.id.toString() === id.toString()){
                     scope.state.services.splice(idx, 1);
@@ -262,7 +253,6 @@ export class ManageServices extends Component {
        })
         .catch(function(response){
             if(response.data.error){
-                // alert(response.data.message);
                 toastr.error(response.data.message);
             }
         });
@@ -280,7 +270,7 @@ export class ManageServices extends Component {
                     <tr key={data.id}>
                         <td>{ data.name }</td>
                         <td>{ data.rate_type.name }</td>
-                        <td>{ data.subtotal } </td>
+                        <td>{ (+ data.subtotal ).formatMoney(2, '.', ',') } </td>
                         <td><span 
                             className={"label " + (data.is_active==='1' ? 'label-success' : 'label-danger')}>
                             {(data.is_active==='1' ? 'Active' : 'Inactive')}
@@ -1301,7 +1291,7 @@ export class ServiceAdd extends Component {
                     <br />
 
                     <p className="form-control text-left">
-                        <strong>Subtotal:</strong>&nbsp;<span>{this.state.subtotal}</span>
+                        <strong>Subtotal:</strong>&nbsp;<span>{ ( + this.state.subtotal ).formatMoney(2, '.', ',') }</span>
                     </p>
                     
                     <br />
@@ -1839,7 +1829,7 @@ export class ServiceAll extends Component {
                         <td>{data.name}</td>
                         <td>{data.description}</td>
                         <td>{data.rate_type.name}</td>
-                        <td>{data.subtotal}</td>
+                        <td>{ ( + data.subtotal ).formatMoney(2, '.', ',') }</td>
                         <td>{(data.is_active==='0' ? 'Inactive' : 'Active')}</td>
                         <td>
                             <div>

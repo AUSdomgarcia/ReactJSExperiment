@@ -28,7 +28,7 @@ export class CategoryController extends Component {
             this.setState({ services: this.props.data.services },
             
             function(){
-                console.log(scope.state.services);
+                console.log('TEst', scope.state.services);
             });
         }
 
@@ -101,7 +101,7 @@ export class CategoryController extends Component {
                     <tr key={data.id}>
                         <td>{data.name}</td>
                         <td>{(data.rate_type===null) ? 'broken-data' : data.rate_type.name}</td>
-                        <td>{ data.subtotal } </td>
+                        <td>{ ( + data.subtotal ).formatMoney(2, '.', ',') } </td>
                         <td><span 
                             className={"label " + (data.is_active==='1' ? 'label-success' : 'label-danger')}>
                             {(data.is_active==='1' ? 'Active' : 'Inactive')}

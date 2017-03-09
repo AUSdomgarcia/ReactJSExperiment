@@ -14,7 +14,9 @@ import {
     postServiceCategories_subCategories_update,
     postRatecardServiceCategoriesSortServiceSubCategories
     
-    } from '../http';
+} from '../http';
+
+import ReactModal from 'react-modal';
 
 export class LevelThree extends Component {
 
@@ -37,7 +39,11 @@ export class LevelThree extends Component {
 
             isReArrange: false,
             enableSave: false,
-            sortedResults:[]
+            sortedResults:[],
+
+
+            showModal: false,
+            modalAction: "",
         }
         this.hackSortableInstance = null;
     }
@@ -210,29 +216,36 @@ export class LevelThree extends Component {
         let scope = this;
         let target = evt.target;
 
-        if (confirm('Are you sure you want to delete this category?')) {
-            // continue
-        } else {
-            return;
-        }
-
-        postServiceCategories_subCategories_delete({id: this.props.parentData.id, level: this.props.nextLevel })
-        .then(function(response){
-            // alert('Category deleted.');
-            toastr.success('Category deleted.');
-            if(scope.hackSortableInstance!==null) scope.hackSortableInstance.destroy();
-            scope.props.onDelete(scope.props.parentData.id);
-        })
-        .catch(function(response){
-            if(response.data.error){
-                // alert(response.data.message);
-                toastr.error(response.data.message);
-            }
+        this.setState({modalAction: "delete_category_2"}, function(){
+            scope.setState({showModal:true});
         });
+        
+        // if (confirm('Are you sure you want to delete this category 2?')) {
+            // continue
+        // } else {
+        //     return;
+        // }
+
+        // postServiceCategories_subCategories_delete({id: this.props.parentData.id, level: this.props.nextLevel })
+        // .then(function(response){
+        //     // alert('Category deleted.');
+        //     toastr.success('Category deleted.');
+        //     if(scope.hackSortableInstance!==null) scope.hackSortableInstance.destroy();
+        //     scope.props.onDelete(scope.props.parentData.id);
+        // })
+        // .catch(function(response){
+        //     if(response.data.error){
+        //         // alert(response.data.message);
+        //         toastr.error(response.data.message);
+        //     }
+        // });
     }
 
     callbackDelete(id){
         let scope = this;
+
+        if(id===undefined||id===null) return;
+
         scope.state.dataTree.map(function(el, index){
             if(el.id === id){
                 scope.state.dataTree.splice(index, 1);
@@ -245,27 +258,22 @@ export class LevelThree extends Component {
        let scope = this;
 
        if(value.length===0){
-            // alert('No category name specified.');
             toastr.error('No category name specified.');
             return;
         }
 
-       // Local Update
         this.state.dataTree.map(function(data){
                 if(data.id === id){
                     data.name = value;
                 }
             });
         
-        // Server Update
         postServiceCategories_subCategories_update({name: value, id: id})
         .then(function(response){
-            // alert('Category name updated.');
             toastr.success('Category name updated.');
         })
         .catch(function(response){
             if(response.data.error){
-                // alert(response.data.message);
                 toastr.error(response.data.message);
             }
         });
@@ -310,6 +318,82 @@ export class LevelThree extends Component {
                 }
             });
         }
+    }
+
+    getModalContent(action){
+        let rateType_id = this.state.rateTypeId;
+        let modal_action = action;
+        let content = <span>No action</span>;
+
+        switch(action){
+            case "delete_category_2":
+                content = 
+                <div className="modal-inner-content">
+                    <h5><i className="fa fa-exclamation-circle fa-2"></i>
+                        &nbsp;&nbsp;Are you sure you want to delete this category?
+                    </h5>
+                    <br />
+                </div>
+            break;
+
+            //  case "delete_category_3":
+            //     content = 
+            //     <div className="modal-inner-content">
+            //         <h5><i className="fa fa-exclamation-circle fa-2"></i>
+            //             &nbsp;&nbsp;Are you sure you want to delete this category 3
+            //         </h5>
+            //         <br />
+            //     </div>
+            // break;
+        }
+
+        return (
+            <div>
+                {content}
+                <div className="text-right">
+
+                <button type="button"
+                    className="btn btn-primary" 
+                    onClick={ ()=> {
+                        let scope = this;
+
+                        switch(modal_action){
+                            case "delete_category_2":
+                                postServiceCategories_subCategories_delete({id: this.props.parentData.id, level: this.props.nextLevel })
+                                .then(function(response){
+
+                                    toastr.success('Category deleted.');
+
+                                    if(scope.hackSortableInstance!==null) scope.hackSortableInstance.destroy();
+
+                                    scope.setState({showModal:true}, function(){
+                                        scope.props.onDelete(scope.props.parentData.id);
+                                    });
+
+                                })
+                                .catch(function(response){
+                                    if(response.data.error){
+                                        toastr.error(response.data.message);
+                                        scope.setState({showModal:false});
+                                    }
+                                });
+                            break;
+
+                            case "delete_category_3":
+                                 
+                            break;
+                        }
+                    }} >Yes</button>&nbsp;
+
+                <button type="button" 
+                    className="btn btn-default" 
+                    onClick={ ()=> {
+                        this.setState({showModal:false})
+                    }} >No</button>
+
+                </div>
+            </div>
+        )
     }
 
 
@@ -460,6 +544,29 @@ export class LevelThree extends Component {
         
         return (
             <div>
+                <ReactModal 
+                    isOpen={this.state.showModal}
+                    contentLabel="Inline Styles Modal Example"
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0,0,0,0.3)'
+                        },
+                        content: {
+                            color: '#000',
+                            top: '53px',
+                            minHeight: '100px',
+                            height:'135px',
+                            width:'450px',
+                            maxWidth:'100%',
+                            left: '50%',
+                            transform: 'translateX(-50%)'
+                        }
+                    }} >
+                    
+                    {this.getModalContent(this.state.modalAction)}
+
+                </ReactModal>
+
                 {menuBtn}
 
                 <ul style={ulStyle(style)} id={'SortableLevelThree_'+scope.props.sortableId}>

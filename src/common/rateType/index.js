@@ -11,6 +11,8 @@ import {
     postServiceRateTypesDelete,
     postRateCardRateTypesUpdate } from '../http';
 
+import ReactModal from 'react-modal';
+
 export class RateType extends Component {
 
     constructor(props){
@@ -25,6 +27,9 @@ export class RateType extends Component {
             inputCategoryName: "",
 
             targetInput: 0,
+
+            showModal: false,
+            modalAction: ""
         }
     }
 
@@ -144,30 +149,36 @@ export class RateType extends Component {
     
         if(id===undefined || id===null) return;
 
-        if (confirm('Are you sure you want to delete this rate type?')) {
-            // continue
-        } else {
-            return;
-        }
+        this.setState({rateTypeId: id});
 
-        postServiceRateTypesDelete({ id: id })
-        .then(function(response){
-            scope.state.rateTypeArr.map(function(el, index){
-                if(el.id === +id){
-                    scope.state.rateTypeArr.splice(index, 1);
-                }
-            });
-            scope.setState({ rateTypeArr: scope.state.rateTypeArr }, function(){
-                toastr.success('Rate type Deleted.');
-            });
-            // alert('Rate Type Deleted.');
-        })
-        .catch(function(response){
-            if(response.data.error){
-                // alert(response.data.message);
-                toastr.error(response.data.message);
-            }
+        this.setState({ modalAction: "delete_rateType" }, function(){
+            scope.setState({showModal:true});
         });
+
+        // if (confirm('Are you sure you want to delete this rate type?')) {
+        //     // continue
+        // } else {
+        //     return;
+        // }
+
+        // postServiceRateTypesDelete({ id: id })
+        // .then(function(response){
+        //     scope.state.rateTypeArr.map(function(el, index){
+        //         if(el.id === +id){
+        //             scope.state.rateTypeArr.splice(index, 1);
+        //         }
+        //     });
+        //     scope.setState({ rateTypeArr: scope.state.rateTypeArr }, function(){
+        //         toastr.success('Rate type Deleted.');
+        //     });
+        //     // alert('Rate Type Deleted.');
+        // })
+        // .catch(function(response){
+        //     if(response.data.error){
+        //         // alert(response.data.message);
+        //         toastr.error(response.data.message);
+        //     }
+        // });
     }
 
     onCategoryNameChanged(evt){
@@ -177,6 +188,71 @@ export class RateType extends Component {
     onHandleKeyChange(){
         
     }
+
+    getModalContent(action){
+        let rateType_id = this.state.rateTypeId;
+        let modal_action = action;
+        let content = <span>No action</span>;
+        
+        switch(action){
+            case "delete_rateType":
+                content = 
+                <div className="modal-inner-content">
+                    <h5><i className="fa fa-exclamation-circle fa-2"></i>
+                        &nbsp;&nbsp;Are you sure you want to delete this rate type?
+                    </h5>
+                    <br />
+                </div>
+            break;
+        }
+
+        return (
+            <div>
+                {content}
+                <div className="text-right">
+
+                <button type="button"
+                    className="btn btn-primary" 
+                    onClick={ ()=> {
+                        let scope = this;
+
+                        switch(modal_action){
+                            case "delete_rateType":
+                                postServiceRateTypesDelete({ id: rateType_id })
+                                    .then(function(response){
+
+                                        scope.state.rateTypeArr.map(function(el, index){
+                                            if(el.id === +rateType_id){
+                                                scope.state.rateTypeArr.splice(index, 1);
+                                            }
+                                        });
+
+                                        scope.setState({ rateTypeArr: scope.state.rateTypeArr }, function(){
+                                            toastr.success('Rate type Deleted.');
+                                            scope.setState({showModal:false});
+                                        });
+
+                                    })
+                                    .catch(function(response){
+                                        if(response.data.error){
+                                            toastr.error(response.data.message);
+                                            scope.setState({showModal:false});
+                                        }
+                                    });
+                            break;
+                        }
+                    }} >Yes</button>&nbsp;
+
+                <button type="button" 
+                    className="btn btn-default" 
+                    onClick={ ()=> {
+                    this.setState({showModal:false})
+                    }} >No</button>
+
+                </div>
+            </div>
+        )
+  }
 
     render(){
         let scope = this;
@@ -224,38 +300,61 @@ export class RateType extends Component {
         }
 
         return (
-            <div className="col-xs-12">
+            <div>
+                <ReactModal 
+                    isOpen={this.state.showModal}
+                    contentLabel="Inline Styles Modal Example"
+                    style={{
+                        overlay: {
+                            backgroundColor: 'rgba(0,0,0,0.3)'
+                        },
+                        content: {
+                            color: '#000',
+                            top: '53px',
+                            minHeight: '100px',
+                            height:'135px',
+                            width:'450px',
+                            maxWidth:'100%',
+                            left: '50%',
+                            transform: 'translateX(-50%)'
+                        }
+                        }} >
+                    {this.getModalContent(this.state.modalAction)}
 
-                <div className="col-xs-6">
-                    &nbsp; 
+                </ReactModal>
+
+                <div className="col-xs-12">
+                    <div className="col-xs-6">
+                        &nbsp; 
+                    </div>
+
+                    <div className="col-xs-6 text-right">
+                        <button type="button" className="btn btn-primary addBtn" onClick={this.onAddBtn.bind(this)}>Add</button>
+                    </div>
+
+                    <br className="clearfix"/>
+
+                <table className='table table-hover table-bordered table-striped no-margin-bottom'>
+                        <thead>
+                            <tr>
+                                <th>Rate Type</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        {rateTypes}
+                    </table>
+
+                    <div className="row">
+                        <AddLevel 
+                            hasAddLevel={this.state.showAddRateType}
+                            name={this.state.rateTypeName}
+                            onSave={this.onSave.bind(this)} 
+                            onCancel={this.onCancel.bind(this)} />
+                    </div>
+
+                    <br />
                 </div>
-
-                <div className="col-xs-6 text-right">
-                    <button type="button" className="btn btn-primary addBtn" onClick={this.onAddBtn.bind(this)}>Add</button>
-                </div>
-
-                <br className="clearfix"/>
-
-               <table className='table table-hover table-bordered table-striped no-margin-bottom'>
-                    <thead>
-                        <tr>
-                            <th>Rate Type</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
-                    {rateTypes}
-                </table>
-
-                <div className="row">
-                    <AddLevel 
-                        hasAddLevel={this.state.showAddRateType}
-                        name={this.state.rateTypeName}
-                        onSave={this.onSave.bind(this)} 
-                        onCancel={this.onCancel.bind(this)} />
-                </div>
-
-                <br />
             </div>
         )
     }

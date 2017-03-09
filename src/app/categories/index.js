@@ -16,6 +16,8 @@ import {getServiceCategoriesRoot,
         postRatecardServiceCategoriesSortServiceCategories
       } from '../../common/http';
 
+import ReactModal from 'react-modal';
+
 export class Categories extends Component {
   
   constructor(props){
@@ -28,10 +30,14 @@ export class Categories extends Component {
       isRearrage: false,
       enableSave: false,
       isSaveSent:false,
-      sortedResults:[]
+      sortedResults:[],
+
+      showModal: false,
+
+      modalAction: ""  // save_arrangement | delete_rateType | delete_category
     };
 
-    this.parentMe = this;
+    // this.parentMe = this;
   }
 
   componentWillMount(){
@@ -104,17 +110,14 @@ export class Categories extends Component {
 
         scope.onCancelAddLevel1();
 
-        // alert('Category added successfully');
-        
-      this.setState({ categoryName: ""});
-      jquery('.category-input').addClass('hide');
+        scope.setState({ categoryName: ""});
 
-        // level1Arr.push(category);
+        jquery('.category-input').addClass('hide');
+
       }
     })
     .catch(function(response){
       if(response.data.error){
-        // alert(response.data.message);
         toastr.error(response.data.message);
       }
     });
@@ -179,30 +182,75 @@ export class Categories extends Component {
   onSaveArrangementLevel1(){
     let scope = this;
 
-    if(this.state.enableSave){
-
-      if(confirm('Are you sure you want to save these changes?')){
-        //
-      } else {
-        return;
+    this.setState({ modalAction: "save_arrangement"}, function(){
+      if(scope.state.enableSave){
+        scope.setState({ showModal: true });
       }
+    });
+  }
 
-      postRatecardServiceCategoriesSortServiceCategories({
-      categories_sort: this.state.sortedResults
-      })
-      .then(function(response){
-        // alert('Category arrangement updated.');
-        toastr.success('Category arrangement updated.');
-        //  reset
-        scope.onCancelArrangementLevel1();
-      })
-      .catch(function(response){
-        if(response.data.error){
-          // alert(response.data.message);
-          toastr.error(response.data.message);
-        }
-      });
+  getModalContent(action){
+    let modal_action = action;
+    let content = <span>No action</span>
+
+    switch(action){
+      case "save_arrangement":
+        content = 
+        <div className="modal-inner-content">
+            <h5><i className="fa fa-exclamation-circle fa-2"></i>
+                &nbsp;&nbsp;Are you sure you want to save changes?
+            </h5>
+            <br />
+        </div>
+      break;
     }
+
+    return (
+      <div>
+        {content}
+        <div className="text-right">
+
+          <button type="button"
+            className="btn btn-primary" 
+            onClick={ ()=> {
+                let scope = this;
+
+                switch(modal_action){
+                  case "save_arrangement":
+                      postRatecardServiceCategoriesSortServiceCategories({
+                        categories_sort: scope.state.sortedResults
+                      })
+                      .then(function(response){
+                        toastr.success('Category arrangement updated.');
+                        scope.onCancelArrangementLevel1();
+                        scope.setState({showModal:false});
+                      })
+                      .catch(function(response){
+                        if(response.data.error){
+                          toastr.error(response.data.message);
+                          scope.setState({showModal:false});
+                        }
+                      });
+                  break;
+
+                  // case "delete_category":
+                  // break;
+
+                  // case "delete_rateType":
+                  // break;
+                }
+
+            }} >Yes</button>&nbsp;
+
+          <button type="button" 
+            className="btn btn-default" 
+            onClick={ ()=> {
+              this.setState({showModal:false})
+            }} >No</button>
+
+        </div>
+      </div>
+    )
   }
 
   render() {
@@ -251,8 +299,31 @@ export class Categories extends Component {
     
     return (
       <div>
+        <ReactModal 
+           isOpen={this.state.showModal}
+           contentLabel="Inline Styles Modal Example"
+           style={{
+              overlay: {
+                backgroundColor: 'rgba(0,0,0,0.3)'
+              },
+              content: {
+                color: '#000',
+                top: '53px',
+                minHeight: '100px',
+                height:'135px',
+                width:'450px',
+                maxWidth:'100%',
+                left: '50%',
+                transform: 'translateX(-50%)'
+              }
+            }} >
+
+          {this.getModalContent(this.state.modalAction)}
+
+        </ReactModal>
+
         {/* Title */}
-        <h3 className="sky">Manage Categories and Rate Type</h3>
+        <h4 className="sky">Manage Categories and Rate Type</h4>
         {/* Menu */}
         <div className="col-md-12">
           <div className="col-xs-6">
@@ -262,7 +333,7 @@ export class Categories extends Component {
             <div className="pull-right">
               {rearrage}&nbsp;
               <button 
-                type="button" 
+                type="button"
                 className="btn btn-primary" 
                 onClick={this.onAddLevel1.bind(this)}>Add Level</button>
             </div>
@@ -292,6 +363,7 @@ export class Categories extends Component {
         <br />
         <br />
         <br />
+
         {/* Rate Type */}
         <RateType />
       </div>
