@@ -1731,7 +1731,7 @@ export class ServiceAll extends Component {
         let description = this.state.description || '';
         let rate_type = (this.state.rate_type_value.includes('Select')) ? '' : this.state.rate_type_value;
         let cost = this.state.cost || '';
-        let status = this.state.status || '';
+        let status = (this.state.status.includes('Select')) ? '' : this.state.status;
 
         let params = [];
             params.push( service_id.trim() );
