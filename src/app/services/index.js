@@ -1515,7 +1515,12 @@ export class ServiceEdit extends Component {
 
 
 
-import {getRateCardServicesAll, getRateCardServiceAllPagination, getServicesById, getRateCardServicesSearch} from '../../common/http';
+import { getRateCardServicesAll, 
+         getRateCardServiceAllPagination, 
+         getServicesById, 
+         getRateCardServicesSearch
+        //  getServiceCategoriesRoot 
+        } from '../../common/http';
 import Pagination from 'react-js-pagination';
 
 export class ServiceAll extends Component {
@@ -1526,12 +1531,14 @@ export class ServiceAll extends Component {
             services: [],
             showFilter: false,
             service_id: "",
-            category: "",
+            category: [],
+            categoryValue: "",
             name: "",
             description: "",
-            rate_type: "",
+            rate_type: [],
+            rate_type_value: "",
             cost: "",
-            status: "",
+            status: "Select Status",
             searchByKeyword: "",
 
             activePage: 1,
@@ -1555,10 +1562,28 @@ export class ServiceAll extends Component {
     // }
 
     componentWillMount(){
-        this.mypagination(this.state.activePage, this.state.itemsCountPerPage);
+        let scope = this;
+
+        this.handlePagination(this.state.activePage, this.state.itemsCountPerPage);
+
+        getServiceCategoriesRoot().then(function(response){
+            let category = response.data.payload;
+            if(category.length!==0){
+                category.unshift({ name: "Select Category", id: 12345 });
+                scope.setState({ category });    
+            }
+        });
+
+        getServiceRateTypes().then(function(response){
+            let rate_type = response.data.payload;
+            if(rate_type.length!==0){
+                rate_type.unshift({ name: "Select Rate Type", id: 12345 });
+                scope.setState({ rate_type });
+            }
+        });
     }
     
-    mypagination(page, limit){
+    handlePagination(page, limit){
     let scope = this;
 
     getRateCardServiceAllPagination(page, limit)
@@ -1697,14 +1722,14 @@ export class ServiceAll extends Component {
         this.setState({showFilter: toggle});
     }
 
-    serviceGlobalSearchHandler(){
+    handleAtSearchAllServices(){
         let scope = this;
         
         let service_id = this.state.service_id || '';
-        let category = this.state.category || '';
+        let category = (this.state.categoryValue.includes('Select')) ? '' : this.state.categoryValue;
         let name = this.state.name || '';
         let description = this.state.description || '';
-        let rate_type = this.state.rate_type || '';
+        let rate_type = (this.state.rate_type_value.includes('Select')) ? '' : this.state.rate_type_value;
         let cost = this.state.cost || '';
         let status = this.state.status || '';
 
@@ -1745,25 +1770,25 @@ export class ServiceAll extends Component {
         });
     }
 
-    serviceInputHandler(evt){
+    handleAtSearchService(evt){
         this.setState({ service_id: evt.target.value });
     }
-    categoryInputHandler(evt){
-        this.setState({ category: evt.target.value });
+    handleAtSearchCategory(evt){
+        this.setState({ categoryValue: evt.target.value });
     }
-    nameInputHandler(evt){
+    handleAtSearchName(evt){
         this.setState({ name: evt.target.value });
     }
-    descriptionInputHandler(evt){
+    handleAtSearchDescription(evt){
         this.setState({ description: evt.target.value });
     }
-    rateTypeInputHandler(evt){
-        this.setState({ rate_type: evt.target.value });
+    handleAtSearchRateType(evt){
+        this.setState({ rate_type_value: evt.target.value });
     }
-    costInputHandler(evt){
+    handleAtSearchCost(evt){
         this.setState({ cost: evt.target.value });
     }
-    statusInputHandler(evt){
+    handleAtSearchStatus(evt){
         this.setState({ status: evt.target.value });    
     }
 
@@ -1801,7 +1826,7 @@ export class ServiceAll extends Component {
         let value = +evt.target.value
         this.setState({activePage: 1}, function(){
             scope.setState({itemsCountPerPage: value}, function(){
-                scope.mypagination(scope.state.activePage, scope.state.itemsCountPerPage);
+                scope.handlePagination(scope.state.activePage, scope.state.itemsCountPerPage);
             });
         });
     }
@@ -1809,8 +1834,18 @@ export class ServiceAll extends Component {
         callbackPageChange(pageNumber){
         let scope = this;
         this.setState({activePage: pageNumber}, function(){
-        scope.mypagination(scope.state.activePage, scope.state.itemsCountPerPage);
+        scope.handlePagination(scope.state.activePage, scope.state.itemsCountPerPage);
         });
+    }
+
+    getSearchCategory(){
+        let category = this.state.category;
+        if(category.length!==0){
+            console.log(category);
+
+        return 
+         
+        }
     }
 
     render(){
@@ -1818,6 +1853,7 @@ export class ServiceAll extends Component {
         let servicesTable = <tr><td colSpan={8}>No data.</td></tr>;
         let searchFilter = null;
         let paginationComponent = null;
+
 
         if(this.state.services.length!==0){
             servicesTable = 
@@ -1896,17 +1932,27 @@ export class ServiceAll extends Component {
                             <label>Sevice ID</label>
                             <input type="text" 
                                 value={this.state.service_id} 
-                                onChange={this.serviceInputHandler.bind(this)} 
+                                onChange={this.handleAtSearchService.bind(this)} 
                                 className="form-control" />
                         </div>    
                     </div>
                     <div className="col-xs-3">
                         <div className="form-group">
                             <label>Category</label>
-                            <input type="text" 
+                            {/* <input type="text" 
                                 value={this.state.category} 
-                                onChange={this.categoryInputHandler.bind(this)} 
-                                className="form-control" />
+                                onChange={this.handleAtSearchCategory.bind(this)} 
+                            className="form-control" /> */}
+                            
+                            <select className="form-control" value={this.state.categoryValue} onChange={this.handleAtSearchCategory.bind(this)} >
+                            { 
+                                this.state.category.map(function(data){
+                                    return (
+                                        <option key={data.id} value={data.name}>{data.name}</option>
+                                    )
+                                }) 
+                            }                      
+                            </select>
                         </div>    
                     </div>
                     <div className="col-xs-3">
@@ -1914,7 +1960,7 @@ export class ServiceAll extends Component {
                             <label>Name</label>
                             <input type="text" 
                                 value={this.state.name} 
-                                onChange={this.nameInputHandler.bind(this)} 
+                                onChange={this.handleAtSearchName.bind(this)} 
                                 className="form-control" />
                         </div>    
                     </div>
@@ -1923,7 +1969,7 @@ export class ServiceAll extends Component {
                             <label>Description</label>
                             <input type="text" 
                                 value={this.state.description} 
-                                onChange={this.descriptionInputHandler.bind(this)} 
+                                onChange={this.handleAtSearchDescription.bind(this)} 
                                 className="form-control" />
                         </div>    
                     </div>
@@ -1934,10 +1980,20 @@ export class ServiceAll extends Component {
                     <div className="col-xs-3">
                         <div className="form-group">
                             <label>Rate Type</label>
-                            <input type="text" 
-                                value={this.state.rate_type} 
-                                onChange={this.rateTypeInputHandler.bind(this)} 
-                                className="form-control" />
+                            {/*<input type="text" 
+                                value={this.state.rate_type_value} 
+                                onChange={this.handleAtSearchRateType.bind(this)} 
+                                className="form-control" />*/}
+                            
+                            <select className="form-control" value={this.state.rate_type_value} onChange={this.handleAtSearchRateType.bind(this)} >
+                            { 
+                                this.state.rate_type.map(function(data){
+                                    return (
+                                        <option key={data.id} value={data.name}>{data.name}</option>
+                                    )
+                                }) 
+                            }                      
+                            </select>
                         </div>    
                     </div>
                     <div className="col-xs-3">
@@ -1945,17 +2001,25 @@ export class ServiceAll extends Component {
                             <label>Cost</label>
                             <input type="text" 
                                 value={this.state.cost} 
-                                onChange={this.costInputHandler.bind(this)}
+                                onChange={this.handleAtSearchCost.bind(this)}
                                 className="form-control" />
                         </div>    
                     </div>
                     <div className="col-xs-3">
                         <div className="form-group">
                             <label>Status</label>
-                            <input type="text" 
+                            {/* <input type="text" 
                                 value={this.state.status} 
-                                onChange={this.statusInputHandler.bind(this)}
-                                className="form-control" />
+                                onChange={this.handleAtSearchStatus.bind(this)}
+                                className="form-control" /> */ }
+                            <select 
+                                className="form-control"
+                                value={this.state.status}
+                                onChange={this.handleAtSearchStatus.bind(this)} >
+                                    <option value="Select Status">Select Status</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="active">Active</option>
+                            </select>
                         </div>    
                     </div>
                     <div className="col-xs-3">
@@ -1963,7 +2027,7 @@ export class ServiceAll extends Component {
                         <label className="center-block">&nbsp;</label>
                         <button type="button" 
                             className="btn btn-primary"
-                            onClick={this.serviceGlobalSearchHandler.bind(this)}
+                            onClick={this.handleAtSearchAllServices.bind(this)}
                             >Submit</button>
                         </div>  
                     </div>

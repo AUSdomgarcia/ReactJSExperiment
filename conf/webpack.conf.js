@@ -91,7 +91,7 @@ module.exports = {
       options: {
         postcss: () => [autoprefixer]
       },
-      debug: true
+      debug: false
     })
   ],
 
