@@ -4,7 +4,7 @@ import jquery from 'jquery';
 
 import toastr from 'toastr';
 
-import { getServicePersonnels } from '../http';
+import {getServicePersonnels} from '../http';
 
 export class ServicePersonnel extends Component {
 

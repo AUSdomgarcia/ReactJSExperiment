@@ -400,6 +400,8 @@ ManageServices.contextTypes = {
 
 
 import {getServicePersonnelsByRateTypeId, getServiceCategoriesRoot} from '../../common/http';
+import {PersonnelDataStack} from '../../common/_services/personnelDataStack'; 
+
 export class ServiceAdd extends Component {
 
     constructor(props){
@@ -431,7 +433,7 @@ export class ServiceAdd extends Component {
             rateTypeValue: "",
 
             servicePersonnelArr: [],
-            personnels_data: [],
+            positionByRateType: [],
             subtotal: 0,
 
             personnelComp_previous_myId: 0,
@@ -514,7 +516,7 @@ export class ServiceAdd extends Component {
 
                         getServicePersonnelsByRateTypeId(id).then(function(response){
                             if(response.data.payload.length!==0){
-                                scope.setState({personnels_data: response.data.payload});
+                                scope.setState({positionByRateType: response.data.payload});
                             }
                         });
                     });
@@ -624,7 +626,7 @@ export class ServiceAdd extends Component {
 
                 getServicePersonnelsByRateTypeId(id).then(function(response){
                     if(response.data.payload.length!==0){
-                        scope.setState({personnels_data: response.data.payload});
+                        scope.setState({positionByRateType: response.data.payload});
                     }
                 });
             });
@@ -749,7 +751,7 @@ export class ServiceAdd extends Component {
         this.setState({ rateTypeValue: id });
 
         getServicePersonnelsByRateTypeId(id).then(function(response){
-            scope.setState({ personnels_data: response.data.payload });
+            scope.setState({ positionByRateType: response.data.payload });
         });
         
         let empty = [];
@@ -1074,7 +1076,39 @@ export class ServiceAdd extends Component {
         }
         return display;
     }
+    
+    onUpdateStack(data){
+        let tempObj = data;
+        let scope = this;
+        let hasCopy = false;
 
+        // No data
+        if(this.state.servicePersonnelArr.length ===0 ){
+            this.state.servicePersonnelArr.push(tempObj);
+            this.setState({ servicePersonnelArr: this.state.servicePersonnelArr });
+            this.calculateSubtotal();
+            return;
+        }
+
+        // Data
+        this.state.servicePersonnelArr.map(function(data){
+            if(+data.id === +tempObj.id ){
+                hasCopy = true;
+            }
+        });
+        
+        if(hasCopy===false){
+            scope.state.servicePersonnelArr.push(tempObj);
+            scope.setState({ servicePersonnelArr: scope.state.servicePersonnelArr });
+        }
+
+        if(hasCopy===true){
+            toastr.error('Cannot add personnel with the same position.');            
+            return;
+        }
+
+        this.calculateSubtotal();
+    }
     
     render(){
         let scope = this;
@@ -1085,6 +1119,9 @@ export class ServiceAdd extends Component {
         let defaultStatus = undefined;
         let personnelsWarining = undefined;
         let sameRateType = <span></span>
+
+        // New Personnel Stack
+        let personnelStack = undefined;
 
         if(this.state.level1Arr.length!==0 && this.state.isEditmode==='0'){ //&& this.state.level1ValueId !== 'default' 
             level1SelectOptions = 
@@ -1181,6 +1218,13 @@ export class ServiceAdd extends Component {
             defaultStatus = <strong>No added personnels.</strong>
         }
 
+        personnelStack = 
+            <PersonnelDataStack 
+                stack={this.state.servicePersonnelArr}
+                position={this.state.positionByRateType}
+                onUpdate={this.onUpdateStack.bind(this)}
+            />
+
         return ( 
             <div>
                 <h3 className="sky">Manage Service: <small>{this.state.titleReference}</small></h3>
@@ -1234,8 +1278,10 @@ export class ServiceAdd extends Component {
 
                     {/* PERSONNELS INPUT SOURCES */}
                     <ServicePersonnel 
+
                         isEnable={true} 
-                        personnelsOption={this.state.personnels_data}
+
+                        personnelsOption={this.state.positionByRateType}
 
                         personnel_id={ this.state.personnelComp_previous_personnel_id} 
 
@@ -1303,9 +1349,13 @@ export class ServiceAdd extends Component {
                     <br className="clearfix"/>
 
                     <h3>Added Personnel(s) {personnelsWarining}</h3>
-                    {defaultStatus}
-                    {personnelList}
                     
+                    {defaultStatus}
+                    
+                    {personnelList}
+
+                    {personnelStack}
+
                 </div>
 
                 <br />
@@ -1754,11 +1804,13 @@ export class ServiceAll extends Component {
 
         getRateCardServicesSearch(paramsStr).then(function(response){
             console.log('search results', response);
-
-            let payload = response.data.payload;
-            
-            if(payload.length!==0){
-                scope.setState({services: payload});
+                
+            if(response.data.payload.length!==0){
+                // scope.setState({services: payload});
+                scope.setState({ services: response.data.payload });
+                scope.setState({ activePage: pagination.current_page });
+                scope.setState({ totalItemsCount: pagination.total_records });
+                scope.setState({ itemsCountPerPage: pagination.limit });
             } else {
                 scope.setState({services: []});
             }
