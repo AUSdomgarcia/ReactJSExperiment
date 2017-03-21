@@ -15,7 +15,8 @@ export class PersonnelDataPile extends Component {
             position_id: 0,
             personnel_id: "000",
             visibleBtn: true,
-            position: []
+            position: [],
+            canAdd: false,
         }
 
         let scope = this;

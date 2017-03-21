@@ -1076,15 +1076,15 @@ export class ServiceAdd extends Component {
         }
         return display;
     }
-    
+
     onUpdateStack(data){
-        let tempObj = data;
+        let instance = data;
         let scope = this;
         let hasCopy = false;
 
         // No data
         if(this.state.servicePersonnelArr.length ===0 ){
-            this.state.servicePersonnelArr.push(tempObj);
+            this.state.servicePersonnelArr.push(instance);
             this.setState({ servicePersonnelArr: this.state.servicePersonnelArr });
             this.calculateSubtotal();
             return;
@@ -1092,13 +1092,13 @@ export class ServiceAdd extends Component {
 
         // Data
         this.state.servicePersonnelArr.map(function(data){
-            if(+data.id === +tempObj.id ){
+            if(+data.id === +instance.id ){
                 hasCopy = true;
             }
         });
         
         if(hasCopy===false){
-            scope.state.servicePersonnelArr.push(tempObj);
+            scope.state.servicePersonnelArr.push(instance);
             scope.setState({ servicePersonnelArr: scope.state.servicePersonnelArr });
         }
 
