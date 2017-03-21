@@ -21,8 +21,6 @@ export class PersonnelDataPile extends Component {
         let scope = this;
 
         this.getData = function(){
-            console.log(scope.state.position, scope.state.manhours,  scope.state.position_id);
-
             return {
                 id: scope.state.position_id,
                 subtotal: +scope.state.manhour_rate * +scope.state.manhours,
@@ -161,7 +159,7 @@ export class PersonnelDataPile extends Component {
                     </select>
                 </td>
                 <td>
-                    <input type="number" 
+                    <input type="number"
                         disabled={this.state.disableInput} 
                         value={this.state.manhours}  
                         onChange={this.handleManhours.bind(this)}
