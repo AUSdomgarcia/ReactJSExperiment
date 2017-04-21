@@ -400,7 +400,6 @@ ManageServices.contextTypes = {
 
 
 import {getServicePersonnelsByRateTypeId, getServiceCategoriesRoot} from '../../common/http';
-import {PersonnelDataStack} from '../../common/_services/personnelDataStack'; 
 
 export class ServiceAdd extends Component {
 
@@ -1120,9 +1119,6 @@ export class ServiceAdd extends Component {
         let personnelsWarining = undefined;
         let sameRateType = <span></span>
 
-        // New Personnel Stack
-        let personnelStack = undefined;
-
         if(this.state.level1Arr.length!==0 && this.state.isEditmode==='0'){ //&& this.state.level1ValueId !== 'default' 
             level1SelectOptions = 
             <div className="form-group">
@@ -1218,13 +1214,7 @@ export class ServiceAdd extends Component {
             defaultStatus = <strong>No added personnels.</strong>
         }
 
-        personnelStack = 
-            <PersonnelDataStack 
-                stack={this.state.servicePersonnelArr}
-                position={this.state.positionByRateType}
-                onUpdate={this.onUpdateStack.bind(this)}
-            />
-
+            
         return ( 
             <div>
                 <h3 className="sky">Manage Service: <small>{this.state.titleReference}</small></h3>
@@ -1353,8 +1343,6 @@ export class ServiceAdd extends Component {
                     {defaultStatus}
                     
                     {personnelList}
-
-                    {personnelStack}
 
                 </div>
 
